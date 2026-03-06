@@ -5,13 +5,13 @@ import {
   BackSide,
   BufferAttribute,
   Color,
+  Group,
   MathUtils,
   MeshBasicMaterial,
   PlaneGeometry,
   Shape,
   ShapeGeometry,
-  SphereGeometry,
-  Vector2,
+  Vector3,
 } from 'three';
 
 import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
@@ -36,8 +36,6 @@ import {
 import { SCENIC_REST_SPOTS } from './restSpots';
 import {
   SCENIC_FORWARD_XZ,
-  SCENIC_SUN_DISTANCE,
-  SCENIC_SUN_HEIGHT,
   SCENIC_SUN_LIGHT_DISTANCE,
   SCENIC_SUN_LIGHT_HEIGHT,
 } from './scenic';
@@ -93,60 +91,69 @@ function buildTerrainGeometry(): PlaneGeometry {
   return geometry;
 }
 
-function buildSunsetSkyDomeGeometry(sunDirectionXZ: { x: number; z: number }): SphereGeometry {
-  const geometry = new SphereGeometry(430, 52, 30);
-  const positions = geometry.attributes.position;
-  const colors = new Float32Array(positions.count * 3);
+const SKY_DOME_RADIUS = 240;
+const VISIBLE_SUN_DISTANCE = 180;
+const VISIBLE_SUN_ELEVATION = 0.105;
 
-  const skyTop = new Color('#172654');
-  const skyUpper = new Color('#2a3a72');
-  const skyMid = new Color('#4b4b84');
-  const horizonCool = new Color('#685a8e');
-  const horizonWarm = new Color('#ff9d66');
-  const horizonPink = new Color('#f48ba5');
-  const horizonHaze = new Color('#ccb7c2');
-  const color = new Color();
-  const sunDirection = new Vector2(sunDirectionXZ.x, sunDirectionXZ.z);
-  if (sunDirection.lengthSq() <= 0.0001) {
-    sunDirection.set(0, 1);
-  }
-  sunDirection.normalize();
+const SUNSET_SKY_VERTEX_SHADER = `
+varying vec3 vDirection;
 
-  for (let index = 0; index < positions.count; index += 1) {
-    const x = positions.getX(index);
-    const y = positions.getY(index);
-    const z = positions.getZ(index);
-    const inverseLength = 1 / Math.max(0.0001, Math.hypot(x, y, z));
-    const nx = x * inverseLength;
-    const ny = y * inverseLength;
-    const nz = z * inverseLength;
-    const up = MathUtils.clamp((ny + 1) * 0.5, 0, 1);
-
-    color.copy(horizonCool);
-    color.lerp(skyMid, MathUtils.smoothstep(up, 0.26, 0.54));
-    color.lerp(skyUpper, MathUtils.smoothstep(up, 0.54, 0.77));
-    color.lerp(skyTop, MathUtils.smoothstep(up, 0.77, 1));
-
-    const xzLength = Math.hypot(nx, nz);
-    const dirX = xzLength > 0.0001 ? nx / xzLength : sunDirection.x;
-    const dirZ = xzLength > 0.0001 ? nz / xzLength : sunDirection.y;
-    const sunFacing = Math.max(0, dirX * sunDirection.x + dirZ * sunDirection.y);
-    const horizonBand = Math.exp(-Math.pow((ny + 0.1) / 0.24, 2));
-    const warmAmount = horizonBand * Math.pow(sunFacing, 2.15);
-    const pinkAmount = horizonBand * Math.pow(sunFacing, 1.6);
-
-    color.lerp(horizonHaze, horizonBand * 0.16);
-    color.lerp(horizonWarm, warmAmount * 0.88);
-    color.lerp(horizonPink, pinkAmount * 0.45 + horizonBand * 0.06);
-
-    colors[index * 3] = color.r;
-    colors[index * 3 + 1] = color.g;
-    colors[index * 3 + 2] = color.b;
-  }
-
-  geometry.setAttribute('color', new BufferAttribute(colors, 3));
-  return geometry;
+void main() {
+  vDirection = normalize(position);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
+`;
+
+const SUNSET_SKY_FRAGMENT_SHADER = `
+uniform vec3 uEdgeBlue;
+uniform vec3 uViolet;
+uniform vec3 uMauve;
+uniform vec3 uRose;
+uniform vec3 uAmber;
+uniform vec3 uTangerine;
+uniform vec3 uGold;
+uniform vec3 uYellow;
+uniform vec3 uSunWhite;
+uniform vec3 uSunDirection;
+varying vec3 vDirection;
+
+vec3 sunsetPalette(float t) {
+  vec3 color = uSunWhite;
+  color = mix(color, uYellow, smoothstep(0.02, 0.08, t));
+  color = mix(color, uGold, smoothstep(0.08, 0.15, t));
+  color = mix(color, uAmber, smoothstep(0.15, 0.26, t));
+  color = mix(color, uTangerine, smoothstep(0.26, 0.4, t));
+  color = mix(color, uRose, smoothstep(0.4, 0.56, t));
+  color = mix(color, uMauve, smoothstep(0.56, 0.72, t));
+  color = mix(color, uViolet, smoothstep(0.72, 0.86, t));
+  color = mix(color, uEdgeBlue, smoothstep(0.86, 1.0, t));
+  return color;
+}
+
+void main() {
+  vec3 dir = normalize(vDirection);
+  vec3 sunDir = normalize(uSunDirection);
+  float up = clamp((dir.y + 1.0) * 0.5, 0.0, 1.0);
+  float sunDot = clamp(dot(dir, sunDir), -1.0, 1.0);
+  float sunDistance = acos(sunDot);
+  float radialT = pow(clamp(sunDistance / 1.7, 0.0, 1.0), 0.92);
+
+  vec3 color = sunsetPalette(radialT);
+
+  float zenithCool = smoothstep(0.74, 1.0, up);
+  color = mix(color, uEdgeBlue, zenithCool * 0.14);
+
+  float horizonSoftness = exp(-pow((dir.y + 0.04) / 0.26, 2.0));
+  color = mix(color, uRose, horizonSoftness * (1.0 - smoothstep(0.0, 0.34, radialT)) * 0.1);
+
+  float whiteCore = smoothstep(0.11, 0.0, sunDistance);
+  color = mix(color, uSunWhite, whiteCore * 0.26);
+
+  gl_FragColor = vec4(color, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}
+`;
 
 const WATER_RENDER_STYLE = {
   seamColor: '#335666',
@@ -513,7 +520,7 @@ function FlowerPatch({ point }: { point: ScatterPoint }) {
 
 export function WorldEnvironment() {
   const terrainGeometry = useMemo(() => buildTerrainGeometry(), []);
-  const skyDomeGeometry = useMemo(() => buildSunsetSkyDomeGeometry(SCENIC_FORWARD_XZ), []);
+  const skyGroupRef = useRef<Group>(null);
   const sunsetLightPosition = useMemo<[number, number, number]>(
     () => [
       SCENIC_FORWARD_XZ.x * SCENIC_SUN_LIGHT_DISTANCE,
@@ -522,15 +529,47 @@ export function WorldEnvironment() {
     ],
     [],
   );
-  const sunsetDiskPosition = useMemo<[number, number, number]>(
-    () => [SCENIC_FORWARD_XZ.x * SCENIC_SUN_DISTANCE, SCENIC_SUN_HEIGHT, SCENIC_FORWARD_XZ.z * SCENIC_SUN_DISTANCE],
+  const visibleSunDirection = useMemo(
+    () => new Vector3(SCENIC_FORWARD_XZ.x, VISIBLE_SUN_ELEVATION, SCENIC_FORWARD_XZ.z).normalize(),
     [],
+  );
+  const visibleSunPosition = useMemo<[number, number, number]>(
+    () => [
+      visibleSunDirection.x * VISIBLE_SUN_DISTANCE,
+      visibleSunDirection.y * VISIBLE_SUN_DISTANCE,
+      visibleSunDirection.z * VISIBLE_SUN_DISTANCE,
+    ],
+    [visibleSunDirection],
+  );
+  const skyUniforms = useMemo(
+    () => ({
+      uEdgeBlue: { value: new Color('#1f315d') },
+      uViolet: { value: new Color('#4a3d72') },
+      uMauve: { value: new Color('#76577b') },
+      uRose: { value: new Color('#d07d8f') },
+      uAmber: { value: new Color('#f3a34c') },
+      uTangerine: { value: new Color('#f17e3b') },
+      uGold: { value: new Color('#ffd15f') },
+      uYellow: { value: new Color('#ffe78a') },
+      uSunWhite: { value: new Color('#fff8ee') },
+      uSunDirection: { value: visibleSunDirection },
+    }),
+    [visibleSunDirection],
   );
   const debugWorldValidation = useMemo(
     () =>
       typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debugWorldValidation'),
     [],
   );
+
+  useFrame(({ camera }) => {
+    const skyGroup = skyGroupRef.current;
+    if (!skyGroup) {
+      return;
+    }
+
+    skyGroup.position.copy(camera.position);
+  });
 
   useEffect(() => {
     if (!debugWorldValidation) {
@@ -610,13 +649,42 @@ export function WorldEnvironment() {
   }, [debugWorldValidation]);
 
   return (
-    <group>
-      <color attach="background" args={['#1d2855']} />
-      <fog attach="fog" args={['#735786', 98, 322]} />
+    <>
+      <color attach="background" args={['#201f49']} />
+      <fog attach="fog" args={['#6f5c7a', 98, 322]} />
 
-      <mesh geometry={skyDomeGeometry} position={[0, 28, 0]}>
-        <meshBasicMaterial vertexColors side={BackSide} toneMapped={false} depthWrite={false} />
-      </mesh>
+      <group>
+      <group ref={skyGroupRef}>
+        <mesh frustumCulled={false}>
+          <sphereGeometry args={[SKY_DOME_RADIUS, 96, 64]} />
+          <shaderMaterial
+            fragmentShader={SUNSET_SKY_FRAGMENT_SHADER}
+            uniforms={skyUniforms}
+            vertexShader={SUNSET_SKY_VERTEX_SHADER}
+            side={BackSide}
+            depthWrite={false}
+            fog={false}
+            toneMapped={false}
+          />
+        </mesh>
+
+        <mesh position={visibleSunPosition} frustumCulled={false}>
+          <sphereGeometry args={[7.8, 30, 30]} />
+          <meshBasicMaterial color="#ffd669" toneMapped={false} fog={false} />
+        </mesh>
+        <mesh position={visibleSunPosition} frustumCulled={false}>
+          <sphereGeometry args={[4.8, 30, 30]} />
+          <meshBasicMaterial color="#fff8ef" toneMapped={false} fog={false} />
+        </mesh>
+        <mesh position={visibleSunPosition} frustumCulled={false}>
+          <sphereGeometry args={[14.5, 30, 30]} />
+          <meshBasicMaterial color="#ffd89c" transparent opacity={0.16} depthWrite={false} toneMapped={false} fog={false} />
+        </mesh>
+        <mesh position={visibleSunPosition} frustumCulled={false}>
+          <sphereGeometry args={[22, 30, 30]} />
+          <meshBasicMaterial color="#ffb25f" transparent opacity={0.09} depthWrite={false} toneMapped={false} fog={false} />
+        </mesh>
+      </group>
 
       <ambientLight intensity={0.34} color="#ffddc3" />
       <hemisphereLight intensity={0.6} color="#ffbc8a" groundColor="#2f4a73" />
@@ -637,19 +705,6 @@ export function WorldEnvironment() {
         shadow-camera-bottom={-120}
       />
       <directionalLight intensity={0.3} position={[-48, 30, -46]} color="#6d8cd9" />
-
-      <mesh position={sunsetDiskPosition}>
-        <sphereGeometry args={[8, 26, 26]} />
-        <meshBasicMaterial color="#ff9a5b" toneMapped={false} />
-      </mesh>
-      <mesh position={sunsetDiskPosition}>
-        <sphereGeometry args={[14.2, 26, 26]} />
-        <meshBasicMaterial color="#ffc17b" transparent opacity={0.2} depthWrite={false} toneMapped={false} />
-      </mesh>
-      <mesh position={[sunsetDiskPosition[0], sunsetDiskPosition[1] - 1.4, sunsetDiskPosition[2]]}>
-        <sphereGeometry args={[22, 26, 26]} />
-        <meshBasicMaterial color="#bd74bf" transparent opacity={0.12} depthWrite={false} toneMapped={false} />
-      </mesh>
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL - 0.03, 0]}>
         <planeGeometry args={[980, 980]} />
@@ -728,6 +783,7 @@ export function WorldEnvironment() {
         <planeGeometry args={[WORLD_BOUNDS.maxX * 4.6, WORLD_BOUNDS.maxZ * 4.6]} />
         <meshStandardMaterial color="#234246" roughness={1} metalness={0} transparent opacity={0.46} />
       </mesh>
-    </group>
+      </group>
+    </>
   );
 }

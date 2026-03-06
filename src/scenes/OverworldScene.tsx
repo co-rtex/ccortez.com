@@ -25,7 +25,7 @@ export function OverworldScene({ experiences, onLandmarkOpen }: OverworldScenePr
       className="world-canvas"
       shadows
       dpr={[1, 1.6]}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
       camera={{ position: [0, 16, 16], fov: 40, near: 0.1, far: 360 }}
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace;
