@@ -2,6 +2,7 @@ import { Line, Sparkles } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import {
+  AdditiveBlending,
   BackSide,
   BufferAttribute,
   Color,
@@ -92,8 +93,7 @@ function buildTerrainGeometry(): PlaneGeometry {
 }
 
 const SKY_DOME_RADIUS = 240;
-const VISIBLE_SUN_DISTANCE = 180;
-const VISIBLE_SUN_ELEVATION = 0.105;
+const VISIBLE_SUN_ELEVATION = 0.015;
 
 const SUNSET_SKY_VERTEX_SHADER = `
 varying vec3 vDirection;
@@ -137,6 +137,7 @@ void main() {
   float sunDot = clamp(dot(dir, sunDir), -1.0, 1.0);
   float sunDistance = acos(sunDot);
   float radialT = pow(clamp(sunDistance / 1.7, 0.0, 1.0), 0.92);
+  float lowSun = 1.0 - smoothstep(0.022, 0.085, sunDir.y);
 
   vec3 color = sunsetPalette(radialT);
 
@@ -146,10 +147,75 @@ void main() {
   float horizonSoftness = exp(-pow((dir.y + 0.04) / 0.26, 2.0));
   color = mix(color, uRose, horizonSoftness * (1.0 - smoothstep(0.0, 0.34, radialT)) * 0.1);
 
-  float whiteCore = smoothstep(0.11, 0.0, sunDistance);
-  color = mix(color, uSunWhite, whiteCore * 0.26);
+  float horizonOcclusion = smoothstep(-0.004, 0.012, dir.y);
+  float sunOuterGlow = smoothstep(0.4, 0.09, sunDistance) * horizonOcclusion;
+  float sunInnerGlow = smoothstep(0.22, 0.04, sunDistance) * horizonOcclusion;
+  float sunDisk = smoothstep(0.078, 0.006, sunDistance) * horizonOcclusion;
+  float whiteCore = smoothstep(0.03, 0.0, sunDistance) * horizonOcclusion;
+  float solarHaze = smoothstep(0.58, 0.1, sunDistance) * horizonOcclusion * lowSun;
+  float horizonBloom =
+    exp(-pow((dir.y - sunDir.y) / 0.08, 2.0)) *
+    smoothstep(0.46, 0.08, sunDistance) *
+    lowSun;
+
+  color = mix(color, uAmber, sunOuterGlow * (0.12 + lowSun * 0.08));
+  color = mix(color, uGold, sunInnerGlow * (0.2 + lowSun * 0.08));
+  color = mix(color, uYellow, sunDisk * mix(0.44, 0.34, lowSun));
+  color = mix(color, uSunWhite, whiteCore * mix(0.92, 0.68, lowSun));
+  color = mix(color, uGold, solarHaze * 0.14);
+  color = mix(color, uSunWhite, horizonBloom * 0.08);
 
   gl_FragColor = vec4(color, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}
+`;
+
+const SUNSET_REFLECTION_VERTEX_SHADER = `
+varying vec3 vWorldPosition;
+
+void main() {
+  vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+  vWorldPosition = worldPosition.xyz;
+  gl_Position = projectionMatrix * viewMatrix * worldPosition;
+}
+`;
+
+const SUNSET_REFLECTION_FRAGMENT_SHADER = `
+uniform vec3 uSunDirection;
+uniform vec3 uAmber;
+uniform vec3 uGold;
+uniform vec3 uSunWhite;
+varying vec3 vWorldPosition;
+
+void main() {
+  vec2 sunXZ = normalize(uSunDirection.xz);
+  vec2 crossXZ = vec2(-sunXZ.y, sunXZ.x);
+  vec2 waterXZ = vWorldPosition.xz;
+
+  float along = max(dot(waterXZ, sunXZ), 0.0);
+  float across = dot(waterXZ, crossXZ);
+  float forwardFade = smoothstep(10.0, 48.0, along);
+  float distanceFade = 1.0 - smoothstep(170.0, 410.0, along);
+  float width = mix(3.2, 18.0, smoothstep(0.0, 220.0, along));
+  float tightStrip = exp(-pow(across / width, 2.0));
+  float softGlow = exp(-pow(across / (width * 2.8), 2.0));
+  float shimmer =
+    0.88 +
+    0.1 * sin(waterXZ.x * 0.33 + waterXZ.y * 0.19) +
+    0.06 * sin(waterXZ.x * 0.78 - waterXZ.y * 0.41);
+  shimmer = clamp(shimmer, 0.74, 1.06);
+
+  float alpha =
+    forwardFade *
+    distanceFade *
+    shimmer *
+    (tightStrip * 0.16 + softGlow * 0.07);
+
+  vec3 color = mix(uAmber, uGold, softGlow * 0.48);
+  color = mix(color, uSunWhite, tightStrip * 0.42);
+
+  gl_FragColor = vec4(color, alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
@@ -533,14 +599,6 @@ export function WorldEnvironment() {
     () => new Vector3(SCENIC_FORWARD_XZ.x, VISIBLE_SUN_ELEVATION, SCENIC_FORWARD_XZ.z).normalize(),
     [],
   );
-  const visibleSunPosition = useMemo<[number, number, number]>(
-    () => [
-      visibleSunDirection.x * VISIBLE_SUN_DISTANCE,
-      visibleSunDirection.y * VISIBLE_SUN_DISTANCE,
-      visibleSunDirection.z * VISIBLE_SUN_DISTANCE,
-    ],
-    [visibleSunDirection],
-  );
   const skyUniforms = useMemo(
     () => ({
       uEdgeBlue: { value: new Color('#1f315d') },
@@ -553,6 +611,15 @@ export function WorldEnvironment() {
       uYellow: { value: new Color('#ffe78a') },
       uSunWhite: { value: new Color('#fff8ee') },
       uSunDirection: { value: visibleSunDirection },
+    }),
+    [visibleSunDirection],
+  );
+  const sunReflectionUniforms = useMemo(
+    () => ({
+      uSunDirection: { value: visibleSunDirection },
+      uAmber: { value: new Color('#f2a14d') },
+      uGold: { value: new Color('#ffd165') },
+      uSunWhite: { value: new Color('#fff7e7') },
     }),
     [visibleSunDirection],
   );
@@ -667,23 +734,6 @@ export function WorldEnvironment() {
             toneMapped={false}
           />
         </mesh>
-
-        <mesh position={visibleSunPosition} frustumCulled={false}>
-          <sphereGeometry args={[7.8, 30, 30]} />
-          <meshBasicMaterial color="#ffd669" toneMapped={false} fog={false} />
-        </mesh>
-        <mesh position={visibleSunPosition} frustumCulled={false}>
-          <sphereGeometry args={[4.8, 30, 30]} />
-          <meshBasicMaterial color="#fff8ef" toneMapped={false} fog={false} />
-        </mesh>
-        <mesh position={visibleSunPosition} frustumCulled={false}>
-          <sphereGeometry args={[14.5, 30, 30]} />
-          <meshBasicMaterial color="#ffd89c" transparent opacity={0.16} depthWrite={false} toneMapped={false} fog={false} />
-        </mesh>
-        <mesh position={visibleSunPosition} frustumCulled={false}>
-          <sphereGeometry args={[22, 30, 30]} />
-          <meshBasicMaterial color="#ffb25f" transparent opacity={0.09} depthWrite={false} toneMapped={false} fog={false} />
-        </mesh>
       </group>
 
       <ambientLight intensity={0.34} color="#ffddc3" />
@@ -709,6 +759,20 @@ export function WorldEnvironment() {
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL - 0.03, 0]}>
         <planeGeometry args={[980, 980]} />
         <meshStandardMaterial color="#5fcbe3" roughness={0.18} metalness={0.08} emissive="#2f86a5" emissiveIntensity={0.14} />
+      </mesh>
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL + 0.028, 0]}>
+        <planeGeometry args={[980, 980]} />
+        <shaderMaterial
+          vertexShader={SUNSET_REFLECTION_VERTEX_SHADER}
+          fragmentShader={SUNSET_REFLECTION_FRAGMENT_SHADER}
+          uniforms={sunReflectionUniforms}
+          transparent
+          depthWrite={false}
+          fog={false}
+          toneMapped={false}
+          blending={AdditiveBlending}
+        />
       </mesh>
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL - 0.7, 0]}>
