@@ -1,24 +1,33 @@
 import { Canvas } from '@react-three/fiber';
 import { ACESFilmicToneMapping, PCFSoftShadowMap, SRGBColorSpace } from 'three';
 
-import { ExperienceDirector } from '../world/ExperienceDirector';
 import { CameraRig } from '../world/CameraRig';
-import { LandmarkProxy } from '../world/LandmarkProxy';
 import { LoadedExperienceScenes } from '../world/LoadedExperienceScenes';
 import { PlayerController } from '../world/PlayerController';
 import { RestSpotDirector } from '../world/RestSpotDirector';
+import { WorkbenchDirector } from '../world/WorkbenchDirector';
+import { WorkbenchLandmark } from '../world/WorkbenchLandmark';
 import { WorldEnvironment } from '../world/WorldEnvironment';
 import { useGameStore } from '../state/gameStore';
 
-import type { ExperienceRecord } from '../types/experience';
+import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 
 interface OverworldSceneProps {
-  experiences: ExperienceRecord[];
-  onLandmarkOpen: (id: string) => void;
+  workbenches: WorkbenchRuntimeRecord[];
+  editorEnabled: boolean;
+  selectedWorkbenchId: string | null;
+  onWorkbenchOpen: (id: string) => void;
+  onWorkbenchSelect: (id: string) => void;
 }
 
-export function OverworldScene({ experiences, onLandmarkOpen }: OverworldSceneProps) {
-  const nearbyExperienceId = useGameStore((state) => state.nearbyExperienceId);
+export function OverworldScene({
+  workbenches,
+  editorEnabled,
+  selectedWorkbenchId,
+  onWorkbenchOpen,
+  onWorkbenchSelect,
+}: OverworldSceneProps) {
+  const nearbyWorkbenchId = useGameStore((state) => state.nearbyWorkbenchId);
 
   return (
     <Canvas
@@ -38,19 +47,22 @@ export function OverworldScene({ experiences, onLandmarkOpen }: OverworldScenePr
       <WorldEnvironment />
       <PlayerController />
       <CameraRig />
-      <ExperienceDirector experiences={experiences} />
+      <WorkbenchDirector workbenches={workbenches} />
       <RestSpotDirector />
 
-      {experiences.map((experience) => (
-        <LandmarkProxy
-          key={experience.manifest.id}
-          manifest={experience.manifest}
-          isNearby={nearbyExperienceId === experience.manifest.id}
-          onOpen={onLandmarkOpen}
+      {workbenches.map((workbench) => (
+        <WorkbenchLandmark
+          key={workbench.definition.id}
+          workbench={workbench}
+          isNearby={nearbyWorkbenchId === workbench.definition.id}
+          isSelected={selectedWorkbenchId === workbench.definition.id}
+          editorEnabled={editorEnabled}
+          onOpen={onWorkbenchOpen}
+          onSelect={onWorkbenchSelect}
         />
       ))}
 
-      <LoadedExperienceScenes />
+      <LoadedExperienceScenes workbenches={workbenches} />
     </Canvas>
   );
 }

@@ -1,12 +1,24 @@
-import { getExperienceById } from '../content/registry';
+import { useMemo } from 'react';
+
 import { useGameStore } from '../state/gameStore';
 import { getScenicRestSpotById } from '../world/restSpots';
 
-export function ExperiencePrompt() {
+import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+
+interface WorkbenchPromptProps {
+  workbenches: WorkbenchRuntimeRecord[];
+}
+
+export function WorkbenchPrompt({ workbenches }: WorkbenchPromptProps) {
   const playerMode = useGameStore((state) => state.playerMode);
   const activeRestSpotId = useGameStore((state) => state.activeRestSpotId);
   const nearbyRestSpotId = useGameStore((state) => state.nearbyRestSpotId);
-  const nearbyExperienceId = useGameStore((state) => state.nearbyExperienceId);
+  const nearbyWorkbenchId = useGameStore((state) => state.nearbyWorkbenchId);
+
+  const nearbyWorkbench = useMemo(
+    () => workbenches.find((workbench) => workbench.definition.id === nearbyWorkbenchId),
+    [nearbyWorkbenchId, workbenches],
+  );
 
   if (playerMode === 'seated' && activeRestSpotId) {
     const activeRestSpot = getScenicRestSpotById(activeRestSpotId);
@@ -28,23 +40,22 @@ export function ExperiencePrompt() {
     );
   }
 
-  if (!nearbyExperienceId) {
+  if (!nearbyWorkbench) {
     return (
       <div className="prompt-card prompt-card--idle">
-        <p>Move with WASD. Hold Shift to run. Explore landmarks and press E when a prompt appears.</p>
+        <p>Move with WASD. Hold Shift to run. Explore the island and open workbenches when a prompt appears.</p>
       </div>
     );
   }
 
-  const nearbyExperience = getExperienceById(nearbyExperienceId);
-  if (!nearbyExperience) {
-    return null;
-  }
-
   return (
     <div className="prompt-card">
-      <p className="prompt-card__title">{nearbyExperience.manifest.title}</p>
-      <p className="prompt-card__subtitle">Press E or click landmark to open details</p>
+      <p className="prompt-card__title">{nearbyWorkbench.definition.title}</p>
+      <p className="prompt-card__subtitle">
+        {nearbyWorkbench.definition.contentMode === 'placeholder'
+          ? 'Press E or click workbench to preview draft details'
+          : 'Press E or click workbench to open details'}
+      </p>
     </div>
   );
 }

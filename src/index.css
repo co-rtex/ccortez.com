@@ -345,6 +345,15 @@ body {
   white-space: nowrap;
 }
 
+.landmark-tooltip--draft {
+  border-color: rgba(191, 215, 235, 0.72);
+  color: #eef6fb;
+}
+
+.landmark-tooltip--editor {
+  border-color: rgba(250, 203, 128, 0.82);
+}
+
 .bootstrap-error {
   width: min(720px, 90vw);
   margin: 10vh auto;
@@ -366,6 +375,184 @@ body {
   color: #612d16;
 }
 
+.workbench-draft-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.workbench-draft-panel__grid {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.workbench-draft-panel__grid span {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 0.24rem 0.66rem;
+  background: rgba(223, 232, 231, 0.92);
+  color: #27424b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.workbench-draft-panel__issues {
+  padding-left: 1rem;
+  margin: 0;
+}
+
+.workbench-editor {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  width: min(420px, 34vw);
+  z-index: 24;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 221, 173, 0.35);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(17, 28, 34, 0.96), rgba(13, 22, 27, 0.93)),
+    radial-gradient(circle at top right, rgba(250, 193, 110, 0.18), transparent 40%);
+  box-shadow: 0 28px 60px rgba(10, 16, 20, 0.4);
+  backdrop-filter: blur(14px);
+  color: #f5efe3;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.workbench-editor__header,
+.workbench-editor__toolbar,
+.workbench-editor__export-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.workbench-editor__header h2,
+.workbench-editor__export h3,
+.workbench-editor__issues h3 {
+  margin: 0;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+}
+
+.workbench-editor__eyebrow {
+  margin: 0 0 0.18rem;
+  color: #dfc49b;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.workbench-editor__list {
+  display: grid;
+  gap: 0.45rem;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+.workbench-editor__list-item {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  gap: 0.14rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 14px;
+  border: 1px solid rgba(241, 211, 168, 0.15);
+  background: rgba(36, 52, 61, 0.72);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workbench-editor__list-item--active {
+  border-color: rgba(250, 192, 116, 0.5);
+  background: rgba(63, 82, 94, 0.92);
+}
+
+.workbench-editor__list-item strong {
+  font-size: 0.92rem;
+}
+
+.workbench-editor__list-item span {
+  font-size: 0.72rem;
+  color: #d6e4ea;
+}
+
+.workbench-editor__form,
+.workbench-editor__subgrid {
+  display: grid;
+  gap: 0.62rem;
+}
+
+.workbench-editor__form label,
+.workbench-editor__subgrid label {
+  display: grid;
+  gap: 0.24rem;
+}
+
+.workbench-editor__form span,
+.workbench-editor__subgrid span {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #e8d0ad;
+}
+
+.workbench-editor input,
+.workbench-editor select,
+.workbench-editor textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 216, 170, 0.16);
+  background: rgba(6, 13, 17, 0.4);
+  color: #f6efe2;
+  padding: 0.52rem 0.6rem;
+  font: inherit;
+}
+
+.workbench-editor textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.workbench-editor__textarea {
+  grid-column: 1 / -1;
+}
+
+.workbench-editor__issues {
+  border: 1px solid rgba(255, 216, 170, 0.12);
+  border-radius: 14px;
+  background: rgba(19, 31, 36, 0.58);
+  padding: 0.8rem;
+}
+
+.workbench-editor__issues p,
+.workbench-editor__issues ul {
+  margin: 0.45rem 0 0;
+  color: #e8ebe8;
+  font-size: 0.82rem;
+}
+
+.workbench-editor__issues ul {
+  padding-left: 1rem;
+}
+
+.workbench-editor__export {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.workbench-editor__export textarea {
+  min-height: 180px;
+  font-family: 'SFMono-Regular', Consolas, Monaco, monospace;
+  font-size: 0.76rem;
+}
+
 @media (max-width: 900px) {
   .hud-layer {
     padding: 0.8rem;
@@ -377,6 +564,16 @@ body {
 
   .experience-panel {
     width: 100vw;
+  }
+
+  .workbench-editor {
+    inset: auto 0 0 0;
+    top: auto;
+    right: auto;
+    bottom: 0;
+    width: 100vw;
+    max-height: 58vh;
+    border-radius: 18px 18px 0 0;
   }
 }
 

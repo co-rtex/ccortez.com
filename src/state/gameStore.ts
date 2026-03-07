@@ -16,17 +16,17 @@ interface GameStore {
   playerMode: PlayerMode;
   nearbyRestSpotId: string | null;
   activeRestSpotId: string | null;
-  nearbyExperienceId: string | null;
-  panelExperienceId: string | null;
+  nearbyWorkbenchId: string | null;
+  panelWorkbenchId: string | null;
   loadedSceneIds: string[];
   collisionFeedbackEvent: CollisionFeedbackEvent | null;
   setPlayerPosition: (position: WorldAnchor) => void;
   setNearbyRestSpotId: (id: string | null) => void;
   enterSeatedMode: (restSpotId: string) => void;
   exitSeatedMode: () => void;
-  setNearbyExperienceId: (id: string | null) => void;
-  openExperiencePanel: (id: string) => void;
-  closeExperiencePanel: () => void;
+  setNearbyWorkbenchId: (id: string | null) => void;
+  openWorkbenchPanel: (id: string) => void;
+  closeWorkbenchPanel: () => void;
   setLoadedSceneIds: (ids: string[]) => void;
   emitCollisionFeedback: (reason: CollisionFeedbackReason) => void;
 }
@@ -50,8 +50,8 @@ export const useGameStore = create<GameStore>((set) => ({
   playerMode: 'exploring',
   nearbyRestSpotId: null,
   activeRestSpotId: null,
-  nearbyExperienceId: null,
-  panelExperienceId: null,
+  nearbyWorkbenchId: null,
+  panelWorkbenchId: null,
   loadedSceneIds: [],
   collisionFeedbackEvent: null,
   setPlayerPosition: (position) => {
@@ -95,14 +95,14 @@ export const useGameStore = create<GameStore>((set) => ({
       };
     });
   },
-  setNearbyExperienceId: (id) => {
-    set((state) => (state.nearbyExperienceId === id ? state : { nearbyExperienceId: id }));
+  setNearbyWorkbenchId: (id) => {
+    set((state) => (state.nearbyWorkbenchId === id ? state : { nearbyWorkbenchId: id }));
   },
-  openExperiencePanel: (id) => {
-    set((state) => (state.panelExperienceId === id ? state : { panelExperienceId: id }));
+  openWorkbenchPanel: (id) => {
+    set((state) => (state.panelWorkbenchId === id ? state : { panelWorkbenchId: id }));
   },
-  closeExperiencePanel: () => {
-    set((state) => (state.panelExperienceId === null ? state : { panelExperienceId: null }));
+  closeWorkbenchPanel: () => {
+    set((state) => (state.panelWorkbenchId === null ? state : { panelWorkbenchId: null }));
   },
   setLoadedSceneIds: (ids) => {
     const nextIds = [...ids].sort();

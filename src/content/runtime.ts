@@ -1,5 +1,4 @@
 import { getExperienceById } from './registry';
-import { useGameStore } from '../state/gameStore';
 
 import type { ExperienceSceneComponent } from '../types/experience';
 
@@ -41,10 +40,6 @@ export async function loadExperienceScene(id: string): Promise<void> {
 
 export function unloadExperienceScene(id: string): void {
   loadedSceneComponents.delete(id);
-}
-
-export function openExperiencePanel(id: string): void {
-  useGameStore.getState().openExperiencePanel(id);
 }
 
 export function getLoadedSceneComponent(id: string): ExperienceSceneComponent | undefined {

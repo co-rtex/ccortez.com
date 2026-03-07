@@ -179,8 +179,15 @@ Manifest fields:
 - `status` (`draft` or `published`)
 
 Current content:
-- `orbital-workbench`: published, has scene + story.
-- `draft-lab`: draft, story only, hidden from world.
+- No published workbenches are currently placed in the world.
+- `draft-lab`: draft content package, currently not linked to a published workbench.
+
+Workbench layout system:
+- In-world placement now lives in `content/workbenches/layout.ts`.
+- Workbenches, not experience manifests, own interaction radius and placement.
+- Default placement is road-relative (`corridorId`, `distanceAlong`, `lateralOffset`), with freeform fallback for hero pieces.
+- The center remains a neutral crossroads; districts branch outward along roads.
+- Draft workbenches are visible only in dev editor mode and can be linked to experiences later via `experienceId`.
 
 ## 8) Controls + User Flow
 - Move: `WASD` / arrow keys.

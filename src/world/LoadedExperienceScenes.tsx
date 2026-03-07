@@ -1,17 +1,24 @@
-import { getExperienceById } from '../content/registry';
 import { getLoadedSceneComponent } from '../content/runtime';
 import { useGameStore } from '../state/gameStore';
 
-export function LoadedExperienceScenes() {
+import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+
+interface LoadedExperienceScenesProps {
+  workbenches: WorkbenchRuntimeRecord[];
+}
+
+export function LoadedExperienceScenes({ workbenches }: LoadedExperienceScenesProps) {
   const loadedSceneIds = useGameStore((state) => state.loadedSceneIds);
-  const focusedExperienceId = useGameStore((state) => state.panelExperienceId);
+  const focusedWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
 
   return (
     <>
       {loadedSceneIds.map((experienceId) => {
         const sceneComponent = getLoadedSceneComponent(experienceId);
-        const experience = getExperienceById(experienceId);
-        if (!sceneComponent || !experience) {
+        const workbench = workbenches.find(
+          (entry) => entry.linkedExperience?.manifest.id === experienceId,
+        );
+        if (!sceneComponent || !workbench) {
           return null;
         }
 
@@ -20,8 +27,8 @@ export function LoadedExperienceScenes() {
         return (
           <SceneComponent
             key={experienceId}
-            anchor={experience.manifest.worldAnchor}
-            isFocused={focusedExperienceId === experienceId}
+            anchor={workbench.placement.anchor}
+            isFocused={focusedWorkbenchId === workbench.definition.id}
           />
         );
       })}
