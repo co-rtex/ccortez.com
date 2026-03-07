@@ -75,9 +75,71 @@ function createFishJumpProfile(seed: number, fishIndex: number, fishCount: numbe
   };
 }
 
-function LakeDucks({ body, seed }: { body: WaterBodyDefinition; seed: number }) {
+function DuckModel({ duckling = false }: { duckling?: boolean }) {
+  const bodyColor = duckling ? '#f0d678' : '#f3ead7';
+  const backColor = duckling ? '#c7a74b' : '#d4c3a0';
+  const headColor = duckling ? '#f5df8f' : '#fbf4e7';
+  const beakColor = duckling ? '#e8a246' : '#f4a055';
+  const scale = duckling ? 0.62 : 1;
+
+  return (
+    <group scale={scale}>
+      <mesh castShadow position={[-0.015, 0.045, -0.01]} scale={[0.18, 0.11, 0.28]}>
+        <sphereGeometry args={[1, 14, 12]} />
+        <meshStandardMaterial color={bodyColor} roughness={0.58} />
+      </mesh>
+      <mesh castShadow position={[-0.05, 0.055, -0.055]} scale={[0.11, 0.08, 0.18]}>
+        <sphereGeometry args={[1, 12, 10]} />
+        <meshStandardMaterial color={backColor} roughness={0.6} />
+      </mesh>
+      <mesh castShadow position={[0.055, 0.092, 0.17]} scale={[0.088, 0.078, 0.104]}>
+        <sphereGeometry args={[1, 12, 12]} />
+        <meshStandardMaterial color={headColor} roughness={0.56} />
+      </mesh>
+      <mesh castShadow position={[0.038, 0.064, 0.06]} scale={[0.09, 0.045, 0.1]}>
+        <sphereGeometry args={[1, 10, 10]} />
+        <meshStandardMaterial color={backColor} roughness={0.62} />
+      </mesh>
+      <mesh castShadow position={[0.058, 0.084, 0.27]} rotation={[Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.028, 0.09, 7]} />
+        <meshStandardMaterial color={beakColor} roughness={0.46} />
+      </mesh>
+      <mesh castShadow position={[0.088, 0.105, 0.198]}>
+        <sphereGeometry args={[0.013, 8, 8]} />
+        <meshStandardMaterial color="#2a2d40" roughness={0.38} />
+      </mesh>
+      <mesh castShadow position={[0.03, 0.105, 0.204]}>
+        <sphereGeometry args={[0.013, 8, 8]} />
+        <meshStandardMaterial color="#2a2d40" roughness={0.38} />
+      </mesh>
+      <mesh position={[0.086, 0.101, 0.218]}>
+        <sphereGeometry args={[0.005, 8, 8]} />
+        <meshStandardMaterial color="#f8fbff" roughness={0.3} />
+      </mesh>
+      <mesh position={[0.03, 0.101, 0.224]}>
+        <sphereGeometry args={[0.005, 8, 8]} />
+        <meshStandardMaterial color="#f8fbff" roughness={0.3} />
+      </mesh>
+      <mesh castShadow position={[-0.11, 0.06, -0.12]} rotation={[-Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.03, 0.09, 4]} />
+        <meshStandardMaterial color={backColor} roughness={0.68} />
+      </mesh>
+    </group>
+  );
+}
+
+function LakeDucks({
+  body,
+  seed,
+  hasDuckling,
+}: {
+  body: WaterBodyDefinition;
+  seed: number;
+  hasDuckling: boolean;
+}) {
   const duckRefs = useRef<Array<Group | null>>([]);
   const wakeRefs = useRef<Array<Mesh | null>>([]);
+  const ducklingRef = useRef<Group>(null);
   const duckStatesRef = useRef<DuckRuntimeState[]>(
     new Array(2).fill(0).map((_, index) => {
       const angle = seed * 0.29 + index * 2.05;
@@ -126,6 +188,27 @@ function LakeDucks({ body, seed }: { body: WaterBodyDefinition; seed: number }) 
         wake.scale.setScalar(wakeScale);
       }
     }
+
+    const leadDuck = duckStatesRef.current[0];
+    const duckling = ducklingRef.current;
+    if (hasDuckling && leadDuck && duckling) {
+      const leadPoint = getLakeBoundaryPoint(body, leadDuck.angle, leadDuck.laneScale);
+      const lookAhead = getLakeBoundaryPoint(body, leadDuck.angle + 0.03, leadDuck.laneScale);
+      const velocityX = lookAhead.x - leadPoint.x;
+      const velocityZ = lookAhead.z - leadPoint.z;
+      const headingLength = Math.hypot(velocityX, velocityZ) || 1;
+      const dirX = velocityX / headingLength;
+      const dirZ = velocityZ / headingLength;
+      const rightX = dirZ;
+      const rightZ = -dirX;
+
+      duckling.position.set(
+        leadPoint.x - dirX * 0.44 + rightX * 0.1,
+        waterY + Math.sin(leadDuck.bobPhase + 0.6) * 0.012,
+        leadPoint.z - dirZ * 0.44 + rightZ * 0.1,
+      );
+      duckling.rotation.y = leadDuck.yaw - 0.08;
+    }
   });
 
   return (
@@ -138,28 +221,14 @@ function LakeDucks({ body, seed }: { body: WaterBodyDefinition; seed: number }) 
           }}
           position={[body.centerX, waterY, body.centerZ]}
         >
-          <mesh castShadow position={[0, 0.045, 0]}>
-            <sphereGeometry args={[0.1, 10, 10]} />
-            <meshStandardMaterial color="#f7ebcf" roughness={0.55} />
-          </mesh>
-          <mesh castShadow position={[0, 0.07, 0.1]}>
-            <sphereGeometry args={[0.058, 10, 10]} />
-            <meshStandardMaterial color="#fdf3dc" roughness={0.56} />
-          </mesh>
-          <mesh castShadow position={[0, 0.066, 0.17]} rotation={[Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[0.024, 0.055, 8]} />
-            <meshStandardMaterial color="#ff9f47" roughness={0.49} />
-          </mesh>
-          <mesh castShadow position={[0.02, 0.08, 0.12]}>
-            <sphereGeometry args={[0.011, 8, 8]} />
-            <meshStandardMaterial color="#2a2d40" roughness={0.42} />
-          </mesh>
-          <mesh castShadow position={[0, 0.047, -0.11]} rotation={[-Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[0.032, 0.07, 4]} />
-            <meshStandardMaterial color="#d0c3a0" roughness={0.66} />
-          </mesh>
+          <DuckModel />
         </group>
       ))}
+      {hasDuckling ? (
+        <group ref={ducklingRef} position={[body.centerX, waterY, body.centerZ]}>
+          <DuckModel duckling />
+        </group>
+      ) : null}
       {new Array(2).fill(0).map((_, index) => (
         <mesh
           key={`${body.id}-wake-${index}`}
@@ -391,6 +460,11 @@ function LakeFishJump({
 }
 
 export function LakeFaunaManager() {
+  const ducklingLakeId = useMemo(
+    () => WORLD_WATER_BODIES.find((body) => getLakeFaunaPlanByLakeId(body.id)?.kind === 'ducks')?.id ?? null,
+    [],
+  );
+
   return (
     <group>
       {WORLD_WATER_BODIES.map((body) => {
@@ -400,7 +474,12 @@ export function LakeFaunaManager() {
         }
 
         return plan.kind === 'ducks' ? (
-          <LakeDucks key={`${body.id}-ducks`} body={body} seed={plan.seed} />
+          <LakeDucks
+            key={`${body.id}-ducks`}
+            body={body}
+            seed={plan.seed}
+            hasDuckling={body.id === ducklingLakeId}
+          />
         ) : (
           <group key={`${body.id}-fish-school`}>
             {new Array(FISH_PER_LAKE).fill(0).map((_, index) => (

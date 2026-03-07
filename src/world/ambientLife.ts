@@ -2,6 +2,7 @@ import { isInsideObstacle } from '../engine/movement';
 
 import { WORLD_COLLISION_OBSTACLES } from './biome';
 import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
+import { SCENIC_FORWARD_XZ, SCENIC_RIGHT_XZ } from './scenic';
 import { getTerrainHeight, isPointWaterBlocked, isPointWalkable } from './terrain';
 
 import type { WaterBodyDefinition } from './constants';
@@ -35,11 +36,11 @@ export interface LakeFaunaPlan {
   seed: number;
 }
 
-const BUNNY_TARGET_COUNT = 14;
-const BUNNY_MIN_DISTANCE = 3.2;
+const BUNNY_TARGET_COUNT = 20;
+const BUNNY_MIN_DISTANCE = 2.8;
 const BUNNY_AVOID_RADIUS = 0.48;
 
-const BIRD_TARGET_COUNT = 12;
+const BIRD_TARGET_COUNT = 18;
 
 function createRandom(seed: number): () => number {
   let state = seed;
@@ -133,6 +134,24 @@ function generateBirdTracks(targetCount: number, seed: number): BirdTrack[] {
   return tracks;
 }
 
+function createScenicBirdTracks(): BirdTrack[] {
+  const scenicOffsets = [-8, -1.5, 6.5];
+
+  return scenicOffsets.map((offset, index) => {
+    const distance = 48 + index * 6;
+    return {
+      id: `bird-scenic-${index}`,
+      centerX: SCENIC_FORWARD_XZ.x * distance + SCENIC_RIGHT_XZ.x * offset,
+      centerZ: SCENIC_FORWARD_XZ.z * distance + SCENIC_RIGHT_XZ.z * offset,
+      altitude: 18.5 + index * 1.4,
+      radiusX: 7 + index * 2.2,
+      radiusZ: 4.2 + index * 1.2,
+      speed: 0.08 + index * 0.025,
+      seed: 820 + index * 57,
+    };
+  });
+}
+
 function createLakeFaunaPlan(lake: WaterBodyDefinition, index: number): LakeFaunaPlan {
   const kind: LakeFaunaKind = ((Math.floor(lake.seed) + index) % 2 === 0 ? 'ducks' : 'fish');
   return {
@@ -143,7 +162,10 @@ function createLakeFaunaPlan(lake: WaterBodyDefinition, index: number): LakeFaun
 }
 
 export const AMBIENT_BUNNY_ANCHORS: BunnyAnchor[] = generateBunnyAnchors(BUNNY_TARGET_COUNT, 9012);
-export const AMBIENT_BIRD_TRACKS: BirdTrack[] = generateBirdTracks(BIRD_TARGET_COUNT, 4810);
+export const AMBIENT_BIRD_TRACKS: BirdTrack[] = [
+  ...generateBirdTracks(BIRD_TARGET_COUNT, 4810),
+  ...createScenicBirdTracks(),
+];
 export const LAKE_FAUNA_PLANS: LakeFaunaPlan[] = WORLD_WATER_BODIES.map((lake, index) =>
   createLakeFaunaPlan(lake, index),
 );
