@@ -82,9 +82,11 @@ body {
 .recruiter-navigator {
   pointer-events: auto;
   width: min(380px, 34vw);
+  max-height: calc(100vh - 2.4rem);
   display: grid;
   gap: 0.9rem;
   padding: 1rem;
+  overflow-y: auto;
   border-radius: 20px;
   border: 1px solid rgba(243, 224, 188, 0.4);
   background:
@@ -92,6 +94,8 @@ body {
     radial-gradient(circle at top right, rgba(234, 143, 43, 0.16), transparent 38%);
   box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   color: #f7eee1;
 }
 
@@ -637,7 +641,11 @@ body {
 }
 
 .experience-panel__content {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 1rem 1.1rem 2rem;
   color: var(--panel-fg);
 }
