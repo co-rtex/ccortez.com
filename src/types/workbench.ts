@@ -150,7 +150,7 @@ export interface WorkbenchResolvedPlacement {
 
 export interface WorkbenchValidationIssue {
   code:
-    | 'inside-crossroads'
+    | 'reserved-start-pad'
     | 'water-overlap'
     | 'obstacle-overlap'
     | 'rest-spot-overlap'

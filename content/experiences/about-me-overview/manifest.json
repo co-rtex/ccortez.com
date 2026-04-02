@@ -1,0 +1,26 @@
+{
+  "id": "about-me-overview",
+  "slug": "about-me-overview",
+  "title": "Start Here",
+  "type": "experience",
+  "uiContentRef": "./story.mdx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Software Engineer Portfolio Overview",
+    "organization": "Christian Cortez",
+    "dateRange": "Current",
+    "location": "Madison, WI",
+    "summary": "This center stop introduces who I am, how this interactive island is organized, and the fastest path for recruiters to understand my experience, projects, and technical strengths.",
+    "impactBullets": [
+      "Designed this environment to turn a portfolio into a guided, explorable recruiter experience instead of a static list of links.",
+      "Organized the island so work experience and projects can be scanned quickly while still leaving room for personal context and storytelling.",
+      "Built the world interaction flow to support both free exploration and direct navigation for hiring teams who want the highlights fast."
+    ],
+    "techStack": [
+      "React",
+      "TypeScript",
+      "Three.js",
+      "React Three Fiber"
+    ]
+  }
+}

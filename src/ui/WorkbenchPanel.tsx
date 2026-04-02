@@ -28,23 +28,33 @@ export function resolvePanelEyebrow(workbench: WorkbenchRuntimeRecord | undefine
     return 'Recruiter Guide';
   }
 
-  return resolveRecruiterNavigatorCategory(workbench) === 'secondary' ? 'More About Me' : 'Recruiter Brief';
+  const category = resolveRecruiterNavigatorCategory(workbench);
+  if (category === 'start') {
+    return 'Start Here';
+  }
+
+  return category === 'secondary' ? 'More About Me' : 'Recruiter Brief';
 }
 
 export function buildWorkbenchMetaChips(workbench: WorkbenchRuntimeRecord): Array<{
   label: string;
-  tone: 'experience' | 'project' | 'secondary' | 'featured' | 'default';
+  tone: 'start' | 'experience' | 'project' | 'secondary' | 'featured' | 'default';
 }> {
   const category = resolveRecruiterNavigatorCategory(workbench);
   const chips: Array<{
     label: string;
-    tone: 'experience' | 'project' | 'secondary' | 'featured' | 'default';
+    tone: 'start' | 'experience' | 'project' | 'secondary' | 'featured' | 'default';
   }> = [];
 
   if (category === 'secondary') {
     chips.push({
       label: 'More About Me',
       tone: 'secondary',
+    });
+  } else if (category === 'start') {
+    chips.push({
+      label: 'Start Here',
+      tone: 'start',
     });
   } else {
     chips.push({

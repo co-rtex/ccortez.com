@@ -4,6 +4,7 @@ import {
   deriveRecruiterNavigatorData,
   resolveRecruiterNavigatorCategory,
 } from './recruiterNavigator';
+import { START_HERE_WORKBENCH_ID } from '../world/hub';
 
 import type { ExperienceRecord } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -115,6 +116,18 @@ describe('recruiter navigator data', () => {
     expect(
       resolveRecruiterNavigatorCategory(
         createWorkbenchRecord({
+          id: START_HERE_WORKBENCH_ID,
+          title: 'Start Here',
+          category: 'personal-life',
+          district: 'personal-life',
+          linkedType: 'experience',
+        }),
+      ),
+    ).toBe('start');
+
+    expect(
+      resolveRecruiterNavigatorCategory(
+        createWorkbenchRecord({
           id: 'linked-experience',
           title: 'Linked Experience',
           category: 'projects',
@@ -153,6 +166,16 @@ describe('recruiter navigator data', () => {
     const data = deriveRecruiterNavigatorData(
       [
         createWorkbenchRecord({
+          id: START_HERE_WORKBENCH_ID,
+          title: 'Start Here',
+          category: 'personal-life',
+          district: 'personal-life',
+          priorityTier: 'anchor',
+          linkedType: 'experience',
+          x: 0,
+          z: 0,
+        }),
+        createWorkbenchRecord({
           id: 'standard-project',
           title: 'Standard Project',
           priorityTier: 'standard',
@@ -187,6 +210,7 @@ describe('recruiter navigator data', () => {
       'anchor-project',
       'standard-project',
     ]);
+    expect(data.startEntry?.id).toBe(START_HERE_WORKBENCH_ID);
     expect(data.markers.find((marker) => marker.id === 'broken-project')?.state).toBe('disabled');
   });
 

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { PUBLISHED_WORKBENCH_CLEAR_ZONES } from '../../content/workbenches/layout';
+import {
+  PUBLISHED_WORKBENCH_CLEAR_ZONES,
+  PUBLISHED_WORKBENCH_PLAZA_METRICS,
+} from '../../content/workbenches/layout';
 import {
   BOULDER_POINTS,
   BUSH_POINTS,
@@ -156,6 +159,27 @@ describe('biome placement', () => {
 
     for (const flower of FLOWER_POINTS) {
       expect(isInsideClearZone(flower, 2.2)).toBe(false);
+    }
+  });
+
+  it('keeps the expanded central plaza free of trees, flowers, bushes, and boulders', () => {
+    const isInsidePlaza = (point: { x: number; z: number }) =>
+      Math.hypot(point.x, point.z) < PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius;
+
+    for (const tree of TREE_POINTS) {
+      expect(isInsidePlaza(tree)).toBe(false);
+    }
+
+    for (const bush of BUSH_POINTS) {
+      expect(isInsidePlaza(bush)).toBe(false);
+    }
+
+    for (const flower of FLOWER_POINTS) {
+      expect(isInsidePlaza(flower)).toBe(false);
+    }
+
+    for (const boulder of [...BOULDER_POINTS, ...COASTAL_ROCK_POINTS]) {
+      expect(isInsidePlaza(boulder)).toBe(false);
     }
   });
 });

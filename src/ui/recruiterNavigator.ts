@@ -1,7 +1,8 @@
 import type { WorldAnchor } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+import { START_HERE_WORKBENCH_ID } from '../world/hub';
 
-export type RecruiterNavigatorCategory = 'experience' | 'project' | 'secondary';
+export type RecruiterNavigatorCategory = 'start' | 'experience' | 'project' | 'secondary';
 export type RecruiterMarkerState = 'default' | 'nearby' | 'active' | 'disabled';
 
 export interface RecruiterMapMarker {
@@ -27,6 +28,13 @@ export interface RecruiterShortlistEntry {
   state: Exclude<RecruiterMarkerState, 'disabled'>;
 }
 
+export interface RecruiterStartEntry {
+  id: string;
+  title: string;
+  districtLabel: string;
+  state: Exclude<RecruiterMarkerState, 'disabled'>;
+}
+
 export interface RecruiterShortlistSection {
   id: Extract<RecruiterNavigatorCategory, 'experience' | 'project'>;
   label: string;
@@ -35,12 +43,14 @@ export interface RecruiterShortlistSection {
 
 export interface RecruiterNavigatorData {
   markers: RecruiterMapMarker[];
+  startEntry: RecruiterStartEntry | null;
   shortlistSections: RecruiterShortlistSection[];
   playerMarker: {
     xPercent: number;
     yPercent: number;
   };
   counts: {
+    start: number;
     experience: number;
     project: number;
     secondary: number;
@@ -102,6 +112,10 @@ function getMapBounds(workbenches: WorkbenchRuntimeRecord[]): {
 export function resolveRecruiterNavigatorCategory(
   workbench: WorkbenchRuntimeRecord,
 ): RecruiterNavigatorCategory {
+  if (workbench.definition.id === START_HERE_WORKBENCH_ID) {
+    return 'start';
+  }
+
   const linkedType = workbench.linkedExperience?.manifest.type;
   if (linkedType === 'experience' || linkedType === 'project') {
     return linkedType;
@@ -120,6 +134,8 @@ export function resolveRecruiterNavigatorCategory(
 
 export function formatRecruiterCategoryLabel(category: RecruiterNavigatorCategory): string {
   switch (category) {
+    case 'start':
+      return 'Start Here';
     case 'experience':
       return 'Experience';
     case 'project':
@@ -175,10 +191,12 @@ export function deriveRecruiterNavigatorData(
   const publishedWorkbenches = getPublishedWorkbenches(workbenches);
   const bounds = getMapBounds(publishedWorkbenches);
   const counts = {
+    start: 0,
     experience: 0,
     project: 0,
     secondary: 0,
   };
+  let startEntry: RecruiterStartEntry | null = null;
 
   const shortlistSource: Array<
     RecruiterShortlistEntry & {
@@ -206,6 +224,15 @@ export function deriveRecruiterNavigatorData(
       yPercent: normalizeMapCoordinate(workbench.placement.anchor.z, bounds.minZ, bounds.maxZ),
       canOpen: state !== 'disabled',
     };
+
+    if (category === 'start' && state !== 'disabled') {
+      startEntry = {
+        id: marker.id,
+        title: marker.title,
+        districtLabel: marker.districtLabel,
+        state,
+      };
+    }
 
     if ((category === 'experience' || category === 'project') && state !== 'disabled') {
       shortlistSource.push({
@@ -245,6 +272,7 @@ export function deriveRecruiterNavigatorData(
 
   return {
     markers,
+    startEntry,
     shortlistSections,
     playerMarker: {
       xPercent: normalizeMapCoordinate(playerPosition.x, bounds.minX, bounds.maxX),

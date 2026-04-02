@@ -23,10 +23,15 @@ import {
   FLOWER_POINTS,
   TREE_POINTS,
 } from './biome';
-import { SPAWN_HUB_RADIUS } from './hub';
+import { PUBLISHED_WORKBENCH_PLAZA_METRICS } from '../../content/workbenches/layout';
+import {
+  CENTRAL_PLAZA_CENTER_PAD_RADIUS,
+  CENTRAL_PLAZA_FOUNDATION_DEPTH,
+} from './hub';
 import {
   OCEAN_LEVEL,
   LAKE_SHORELINE_SAMPLE_DETAIL,
+  getCentralPlazaTopHeight,
   getIslandDistanceNormalized,
   getLakeBoundaryPolyline,
   getNearestLakeShoreSignedDistance,
@@ -452,37 +457,32 @@ function ScenicRestSpotBench({ spot }: { spot: ScenicRestSpotDefinition }) {
 }
 
 function NeighborhoodHub() {
-  const centerY = useMemo(() => {
-    const centerHeight = getTerrainHeight(0, 0);
-    let edgeHeightMax = centerHeight;
-    const sampleRadius = SPAWN_HUB_RADIUS + 2.3;
-    const samples = 28;
-
-    for (let index = 0; index < samples; index += 1) {
-      const angle = (index / samples) * Math.PI * 2;
-      const sampleX = Math.cos(angle) * sampleRadius;
-      const sampleZ = Math.sin(angle) * sampleRadius;
-      edgeHeightMax = Math.max(edgeHeightMax, getTerrainHeight(sampleX, sampleZ));
-    }
-
-    const lift = MathUtils.clamp(edgeHeightMax - centerHeight, 0, 0.24);
-    return centerHeight + lift + 0.04;
-  }, []);
+  const centerY = getCentralPlazaTopHeight();
+  const { perimeterRadius, plazaRadius } = PUBLISHED_WORKBENCH_PLAZA_METRICS;
 
   return (
     <group>
-      <mesh receiveShadow position={[0, centerY + 0.04, 0]}>
-        <cylinderGeometry args={[SPAWN_HUB_RADIUS + 2.2, SPAWN_HUB_RADIUS + 2.9, 0.44, 48]} />
-        <meshStandardMaterial color="#c6ab78" roughness={0.9} />
+      <mesh receiveShadow position={[0, centerY - CENTRAL_PLAZA_FOUNDATION_DEPTH * 0.5, 0]}>
+        <cylinderGeometry
+          args={[plazaRadius + 1.2, plazaRadius + 1.8, CENTRAL_PLAZA_FOUNDATION_DEPTH, 72]}
+        />
+        <meshStandardMaterial color="#b69865" roughness={0.92} />
       </mesh>
 
-      <mesh receiveShadow position={[0, centerY + 0.22, 0]}>
-        <cylinderGeometry args={[SPAWN_HUB_RADIUS, SPAWN_HUB_RADIUS, 0.2, 48]} />
+      <mesh receiveShadow position={[0, centerY + 0.03, 0]}>
+        <cylinderGeometry args={[plazaRadius, plazaRadius, 0.08, 72]} />
         <meshStandardMaterial color="#dec9a6" roughness={0.88} />
       </mesh>
 
-      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, centerY + 0.29, 0]}>
-        <ringGeometry args={[SPAWN_HUB_RADIUS - 0.8, SPAWN_HUB_RADIUS - 0.35, 48]} />
+      <mesh receiveShadow position={[0, centerY + 0.06, 0]}>
+        <cylinderGeometry
+          args={[CENTRAL_PLAZA_CENTER_PAD_RADIUS, CENTRAL_PLAZA_CENTER_PAD_RADIUS, 0.1, 48]}
+        />
+        <meshStandardMaterial color="#f2e1c1" roughness={0.82} />
+      </mesh>
+
+      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, centerY + 0.07, 0]}>
+        <ringGeometry args={[perimeterRadius - 0.72, perimeterRadius - 0.28, 72]} />
         <meshStandardMaterial color="#f6e7c8" roughness={0.84} />
       </mesh>
     </group>

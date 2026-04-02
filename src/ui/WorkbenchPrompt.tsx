@@ -54,8 +54,8 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode }: 
           {editorEnabled
             ? 'Move with WASD. Hold Shift to run. Explore the island and open workbenches when a prompt appears.'
             : mobileLiteMode
-              ? 'Open the recruiter guide to jump between highlights, or tap a nearby workbench when one lights up.'
-              : 'Use the recruiter guide to jump straight to experiences and projects, or explore with WASD and open any nearby workbench.'}
+              ? 'Start with the center plaza welcome bench, or open the recruiter guide to jump between highlights.'
+              : 'Begin at the center plaza Start Here bench, then use the recruiter guide to jump into experiences and projects or explore with WASD.'}
         </p>
       </div>
     );

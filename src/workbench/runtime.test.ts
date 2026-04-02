@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { __resetBootstrapFlagForTests, bootstrapExperienceRegistry } from '../content/loader';
 import { __resetExperienceRegistryForTests, getAllExperiences } from '../content/registry';
 import { WORKBENCH_DISTRICTS, WORKBENCH_LAYOUT } from '../../content/workbenches/layout';
+import { START_HERE_WORKBENCH_ID } from '../world/hub';
 
 import { buildWorkbenchRuntime } from './runtime';
 
@@ -39,7 +40,8 @@ describe('workbench runtime', () => {
       record.issues.filter((issue) => issue.code === 'missing-link'),
     );
 
-    expect(publishedRecords).toHaveLength(13);
+    expect(publishedRecords).toHaveLength(14);
+    expect(publishedRecords.some((record) => record.definition.id === START_HERE_WORKBENCH_ID)).toBe(true);
     expect(missingLinks).toEqual([]);
     expect(
       publishedRecords.flatMap((record) =>
@@ -47,7 +49,7 @@ describe('workbench runtime', () => {
           (issue) =>
             issue.severity === 'error' ||
             issue.code === 'district-spacing' ||
-            issue.code === 'inside-crossroads',
+            issue.code === 'reserved-start-pad',
         ),
       ),
     ).toEqual([]);

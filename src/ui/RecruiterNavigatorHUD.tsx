@@ -4,6 +4,7 @@ import {
   deriveRecruiterNavigatorData,
   type RecruiterShortlistSection,
   type RecruiterMapMarker,
+  type RecruiterStartEntry,
 } from './recruiterNavigator';
 
 import type { WorldAnchor } from '../types/experience';
@@ -20,11 +21,13 @@ interface RecruiterNavigatorHUDProps {
 
 interface RecruiterNavigatorContentProps {
   counts: {
+    start: number;
     experience: number;
     project: number;
     secondary: number;
   };
   markers: RecruiterMapMarker[];
+  startEntry: RecruiterStartEntry | null;
   sections: RecruiterShortlistSection[];
   playerMarker: {
     xPercent: number;
@@ -73,6 +76,7 @@ function renderShortlistSection(
 function RecruiterNavigatorContent({
   counts,
   markers,
+  startEntry,
   sections,
   playerMarker,
   onWorkbenchOpen,
@@ -86,6 +90,7 @@ function RecruiterNavigatorContent({
             <p className="recruiter-navigator__eyebrow">Recruiter Guide</p>
             <h2>Start Here</h2>
           </div>
+
           {onHide ? (
             <button
               type="button"
@@ -97,16 +102,37 @@ function RecruiterNavigatorContent({
             </button>
           ) : null}
         </div>
+
         <div className="recruiter-navigator__counts" aria-label="Published highlight counts">
+          <span>{counts.start} start</span>
           <span>{counts.experience} experiences</span>
           <span>{counts.project} projects</span>
         </div>
       </header>
 
       <p className="recruiter-navigator__intro">
-        Use the map or shortlist to jump straight into career highlights. Personal and campus context
-        stays visible, but secondary.
+        Start in the middle plaza for a quick introduction, then use the map or shortlist to jump
+        into career highlights. Personal and campus context stays visible, but secondary.
       </p>
+
+      {startEntry ? (
+        <section className="recruiter-navigator__section recruiter-navigator__section--start">
+          <div className="recruiter-navigator__section-header">
+            <h3>Start Here</h3>
+            <span>Welcome</span>
+          </div>
+
+          <button
+            type="button"
+            className={`recruiter-navigator__item recruiter-navigator__item--start recruiter-navigator__item--${startEntry.state}`}
+            onClick={() => onWorkbenchOpen(startEntry.id)}
+            aria-label={`Open ${startEntry.title} (Start Here)`}
+          >
+            <span className="recruiter-navigator__item-title">{startEntry.title}</span>
+            <span className="recruiter-navigator__item-meta">{startEntry.districtLabel}</span>
+          </button>
+        </section>
+      ) : null}
 
       <div className="recruiter-navigator__map" aria-label="Schematic island map of highlights">
         <div
@@ -138,6 +164,10 @@ function RecruiterNavigatorContent({
       </div>
 
       <div className="recruiter-navigator__legend" aria-label="Highlight legend">
+        <span className="recruiter-navigator__legend-item">
+          <span className="recruiter-navigator__swatch recruiter-navigator__swatch--start" />
+          Start Here
+        </span>
         <span className="recruiter-navigator__legend-item">
           <span className="recruiter-navigator__swatch recruiter-navigator__swatch--experience" />
           Experiences
@@ -181,6 +211,7 @@ export function RecruiterNavigatorHUD({
     <RecruiterNavigatorContent
       counts={data.counts}
       markers={data.markers}
+      startEntry={data.startEntry}
       sections={data.shortlistSections}
       playerMarker={data.playerMarker}
       onWorkbenchOpen={onWorkbenchOpen}
@@ -216,6 +247,7 @@ export function RecruiterNavigatorHUD({
       <RecruiterNavigatorContent
         counts={data.counts}
         markers={data.markers}
+        startEntry={data.startEntry}
         sections={data.shortlistSections}
         playerMarker={data.playerMarker}
         onWorkbenchOpen={onWorkbenchOpen}

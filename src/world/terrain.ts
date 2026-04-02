@@ -1,6 +1,8 @@
 import { MathUtils } from 'three';
 
+import { PUBLISHED_WORKBENCH_PLAZA_METRICS } from '../../content/workbenches/layout';
 import { WORLD_WATER_BODIES } from './constants';
+import { CENTRAL_PLAZA_EDGE_BLEND, CENTRAL_PLAZA_HEIGHT_OFFSET } from './hub';
 
 import type { WaterBodyDefinition } from './constants';
 
@@ -141,6 +143,16 @@ const WATER_SURFACE_HEIGHTS = WORLD_WATER_BODIES.map((body) => computeWaterSurfa
 const LAKE_BOUNDARY_CACHE = WORLD_WATER_BODIES.map((body) =>
   getLakeBoundaryPolyline(body, LAKE_SHORELINE_SAMPLE_DETAIL),
 );
+const CENTRAL_PLAZA_TOP_HEIGHT =
+  applyIslandFalloff(baseTerrainHeight(0, 0), 0, 0) + CENTRAL_PLAZA_HEIGHT_OFFSET;
+
+export function getCentralPlazaTopHeight(): number {
+  return CENTRAL_PLAZA_TOP_HEIGHT;
+}
+
+export function isPointOnCentralPlaza(x: number, z: number, padding = 0): boolean {
+  return Math.hypot(x, z) <= PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + padding;
+}
 
 function pointToSegmentDistance(
   pointX: number,
@@ -226,8 +238,30 @@ function carveForLake(
   return height;
 }
 
+function applyCentralPlazaHeight(x: number, z: number, naturalHeight: number): number {
+  const radialDistance = Math.hypot(x, z);
+  const plazaRadius = PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius;
+  const blendStart = Math.max(plazaRadius - CENTRAL_PLAZA_EDGE_BLEND, 0);
+
+  if (radialDistance <= blendStart) {
+    return CENTRAL_PLAZA_TOP_HEIGHT;
+  }
+
+  if (radialDistance <= plazaRadius) {
+    const blend = MathUtils.smootherstep(
+      (radialDistance - blendStart) / Math.max(CENTRAL_PLAZA_EDGE_BLEND, 0.001),
+      0,
+      1,
+    );
+    return MathUtils.lerp(CENTRAL_PLAZA_TOP_HEIGHT, naturalHeight, blend);
+  }
+
+  return naturalHeight;
+}
+
 export function getTerrainHeight(x: number, z: number): number {
   let height = applyIslandFalloff(baseTerrainHeight(x, z), x, z);
+  height = applyCentralPlazaHeight(x, z, height);
 
   for (let index = 0; index < WORLD_WATER_BODIES.length; index += 1) {
     const body = WORLD_WATER_BODIES[index];

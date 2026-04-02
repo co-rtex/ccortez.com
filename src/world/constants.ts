@@ -69,7 +69,7 @@ export const WORLD_WATER_BODIES: WaterBodyDefinition[] = [
 export const PLAYER_START: WorldAnchor = {
   x: 0,
   y: 0.8,
-  z: 0,
+  z: -12,
 };
 
 const MAX_LAKE_RADIUS_FACTOR = 1.2;

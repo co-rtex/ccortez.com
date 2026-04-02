@@ -4,6 +4,7 @@ import type { WorldAnchor } from '../types/experience';
 import type { CollisionFeedbackReason } from '../types/collisionFeedback';
 import type { WorkbenchScenePresentationMap } from '../workbench/presentation';
 import { scenePresentationMapsEqual } from '../workbench/presentation';
+import { PLAYER_START } from '../world/constants';
 
 interface CollisionFeedbackEvent {
   id: number;
@@ -42,9 +43,9 @@ interface GameStore {
 }
 
 const initialPlayerPosition: WorldAnchor = {
-  x: 0,
-  y: 0.8,
-  z: 18,
+  x: PLAYER_START.x,
+  y: PLAYER_START.y,
+  z: PLAYER_START.z,
 };
 
 function arraysEqual(left: string[], right: string[]): boolean {

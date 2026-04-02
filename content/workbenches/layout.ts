@@ -1,6 +1,10 @@
 import type { WorkbenchDefinition, WorkbenchDistrictDefinition } from '../../src/types/workbench';
 
-import { applyPublishedWorkbenchRingLayout, getPublishedWorkbenchClearZones } from '../../src/workbench/publishedRing';
+import {
+  applyPublishedWorkbenchRingLayout,
+  getPublishedWorkbenchClearZones,
+  getPublishedWorkbenchPlazaMetrics,
+} from '../../src/workbench/publishedRing';
 
 export const WORKBENCH_DISTRICTS: WorkbenchDistrictDefinition[] = [
   {
@@ -51,6 +55,33 @@ export const WORKBENCH_DISTRICTS: WorkbenchDistrictDefinition[] = [
 ];
 
 const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
+  {
+    id: 'about-me-overview',
+    title: 'Start Here',
+    category: 'personal-life',
+    district: 'personal-life',
+    visibility: 'published',
+    contentMode: 'linked',
+    presentationMode: 'scene-owned',
+    experienceId: 'about-me-overview',
+    placement: {
+      mode: 'freeform',
+      x: 0,
+      z: 0,
+      rotationY: Math.PI,
+      yOffset: 0.18,
+    },
+    interactionRadius: 4.8,
+    priorityTier: 'anchor',
+    visualRecipe: {
+      archetype: 'journal-console',
+      palette: 'personal-rose',
+      accentMaterial: 'ceramic',
+      propKit: 'reflection-nook',
+      heroProp: 'memory-orb',
+      animationStyle: 'paper-breeze',
+    },
+  },
   {
     id: 'ssec-technical-computing',
     title: 'Technical Computing at SSEC',
@@ -493,5 +524,7 @@ const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
 
 export const WORKBENCH_LAYOUT: WorkbenchDefinition[] =
   applyPublishedWorkbenchRingLayout(RAW_WORKBENCH_LAYOUT);
+
+export const PUBLISHED_WORKBENCH_PLAZA_METRICS = getPublishedWorkbenchPlazaMetrics(WORKBENCH_LAYOUT);
 
 export const PUBLISHED_WORKBENCH_CLEAR_ZONES = getPublishedWorkbenchClearZones(WORKBENCH_LAYOUT);

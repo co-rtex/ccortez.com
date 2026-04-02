@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
+import {
+  PUBLISHED_WORKBENCH_PLAZA_METRICS,
+  WORKBENCH_LAYOUT,
+} from '../../content/workbenches/layout';
 import { WORLD_WATER_BODIES } from './constants';
+import { PLAYER_START } from './constants';
 import {
   OCEAN_LEVEL,
   findNearestWalkablePoint,
+  getCentralPlazaTopHeight,
   getLakeBoundaryPoint,
   getLakeBoundaryPolyline,
   getLakeDistance,
@@ -14,8 +20,34 @@ import {
   isPointWaterBlocked,
   isPointWalkable,
 } from './terrain';
+import { START_HERE_WORKBENCH_ID } from './hub';
 
 describe('terrain water carving', () => {
+  it('keeps the central plaza origin, spawn point, and published perimeter anchors walkable on the raised platform', () => {
+    expect(getTerrainHeight(0, 0)).toBeCloseTo(getCentralPlazaTopHeight(), 3);
+    expect(isPointWalkable(0, 0, 0.72)).toBe(true);
+
+    expect(isPointWalkable(PLAYER_START.x, PLAYER_START.z, 0.72)).toBe(true);
+    expect(getTerrainHeight(PLAYER_START.x, PLAYER_START.z)).toBeCloseTo(getCentralPlazaTopHeight(), 3);
+
+    const representativeAnchors = WORKBENCH_LAYOUT.filter(
+      (definition) => definition.visibility === 'published' && definition.id !== START_HERE_WORKBENCH_ID,
+    ).slice(0, 3);
+
+    expect(representativeAnchors).toHaveLength(3);
+    for (const anchor of representativeAnchors) {
+      expect(anchor.placement.mode).toBe('freeform');
+      if (anchor.placement.mode !== 'freeform') {
+        continue;
+      }
+
+      expect(Math.hypot(anchor.placement.x, anchor.placement.z)).toBeLessThanOrEqual(
+        PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius,
+      );
+      expect(isPointWalkable(anchor.placement.x, anchor.placement.z, 0.72)).toBe(true);
+    }
+  });
+
   it('keeps water surface above the carved basin center', () => {
     for (const waterBody of WORLD_WATER_BODIES) {
       const waterY = getWaterSurfaceHeight(waterBody);
@@ -134,6 +166,15 @@ describe('terrain water carving', () => {
       expect(isPointWaterBlocked(recovery.x, recovery.z, 0.72)).toBe(false);
       expect(getNearestLakeShoreSignedDistance(recovery.x, recovery.z)).toBeGreaterThan(0);
     }
+  });
+
+  it('keeps the plaza edge walkable and smoothly blended with surrounding terrain', () => {
+    const innerEdgeHeight = getTerrainHeight(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 0.3);
+    const outerEdgeHeight = getTerrainHeight(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius - 0.3);
+
+    expect(isPointWalkable(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 0.3, 0.72)).toBe(true);
+    expect(isPointWalkable(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius - 0.3, 0.72)).toBe(true);
+    expect(Math.abs(innerEdgeHeight - outerEdgeHeight)).toBeLessThan(0.7);
   });
 
   it('allows approaching curved shorelines closely without invisible wide blocking', () => {

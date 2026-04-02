@@ -249,6 +249,10 @@ body {
   background: var(--accent);
 }
 
+.recruiter-map-marker--start .recruiter-map-marker__core {
+  background: #f2d8a4;
+}
+
 .recruiter-map-marker--project .recruiter-map-marker__core {
   background: var(--project-accent);
 }
@@ -301,6 +305,10 @@ body {
 
 .recruiter-navigator__swatch--experience {
   background: var(--accent);
+}
+
+.recruiter-navigator__swatch--start {
+  background: #f2d8a4;
 }
 
 .recruiter-navigator__swatch--project {
@@ -384,6 +392,10 @@ body {
 
 .recruiter-navigator__item--experience .recruiter-navigator__item-title {
   color: #ffd8aa;
+}
+
+.recruiter-navigator__item--start .recruiter-navigator__item-title {
+  color: #ffe6b8;
 }
 
 .recruiter-navigator__item--project .recruiter-navigator__item-title {
@@ -660,6 +672,11 @@ body {
 .experience-panel__meta-chip--experience {
   background: rgba(234, 143, 43, 0.14);
   color: #8a4b0d;
+}
+
+.experience-panel__meta-chip--start {
+  background: rgba(255, 239, 206, 0.95);
+  color: #7a4c11;
 }
 
 .experience-panel__meta-chip--project {

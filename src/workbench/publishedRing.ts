@@ -1,16 +1,45 @@
-import { SPAWN_HUB_RADIUS } from '../world/hub';
+import {
+  CENTRAL_PLAZA_CENTER_PAD_RADIUS,
+  START_HERE_ROTATION_Y,
+  START_HERE_WORKBENCH_ID,
+  getCentralPlazaPerimeterRadius,
+  getCentralPlazaRadius,
+  getWorkbenchFacingCenterRotationY,
+} from '../world/hub';
 
 import type { WorkbenchDefinition, WorkbenchPlacement } from '../types/workbench';
 
-export const HUB_RING_RADIUS = SPAWN_HUB_RADIUS + 6;
-export const HUB_RING_FACING_YAW = 0;
 export const WORKBENCH_CLEAR_RADIUS = 4.5;
+const SOUTH_ENTRY_ANGLE = -Math.PI / 2;
+
+const DISTRICT_ORDER = {
+  'work-experience': 0,
+  projects: 1,
+  'personal-life': 2,
+  clubs: 3,
+  extracurriculars: 4,
+} as const;
+
+const PRIORITY_ORDER = {
+  anchor: 0,
+  standard: 1,
+  satellite: 2,
+} as const;
 
 export interface WorkbenchClearZone {
   x: number;
   z: number;
   radius: number;
   workbenchId: string;
+}
+
+export interface PublishedWorkbenchPlazaMetrics {
+  centerWorkbenchId: string | null;
+  perimeterWorkbenchIds: string[];
+  perimeterWorkbenchCount: number;
+  centerPadRadius: number;
+  perimeterRadius: number;
+  plazaRadius: number;
 }
 
 function getPlacementYOffset(placement: WorkbenchPlacement): number {
@@ -21,8 +50,49 @@ function isPublishedWorkbench(definition: WorkbenchDefinition): boolean {
   return definition.visibility === 'published';
 }
 
-function isWorkExperienceWorkbench(definition: WorkbenchDefinition): boolean {
-  return definition.district === 'work-experience';
+function isStartHereWorkbench(definition: WorkbenchDefinition): boolean {
+  return definition.id === START_HERE_WORKBENCH_ID;
+}
+
+function getOrderedPerimeterWorkbenches(definitions: WorkbenchDefinition[]): WorkbenchDefinition[] {
+  const published = definitions
+    .map((definition, order) => ({ definition, order }))
+    .filter(({ definition }) => isPublishedWorkbench(definition) && !isStartHereWorkbench(definition));
+
+  return published
+    .sort((left, right) => {
+      const districtDelta = DISTRICT_ORDER[left.definition.district] - DISTRICT_ORDER[right.definition.district];
+      if (districtDelta !== 0) {
+        return districtDelta;
+      }
+
+      const priorityDelta =
+        PRIORITY_ORDER[left.definition.priorityTier] - PRIORITY_ORDER[right.definition.priorityTier];
+      if (priorityDelta !== 0) {
+        return priorityDelta;
+      }
+
+      return left.order - right.order;
+    })
+    .map(({ definition }) => definition);
+}
+
+export function getPublishedWorkbenchPlazaMetrics(
+  definitions: WorkbenchDefinition[],
+): PublishedWorkbenchPlazaMetrics {
+  const centerWorkbench = definitions.find(
+    (definition) => isPublishedWorkbench(definition) && isStartHereWorkbench(definition),
+  );
+  const perimeterWorkbenches = getOrderedPerimeterWorkbenches(definitions);
+
+  return {
+    centerWorkbenchId: centerWorkbench?.id ?? null,
+    perimeterWorkbenchIds: perimeterWorkbenches.map((definition) => definition.id),
+    perimeterWorkbenchCount: perimeterWorkbenches.length,
+    centerPadRadius: CENTRAL_PLAZA_CENTER_PAD_RADIUS,
+    perimeterRadius: getCentralPlazaPerimeterRadius(perimeterWorkbenches.length),
+    plazaRadius: getCentralPlazaRadius(perimeterWorkbenches.length),
+  };
 }
 
 export function applyPublishedWorkbenchRingLayout(
@@ -33,27 +103,40 @@ export function applyPublishedWorkbenchRingLayout(
     return definitions;
   }
 
-  const workExperience = published.filter(isWorkExperienceWorkbench);
-  const remainingPublished = published.filter((definition) => !isWorkExperienceWorkbench(definition));
-  const orderedPublished = [...workExperience, ...remainingPublished];
-  const slotStep = (Math.PI * 2) / orderedPublished.length;
-  const ringStartAngle = Math.PI - slotStep * ((workExperience.length - 1) / 2);
+  const metrics = getPublishedWorkbenchPlazaMetrics(definitions);
+  const perimeterWorkbenches = getOrderedPerimeterWorkbenches(definitions);
+  const slotStep = (Math.PI * 2) / Math.max(perimeterWorkbenches.length + 1, 4);
+  const placementsById = new Map<string, WorkbenchPlacement>();
 
-  const placementsById = new Map(
-    orderedPublished.map((definition, index) => {
-      const angle = ringStartAngle + slotStep * index;
-      return [
-        definition.id,
-        {
-          mode: 'freeform' as const,
-          x: Number((Math.cos(angle) * HUB_RING_RADIUS).toFixed(3)),
-          z: Number((Math.sin(angle) * HUB_RING_RADIUS).toFixed(3)),
-          rotationY: HUB_RING_FACING_YAW,
-          yOffset: getPlacementYOffset(definition.placement),
-        },
-      ] as const;
-    }),
-  );
+  for (const definition of definitions) {
+    if (!isPublishedWorkbench(definition)) {
+      continue;
+    }
+
+    if (isStartHereWorkbench(definition)) {
+      placementsById.set(definition.id, {
+        mode: 'freeform',
+        x: 0,
+        z: 0,
+        rotationY: START_HERE_ROTATION_Y,
+        yOffset: getPlacementYOffset(definition.placement),
+      });
+    }
+  }
+
+  perimeterWorkbenches.forEach((definition, index) => {
+    const angle = SOUTH_ENTRY_ANGLE - slotStep * (index + 1);
+    const x = Number((Math.cos(angle) * metrics.perimeterRadius).toFixed(3));
+    const z = Number((Math.sin(angle) * metrics.perimeterRadius).toFixed(3));
+
+    placementsById.set(definition.id, {
+      mode: 'freeform',
+      x,
+      z,
+      rotationY: getWorkbenchFacingCenterRotationY(x, z),
+      yOffset: getPlacementYOffset(definition.placement),
+    });
+  });
 
   return definitions.map((definition) =>
     isPublishedWorkbench(definition)

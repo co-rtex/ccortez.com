@@ -1,5 +1,5 @@
 import { TREE_COLLIDER_RADIUS, WORLD_COLLISION_OBSTACLES } from '../world/biome';
-import { SPAWN_HUB_RADIUS } from '../world/hub';
+import { CENTRAL_PLAZA_CENTER_PAD_RADIUS, START_HERE_WORKBENCH_ID } from '../world/hub';
 import { SCENIC_REST_SPOTS, getRestSpotSeatAnchor } from '../world/restSpots';
 import { isPointWalkable, isPointWaterBlocked } from '../world/terrain';
 import { isInsideObstacle } from '../engine/movement';
@@ -47,11 +47,27 @@ function distanceXZ(
 function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValidationIssue[] {
   const issues: WorkbenchValidationIssue[] = [];
   const { anchor } = record.placement;
+  const radialDistance = Math.hypot(anchor.x, anchor.z);
 
-  if (Math.hypot(anchor.x, anchor.z) < SPAWN_HUB_RADIUS + 1.6) {
+  if (
+    record.definition.id === START_HERE_WORKBENCH_ID &&
+    radialDistance > 0.2
+  ) {
     issues.push({
-      code: 'inside-crossroads',
-      message: 'Bench sits inside the neutral crossroads hub.',
+      code: 'reserved-start-pad',
+      message: 'Start Here bench should stay centered on the plaza origin.',
+      severity: 'warning',
+    });
+  }
+
+  if (
+    record.definition.visibility === 'published' &&
+    record.definition.id !== START_HERE_WORKBENCH_ID &&
+    radialDistance < CENTRAL_PLAZA_CENTER_PAD_RADIUS + 1.4
+  ) {
+    issues.push({
+      code: 'reserved-start-pad',
+      message: 'Non-intro published bench overlaps the reserved Start Here pad.',
       severity: 'warning',
     });
   }

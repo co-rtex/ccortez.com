@@ -1,8 +1,10 @@
 import { MathUtils } from 'three';
 
-import { PUBLISHED_WORKBENCH_CLEAR_ZONES } from '../../content/workbenches/layout';
+import {
+  PUBLISHED_WORKBENCH_CLEAR_ZONES,
+  PUBLISHED_WORKBENCH_PLAZA_METRICS,
+} from '../../content/workbenches/layout';
 import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
-import { SPAWN_HUB_RADIUS } from './hub';
 import {
   OCEAN_LEVEL,
   getIslandDistanceNormalized,
@@ -197,7 +199,7 @@ function generateScatterPoints({
 }
 
 function isInNeighborhood(pointX: number, pointZ: number): boolean {
-  return Math.hypot(pointX, pointZ) < SPAWN_HUB_RADIUS + 1.8;
+  return Math.hypot(pointX, pointZ) < PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 1.8;
 }
 
 function isInsideWorkbenchClearZone(
@@ -247,7 +249,7 @@ export const FLOWER_POINTS: ScatterPoint[] = generateScatterPoints({
   avoid: (x, z) =>
     !isGroundedPlacement(x, z, 0.22) ||
     isNearLake(x, z, 0.2) ||
-    Math.hypot(x, z) < SPAWN_HUB_RADIUS + 2.4 ||
+    Math.hypot(x, z) < PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 2.4 ||
     isInsideWorkbenchClearZone(x, z, WORKBENCH_GROUND_COVER_CLEAR_RADIUS) ||
     getIslandDistanceNormalized(x, z) > 0.95,
 });

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { RecruiterNavigatorHUD } from './RecruiterNavigatorHUD';
+import { START_HERE_WORKBENCH_ID } from '../world/hub';
 
 import type { ExperienceRecord } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -114,6 +115,15 @@ describe('RecruiterNavigatorHUD', () => {
       <RecruiterNavigatorHUD
         workbenches={[
           createWorkbenchRecord({
+            id: START_HERE_WORKBENCH_ID,
+            title: 'Start Here',
+            category: 'personal-life',
+            district: 'personal-life',
+            linkedType: 'experience',
+            x: 0,
+            z: 0,
+          }),
+          createWorkbenchRecord({
             id: 'experience-stop',
             title: 'Experience Stop',
             category: 'work-experience',
@@ -149,9 +159,11 @@ describe('RecruiterNavigatorHUD', () => {
 
     expect(markup).toContain('Recruiter Guide');
     expect(markup).toContain('Hide');
+    expect(markup).toContain('Start Here');
     expect(markup).toContain('Experiences');
     expect(markup).toContain('Projects');
     expect(markup).toContain('More About Me');
+    expect(markup).toContain('Open Start Here (Start Here)');
     expect(markup).toContain('Open Experience Stop (Experience)');
     expect(markup).toContain('Open Project Stop (Project)');
   });
@@ -160,6 +172,15 @@ describe('RecruiterNavigatorHUD', () => {
     const markup = renderToStaticMarkup(
       <RecruiterNavigatorHUD
         workbenches={[
+          createWorkbenchRecord({
+            id: START_HERE_WORKBENCH_ID,
+            title: 'Start Here',
+            category: 'personal-life',
+            district: 'personal-life',
+            linkedType: 'experience',
+            x: 0,
+            z: 0,
+          }),
           createWorkbenchRecord({
             id: 'experience-stop',
             title: 'Experience Stop',
@@ -187,6 +208,7 @@ describe('RecruiterNavigatorHUD', () => {
 
     expect(markup).toContain('recruiter-map-marker--active');
     expect(markup).toContain('recruiter-map-marker--nearby');
+    expect(markup).toContain('recruiter-map-marker--start');
     expect(markup).toContain('recruiter-map-marker--experience');
     expect(markup).toContain('recruiter-map-marker--project');
   });
