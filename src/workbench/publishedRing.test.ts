@@ -9,22 +9,26 @@ import {
   WORKBENCH_CLEAR_RADIUS,
 } from './publishedRing';
 import {
+  START_HERE_ANCHOR,
   START_HERE_ROTATION_Y,
   START_HERE_WORKBENCH_ID,
   getWorkbenchFacingCenterRotationY,
 } from '../world/hub';
 
 describe('published workbench plaza layout', () => {
-  it('places Start Here at the origin and every other published bench on the shared inward-facing plaza ring', () => {
+  it('places Start Here on the reserved center-pad intro spot and every other published bench on the shared inward-facing plaza ring', () => {
     const published = WORKBENCH_LAYOUT.filter((definition) => definition.visibility === 'published');
     const centerWorkbench = published.find((definition) => definition.id === START_HERE_WORKBENCH_ID);
     const perimeterWorkbenches = published.filter((definition) => definition.id !== START_HERE_WORKBENCH_ID);
 
     expect(centerWorkbench?.placement.mode).toBe('freeform');
     if (centerWorkbench?.placement.mode === 'freeform') {
-      expect(centerWorkbench.placement.x).toBe(0);
-      expect(centerWorkbench.placement.z).toBe(0);
+      expect(centerWorkbench.placement.x).toBe(START_HERE_ANCHOR.x);
+      expect(centerWorkbench.placement.z).toBe(START_HERE_ANCHOR.z);
       expect(centerWorkbench.placement.rotationY).toBe(START_HERE_ROTATION_Y);
+      expect(Math.hypot(centerWorkbench.placement.x, centerWorkbench.placement.z)).toBeLessThan(
+        PUBLISHED_WORKBENCH_PLAZA_METRICS.centerPadRadius,
+      );
     }
 
     for (const definition of perimeterWorkbenches) {

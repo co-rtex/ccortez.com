@@ -1,5 +1,6 @@
 import {
   CENTRAL_PLAZA_CENTER_PAD_RADIUS,
+  START_HERE_ANCHOR,
   START_HERE_ROTATION_Y,
   START_HERE_WORKBENCH_ID,
   getCentralPlazaPerimeterRadius,
@@ -38,6 +39,10 @@ export interface PublishedWorkbenchPlazaMetrics {
   perimeterWorkbenchIds: string[];
   perimeterWorkbenchCount: number;
   centerPadRadius: number;
+  startAnchor: {
+    x: number;
+    z: number;
+  };
   perimeterRadius: number;
   plazaRadius: number;
 }
@@ -90,6 +95,7 @@ export function getPublishedWorkbenchPlazaMetrics(
     perimeterWorkbenchIds: perimeterWorkbenches.map((definition) => definition.id),
     perimeterWorkbenchCount: perimeterWorkbenches.length,
     centerPadRadius: CENTRAL_PLAZA_CENTER_PAD_RADIUS,
+    startAnchor: START_HERE_ANCHOR,
     perimeterRadius: getCentralPlazaPerimeterRadius(perimeterWorkbenches.length),
     plazaRadius: getCentralPlazaRadius(perimeterWorkbenches.length),
   };
@@ -116,8 +122,8 @@ export function applyPublishedWorkbenchRingLayout(
     if (isStartHereWorkbench(definition)) {
       placementsById.set(definition.id, {
         mode: 'freeform',
-        x: 0,
-        z: 0,
+        x: START_HERE_ANCHOR.x,
+        z: START_HERE_ANCHOR.z,
         rotationY: START_HERE_ROTATION_Y,
         yOffset: getPlacementYOffset(definition.placement),
       });

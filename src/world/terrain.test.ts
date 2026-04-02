@@ -9,7 +9,9 @@ import { PLAYER_START } from './constants';
 import {
   OCEAN_LEVEL,
   findNearestWalkablePoint,
+  getCentralPlazaOuterRadius,
   getCentralPlazaTopHeight,
+  getCentralPlazaTopRadius,
   getLakeBoundaryPoint,
   getLakeBoundaryPolyline,
   getLakeDistance,
@@ -20,12 +22,18 @@ import {
   isPointWaterBlocked,
   isPointWalkable,
 } from './terrain';
-import { START_HERE_WORKBENCH_ID } from './hub';
+import { START_HERE_ANCHOR, START_HERE_WORKBENCH_ID } from './hub';
 
 describe('terrain water carving', () => {
-  it('keeps the central plaza origin, spawn point, and published perimeter anchors walkable on the raised platform', () => {
+  it('keeps the central plaza, Start Here bench, spawn point, and published perimeter anchors walkable on the raised platform', () => {
     expect(getTerrainHeight(0, 0)).toBeCloseTo(getCentralPlazaTopHeight(), 3);
     expect(isPointWalkable(0, 0, 0.72)).toBe(true);
+
+    expect(isPointWalkable(START_HERE_ANCHOR.x, START_HERE_ANCHOR.z, 0.72)).toBe(true);
+    expect(getTerrainHeight(START_HERE_ANCHOR.x, START_HERE_ANCHOR.z)).toBeCloseTo(
+      getCentralPlazaTopHeight(),
+      3,
+    );
 
     expect(isPointWalkable(PLAYER_START.x, PLAYER_START.z, 0.72)).toBe(true);
     expect(getTerrainHeight(PLAYER_START.x, PLAYER_START.z)).toBeCloseTo(getCentralPlazaTopHeight(), 3);
@@ -168,13 +176,21 @@ describe('terrain water carving', () => {
     }
   });
 
-  it('keeps the plaza edge walkable and smoothly blended with surrounding terrain', () => {
-    const innerEdgeHeight = getTerrainHeight(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 0.3);
-    const outerEdgeHeight = getTerrainHeight(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius - 0.3);
+  it('keeps the visible plaza top flat through the edge before blending into the outer skirt', () => {
+    const plazaTopRadius = getCentralPlazaTopRadius();
+    const plazaOuterRadius = getCentralPlazaOuterRadius();
+    const nearTopEdgeHeight = getTerrainHeight(0, -plazaTopRadius + 0.35);
+    const topEdgeHeight = getTerrainHeight(0, -plazaTopRadius);
+    const skirtHeight = getTerrainHeight(0, -plazaTopRadius - 0.45);
+    const outerSkirtHeight = getTerrainHeight(0, -plazaOuterRadius + 0.2);
 
-    expect(isPointWalkable(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 0.3, 0.72)).toBe(true);
-    expect(isPointWalkable(0, -PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius - 0.3, 0.72)).toBe(true);
-    expect(Math.abs(innerEdgeHeight - outerEdgeHeight)).toBeLessThan(0.7);
+    expect(isPointWalkable(0, -plazaTopRadius + 0.3, 0.72)).toBe(true);
+    expect(isPointWalkable(0, -plazaTopRadius - 0.3, 0.72)).toBe(true);
+    expect(nearTopEdgeHeight).toBeCloseTo(getCentralPlazaTopHeight(), 3);
+    expect(topEdgeHeight).toBeCloseTo(getCentralPlazaTopHeight(), 3);
+    expect(Math.abs(nearTopEdgeHeight - topEdgeHeight)).toBeLessThan(0.02);
+    expect(Math.abs(topEdgeHeight - skirtHeight)).toBeLessThan(0.6);
+    expect(outerSkirtHeight).toBeLessThan(topEdgeHeight);
   });
 
   it('allows approaching curved shorelines closely without invisible wide blocking', () => {

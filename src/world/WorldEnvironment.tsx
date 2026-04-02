@@ -23,15 +23,17 @@ import {
   FLOWER_POINTS,
   TREE_POINTS,
 } from './biome';
-import { PUBLISHED_WORKBENCH_PLAZA_METRICS } from '../../content/workbenches/layout';
 import {
   CENTRAL_PLAZA_CENTER_PAD_RADIUS,
   CENTRAL_PLAZA_FOUNDATION_DEPTH,
+  CENTRAL_PLAZA_FOUNTAIN_RADIUS,
 } from './hub';
 import {
   OCEAN_LEVEL,
   LAKE_SHORELINE_SAMPLE_DETAIL,
+  getCentralPlazaOuterRadius,
   getCentralPlazaTopHeight,
+  getCentralPlazaTopRadius,
   getIslandDistanceNormalized,
   getLakeBoundaryPolyline,
   getNearestLakeShoreSignedDistance,
@@ -53,6 +55,8 @@ import { planeXYToWorldXZ, worldXZToPlaneXY } from './renderSpace';
 import type { WaterBodyDefinition } from './constants';
 import type { RockPoint, ScatterPoint } from './biome';
 import type { ScenicRestSpotDefinition } from './restSpots';
+
+type FountainArcPoint = [number, number, number];
 
 function buildTerrainGeometry(): PlaneGeometry {
   const geometry = new PlaneGeometry(430, 430, 360, 360);
@@ -456,21 +460,141 @@ function ScenicRestSpotBench({ spot }: { spot: ScenicRestSpotDefinition }) {
   );
 }
 
+function buildFountainArcPoints(angle: number): FountainArcPoint[] {
+  const startRadius = 0.78;
+  const endRadius = CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.54;
+  const startY = 1.54;
+  const endY = 0.34;
+  const apexY = 1.96;
+  const samples = 7;
+  const startX = Math.cos(angle) * startRadius;
+  const startZ = Math.sin(angle) * startRadius;
+  const endX = Math.cos(angle) * endRadius;
+  const endZ = Math.sin(angle) * endRadius;
+
+  return new Array(samples).fill(0).map((_, index) => {
+    const t = index / (samples - 1);
+    const x = MathUtils.lerp(startX, endX, t);
+    const z = MathUtils.lerp(startZ, endZ, t);
+    const y = MathUtils.lerp(startY, endY, t) + Math.sin(t * Math.PI) * (apexY - startY);
+    return [x, y, z];
+  });
+}
+
+function CentralPlazaFountain() {
+  const centerY = getCentralPlazaTopHeight();
+  const arcPoints = useMemo(
+    () =>
+      new Array(6)
+        .fill(0)
+        .map((_, index) => buildFountainArcPoints((index / 6) * Math.PI * 2 + Math.PI / 6)),
+    [],
+  );
+
+  return (
+    <group position={[0, centerY + 0.02, 0]}>
+      <mesh castShadow receiveShadow position={[0, 0.16, 0]}>
+        <cylinderGeometry args={[CENTRAL_PLAZA_FOUNTAIN_RADIUS + 0.22, CENTRAL_PLAZA_FOUNTAIN_RADIUS + 0.28, 0.28, 48]} />
+        <meshStandardMaterial color="#cdb391" roughness={0.9} />
+      </mesh>
+
+      <mesh castShadow receiveShadow position={[0, 0.28, 0]}>
+        <cylinderGeometry args={[CENTRAL_PLAZA_FOUNTAIN_RADIUS, CENTRAL_PLAZA_FOUNTAIN_RADIUS + 0.04, 0.12, 48]} />
+        <meshStandardMaterial color="#ead2b0" roughness={0.84} />
+      </mesh>
+
+      <mesh position={[0, 0.31, 0]}>
+        <cylinderGeometry args={[CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.36, CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.36, 0.05, 40]} />
+        <meshStandardMaterial
+          color="#82bfd0"
+          roughness={0.18}
+          metalness={0.04}
+          emissive="#8ed7e5"
+          emissiveIntensity={0.18}
+          transparent
+          opacity={0.9}
+        />
+      </mesh>
+
+      <mesh castShadow receiveShadow position={[0, 0.72, 0]}>
+        <cylinderGeometry args={[0.46, 0.58, 0.78, 24]} />
+        <meshStandardMaterial color="#d8bf9c" roughness={0.86} />
+      </mesh>
+
+      <mesh castShadow receiveShadow position={[0, 1.08, 0]}>
+        <cylinderGeometry args={[0.98, 1.08, 0.18, 32]} />
+        <meshStandardMaterial color="#e8d1ad" roughness={0.82} />
+      </mesh>
+
+      <mesh position={[0, 1.13, 0]}>
+        <cylinderGeometry args={[0.72, 0.72, 0.04, 28]} />
+        <meshStandardMaterial
+          color="#9bd6e4"
+          roughness={0.14}
+          metalness={0.03}
+          emissive="#b8ebf4"
+          emissiveIntensity={0.2}
+          transparent
+          opacity={0.9}
+        />
+      </mesh>
+
+      <mesh castShadow receiveShadow position={[0, 1.48, 0]}>
+        <cylinderGeometry args={[0.18, 0.26, 0.64, 20]} />
+        <meshStandardMaterial color="#d7be9a" roughness={0.84} />
+      </mesh>
+
+      <mesh position={[0, 1.7, 0]}>
+        <cylinderGeometry args={[0.1, 0.12, 0.92, 16]} />
+        <meshStandardMaterial
+          color="#b9edf8"
+          roughness={0.1}
+          metalness={0.02}
+          emissive="#dff9ff"
+          emissiveIntensity={0.26}
+          transparent
+          opacity={0.78}
+        />
+      </mesh>
+
+      {arcPoints.map((points, index) => (
+        <Line key={`fountain-arc-${index}`} points={points} color="#d9f7ff" lineWidth={1.05} />
+      ))}
+
+      <Sparkles
+        count={18}
+        speed={0.18}
+        size={1.35}
+        color="#e7fbff"
+        opacity={0.34}
+        scale={[3.2, 1.8, 3.2]}
+        position={[0, 1.65, 0]}
+      />
+    </group>
+  );
+}
+
 function NeighborhoodHub() {
   const centerY = getCentralPlazaTopHeight();
-  const { perimeterRadius, plazaRadius } = PUBLISHED_WORKBENCH_PLAZA_METRICS;
+  const plazaTopRadius = getCentralPlazaTopRadius();
+  const plazaOuterRadius = getCentralPlazaOuterRadius();
 
   return (
     <group>
       <mesh receiveShadow position={[0, centerY - CENTRAL_PLAZA_FOUNDATION_DEPTH * 0.5, 0]}>
         <cylinderGeometry
-          args={[plazaRadius + 1.2, plazaRadius + 1.8, CENTRAL_PLAZA_FOUNDATION_DEPTH, 72]}
+          args={[
+            plazaOuterRadius + 0.4,
+            plazaOuterRadius + 1.4,
+            CENTRAL_PLAZA_FOUNDATION_DEPTH,
+            72,
+          ]}
         />
         <meshStandardMaterial color="#b69865" roughness={0.92} />
       </mesh>
 
       <mesh receiveShadow position={[0, centerY + 0.03, 0]}>
-        <cylinderGeometry args={[plazaRadius, plazaRadius, 0.08, 72]} />
+        <cylinderGeometry args={[plazaTopRadius, plazaTopRadius, 0.08, 72]} />
         <meshStandardMaterial color="#dec9a6" roughness={0.88} />
       </mesh>
 
@@ -481,10 +605,7 @@ function NeighborhoodHub() {
         <meshStandardMaterial color="#f2e1c1" roughness={0.82} />
       </mesh>
 
-      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, centerY + 0.07, 0]}>
-        <ringGeometry args={[perimeterRadius - 0.72, perimeterRadius - 0.28, 72]} />
-        <meshStandardMaterial color="#f6e7c8" roughness={0.84} />
-      </mesh>
+      <CentralPlazaFountain />
     </group>
   );
 }

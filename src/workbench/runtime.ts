@@ -1,5 +1,12 @@
 import { TREE_COLLIDER_RADIUS, WORLD_COLLISION_OBSTACLES } from '../world/biome';
-import { CENTRAL_PLAZA_CENTER_PAD_RADIUS, START_HERE_WORKBENCH_ID } from '../world/hub';
+import {
+  CENTRAL_PLAZA_CENTER_PAD_RADIUS,
+  CENTRAL_PLAZA_FOUNTAIN_RADIUS,
+  START_HERE_ANCHOR,
+  START_HERE_PLACEMENT_TOLERANCE,
+  START_HERE_WORKBENCH_ID,
+  getWorkbenchFacingCenterRotationY,
+} from '../world/hub';
 import { SCENIC_REST_SPOTS, getRestSpotSeatAnchor } from '../world/restSpots';
 import { isPointWalkable, isPointWaterBlocked } from '../world/terrain';
 import { isInsideObstacle } from '../engine/movement';
@@ -38,24 +45,51 @@ function getSpacingIssueThreshold(
 }
 
 function distanceXZ(
-  left: WorkbenchRuntimeRecord['placement']['anchor'],
-  right: WorkbenchRuntimeRecord['placement']['anchor'],
+  left: Pick<WorkbenchRuntimeRecord['placement']['anchor'], 'x' | 'z'>,
+  right: Pick<WorkbenchRuntimeRecord['placement']['anchor'], 'x' | 'z'>,
 ): number {
   return Math.hypot(left.x - right.x, left.z - right.z);
+}
+
+function angleDelta(left: number, right: number): number {
+  return Math.abs(Math.atan2(Math.sin(left - right), Math.cos(left - right)));
 }
 
 function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValidationIssue[] {
   const issues: WorkbenchValidationIssue[] = [];
   const { anchor } = record.placement;
   const radialDistance = Math.hypot(anchor.x, anchor.z);
+  const expectedStartRotation = getWorkbenchFacingCenterRotationY(anchor.x, anchor.z);
 
   if (
     record.definition.id === START_HERE_WORKBENCH_ID &&
-    radialDistance > 0.2
+    distanceXZ(anchor, START_HERE_ANCHOR) > START_HERE_PLACEMENT_TOLERANCE
   ) {
     issues.push({
       code: 'reserved-start-pad',
-      message: 'Start Here bench should stay centered on the plaza origin.',
+      message: 'Start Here bench should stay on the reserved southern intro spot beside the fountain.',
+      severity: 'warning',
+    });
+  }
+
+  if (
+    record.definition.id === START_HERE_WORKBENCH_ID &&
+    radialDistance < CENTRAL_PLAZA_FOUNTAIN_RADIUS + WORKBENCH_FOOTPRINT_RADIUS + 0.2
+  ) {
+    issues.push({
+      code: 'reserved-start-pad',
+      message: 'Start Here bench overlaps the reserved fountain footprint.',
+      severity: 'warning',
+    });
+  }
+
+  if (
+    record.definition.id === START_HERE_WORKBENCH_ID &&
+    angleDelta(record.placement.rotationY, expectedStartRotation) > 0.12
+  ) {
+    issues.push({
+      code: 'reserved-start-pad',
+      message: 'Start Here bench should face inward toward the central fountain.',
       severity: 'warning',
     });
   }
@@ -89,7 +123,7 @@ function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValid
   if (WORLD_COLLISION_OBSTACLES.some((obstacle) => isInsideObstacle(anchor, obstacle, TREE_COLLIDER_RADIUS + 0.5))) {
     issues.push({
       code: 'obstacle-overlap',
-      message: 'Bench overlaps an existing tree or rock collider.',
+      message: 'Bench overlaps an existing fountain, tree, or rock collider.',
       severity: 'error',
     });
   }

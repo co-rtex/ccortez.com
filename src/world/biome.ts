@@ -12,6 +12,7 @@ import {
   getTerrainHeight,
   isPointWalkable,
 } from './terrain';
+import { CENTRAL_PLAZA_FOUNTAIN_RADIUS } from './hub';
 
 import type { CircleObstacle, CollisionObstacle } from '../engine/movement';
 
@@ -32,6 +33,7 @@ export const TREE_COLLIDER_RADIUS = TREE_TRUNK_RADIUS + TREE_COLLIDER_BUFFER;
 export const ROCK_CORE_COLLIDER_SCALE = 0.72;
 export const ROCK_COLLIDER_BUFFER = 0.04;
 export const WORKBENCH_GROUND_COVER_CLEAR_RADIUS = 2.2;
+export const CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS = CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.18;
 
 export const ROAD_PATH_NETWORK_XZ: Array<Array<[number, number]>> = [
   [
@@ -255,7 +257,7 @@ export const FLOWER_POINTS: ScatterPoint[] = generateScatterPoints({
 });
 
 const rawBoulderPoints: ScatterPoint[] = generateScatterPoints({
-  count: 46,
+  count: 37,
   seed: 4321,
   minDistance: 3.5,
   avoid: (x, z) =>
@@ -269,11 +271,11 @@ const rawBoulderPoints: ScatterPoint[] = generateScatterPoints({
 
 export const BOULDER_POINTS: RockPoint[] = rawBoulderPoints.map((point) => ({
   ...point,
-  size: 0.74 + ((point.seed * 0.0019) % 0.56),
+  size: (0.74 + ((point.seed * 0.0019) % 0.56)) * 0.8,
 }));
 
 const rawCoastalRockPoints: ScatterPoint[] = generateScatterPoints({
-  count: 128,
+  count: 102,
   seed: 5123,
   minDistance: 1.4,
   avoid: (x, z) => {
@@ -294,7 +296,7 @@ const rawCoastalRockPoints: ScatterPoint[] = generateScatterPoints({
 
 export const COASTAL_ROCK_POINTS: RockPoint[] = rawCoastalRockPoints.map((point) => ({
   ...point,
-  size: 0.42 + ((point.seed * 0.0022) % 0.44),
+  size: (0.42 + ((point.seed * 0.0022) % 0.44)) * 0.8,
 }));
 
 function getRockCollisionRadius(visualSize: number): number {
@@ -314,7 +316,15 @@ function createTreeAndRockCollisionObstacles(): CircleObstacle[] {
     radius: getRockCollisionRadius(point.size),
   }));
 
-  return [...treeObstacles, ...boulderObstacles];
+  return [
+    {
+      centerX: 0,
+      centerZ: 0,
+      radius: CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS,
+    },
+    ...treeObstacles,
+    ...boulderObstacles,
+  ];
 }
 
 export const WORLD_COLLISION_OBSTACLES: CollisionObstacle[] = [

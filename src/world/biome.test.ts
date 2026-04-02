@@ -6,6 +6,7 @@ import {
 } from '../../content/workbenches/layout';
 import {
   BOULDER_POINTS,
+  CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS,
   BUSH_POINTS,
   COASTAL_ROCK_POINTS,
   FLOWER_POINTS,
@@ -53,6 +54,11 @@ function isInsideClearZone(
 }
 
 describe('biome placement', () => {
+  it('reduces rock clutter while keeping the smaller set deterministic', () => {
+    expect(BOULDER_POINTS).toHaveLength(37);
+    expect(COASTAL_ROCK_POINTS).toHaveLength(102);
+  });
+
   it('keeps trees, bushes, flowers, and boulders on walkable land', () => {
     for (const tree of TREE_POINTS) {
       expect(isPointWalkable(tree.x, tree.z, 0.42)).toBe(true);
@@ -140,6 +146,18 @@ describe('biome placement', () => {
         8,
       );
     }
+  });
+
+  it('reserves the central fountain as a permanent collision obstacle', () => {
+    expect(
+      WORLD_COLLISION_OBSTACLES.some(
+        (obstacle): obstacle is CircleObstacle =>
+          'radius' in obstacle &&
+          obstacle.centerX === 0 &&
+          obstacle.centerZ === 0 &&
+          obstacle.radius === CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS,
+      ),
+    ).toBe(true);
   });
 
   it('keeps workbench clear zones free of tree and boulder obstacles', () => {

@@ -150,8 +150,16 @@ export function getCentralPlazaTopHeight(): number {
   return CENTRAL_PLAZA_TOP_HEIGHT;
 }
 
+export function getCentralPlazaTopRadius(): number {
+  return PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius;
+}
+
+export function getCentralPlazaOuterRadius(): number {
+  return getCentralPlazaTopRadius() + CENTRAL_PLAZA_EDGE_BLEND;
+}
+
 export function isPointOnCentralPlaza(x: number, z: number, padding = 0): boolean {
-  return Math.hypot(x, z) <= PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + padding;
+  return Math.hypot(x, z) <= getCentralPlazaTopRadius() + padding;
 }
 
 function pointToSegmentDistance(
@@ -240,16 +248,16 @@ function carveForLake(
 
 function applyCentralPlazaHeight(x: number, z: number, naturalHeight: number): number {
   const radialDistance = Math.hypot(x, z);
-  const plazaRadius = PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius;
-  const blendStart = Math.max(plazaRadius - CENTRAL_PLAZA_EDGE_BLEND, 0);
+  const plazaTopRadius = getCentralPlazaTopRadius();
+  const plazaOuterRadius = getCentralPlazaOuterRadius();
 
-  if (radialDistance <= blendStart) {
+  if (radialDistance <= plazaTopRadius) {
     return CENTRAL_PLAZA_TOP_HEIGHT;
   }
 
-  if (radialDistance <= plazaRadius) {
+  if (radialDistance <= plazaOuterRadius) {
     const blend = MathUtils.smootherstep(
-      (radialDistance - blendStart) / Math.max(CENTRAL_PLAZA_EDGE_BLEND, 0.001),
+      (radialDistance - plazaTopRadius) / Math.max(plazaOuterRadius - plazaTopRadius, 0.001),
       0,
       1,
     );
