@@ -1,0 +1,30 @@
+{
+  "id": "phoenix-aid-qa",
+  "slug": "phoenix-aid-qa",
+  "title": "Phoenix Aid at Accura Trials",
+  "type": "experience",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "QA Analyst Intern",
+    "organization": "Phoenix Aid, Accura Trials",
+    "dateRange": "Nov 2025 - Feb 2026",
+    "location": "Madison, WI",
+    "summary": "Worked across QA, automation, and regulated-release validation to improve regression coverage, release confidence, and documentation readiness in a compliance-sensitive environment.",
+    "impactBullets": [
+      "Built Selenium and C# automated test suites, increasing regression coverage by 40% across web and API layers.",
+      "Integrated automated tests into GitHub Actions CI pipelines to prevent regressions and accelerate deployments.",
+      "Logged and triaged 50+ defects with engineers, improving release stability and reducing post-deploy incidents.",
+      "Authored SOP-aligned validation documentation supporting 21 CFR Part 11 compliance and audit readiness."
+    ],
+    "techStack": [
+      "C#",
+      "Selenium",
+      "GitHub Actions",
+      "API Testing",
+      "Validation Documentation",
+      "Regulated QA"
+    ]
+  }
+}

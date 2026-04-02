@@ -1,0 +1,31 @@
+{
+  "id": "ssec-technical-computing",
+  "slug": "ssec-technical-computing",
+  "title": "Technical Computing at SSEC",
+  "type": "experience",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Technical Computing Help Desk",
+    "organization": "Space Science and Engineering Center, UW-Madison",
+    "dateRange": "Dec 2025 - Present",
+    "location": "Madison, WI",
+    "summary": "Supports research computing operations across scientific environments, blending technical support, infrastructure work, and systems reliability for NASA- and NOAA-adjacent workflows.",
+    "impactBullets": [
+      "Resolved Linux, Windows, and macOS issues for research staff supporting scientific computing workflows.",
+      "Diagnosed hardware, software, and network failures to minimize downtime for data and simulation environments.",
+      "Assisted users with command-line tools, file systems, and permissions on shared research computing resources.",
+      "Documented solutions and escalated complex issues to systems administrators to improve long-term reliability."
+    ],
+    "techStack": [
+      "Linux",
+      "Windows",
+      "macOS",
+      "Networking",
+      "Command Line",
+      "Systems Support",
+      "Scientific Computing"
+    ]
+  }
+}

@@ -7,7 +7,7 @@ const { createWorkbenchTemplate, insertWorkbenchIntoLayoutSource, renderWorkbenc
   workbenchScript;
 
 describe('new workbench script helpers', () => {
-  it('creates draft placeholder entries with corridor placement defaults', () => {
+  it('creates draft placeholder entries with seeded freeform defaults', () => {
     const entry = createWorkbenchTemplate({
       id: 'bcbs-swe',
       title: 'BCBS SWE',
@@ -16,14 +16,15 @@ describe('new workbench script helpers', () => {
 
     expect(entry.visibility).toBe('draft');
     expect(entry.contentMode).toBe('placeholder');
-    expect(entry.placement.mode).toBe('corridor');
-    expect(entry.placement.corridorId).toBe('southeast-trail');
+    expect(entry.presentationMode).toBe('scene-owned');
+    expect(entry.placement.mode).toBe('freeform');
+    expect(entry.placement.x).toBeCloseTo(6.899, 3);
   });
 
   it('inserts a rendered workbench block into the layout source', () => {
     const source = `import type { WorkbenchDefinition } from '../../src/types/workbench';
 
-export const WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
+const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
 ];
 `;
     const block = renderWorkbenchEntry(
@@ -36,6 +37,6 @@ export const WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
     const nextSource = insertWorkbenchIntoLayoutSource(source, block);
 
     expect(nextSource).toContain("id: 'new-bench'");
-    expect(nextSource).toContain('export const WORKBENCH_LAYOUT');
+    expect(nextSource).toContain('const RAW_WORKBENCH_LAYOUT');
   });
 });

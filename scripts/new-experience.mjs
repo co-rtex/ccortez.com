@@ -107,16 +107,6 @@ async function main() {
     slug: normalizedId,
     title,
     type: parsed.type,
-    worldAnchor: {
-      x: 0,
-      y: 0.2,
-      z: 0,
-    },
-    triggerRadius: 3.5,
-    loadDistances: {
-      preload: 10,
-      unload: 16,
-    },
     uiContentRef: 'story.mdx',
     sceneModuleRef: 'scene.tsx',
     status: 'draft',
@@ -129,9 +119,9 @@ async function main() {
 export default function ${normalizedId
     .split('-')
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join('')}Scene({ anchor }: ExperienceSceneProps): JSX.Element {
+    .join('')}Scene({ anchor, rotationY }: ExperienceSceneProps): JSX.Element {
   return (
-    <group position={[anchor.x, anchor.y, anchor.z]}>
+    <group position={[anchor.x, anchor.y, anchor.z]} rotation={[0, rotationY, 0]}>
       <mesh castShadow>
         <boxGeometry args={[2, 1.2, 2]} />
         <meshStandardMaterial color="#8fb9bf" roughness={0.55} />

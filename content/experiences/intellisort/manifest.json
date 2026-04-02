@@ -1,0 +1,27 @@
+{
+  "id": "intellisort",
+  "slug": "intellisort",
+  "title": "IntelliSort",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Algorithm Visualizer & Performance Tool",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Built an interactive learning and performance-analysis tool that compares sorting algorithms visually while estimating runtime behavior from input characteristics.",
+    "impactBullets": [
+      "Developed React visualizations comparing sorting algorithms, time complexity, and performance across inputs.",
+      "Trained a lightweight ML model to estimate runtime behavior from input size and structural characteristics.",
+      "Connected algorithm education with predictive analysis instead of stopping at a static visual demo."
+    ],
+    "techStack": [
+      "React",
+      "JavaScript",
+      "Machine Learning",
+      "Algorithm Analysis",
+      "Visualization"
+    ]
+  }
+}

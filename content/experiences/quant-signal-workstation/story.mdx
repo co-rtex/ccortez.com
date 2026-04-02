@@ -1,0 +1,9 @@
+## Quantitative Signal Workstation & Forecasting Pipeline
+
+This project was about building a more complete prediction workflow instead of stopping at model training. I wanted a system that could ingest live market data, rank opportunities, explain outputs, and evaluate reliability in a way that was actually decision-useful.
+
+I built a FastAPI backend to serve ranked equity signals and SHAP-backed explanations. From there, I added evaluation pipelines around ROC-AUC, PR-AUC, Brier scores, and calibration curves so performance was not judged by one flattering metric.
+
+Another important part of the project was reproducibility. I designed feature workflows and regime-aware backtesting so comparisons between models were grounded in evidence instead of intuition.
+
+The result is a system that reflects how I like to build: not just predictive, but inspectable, testable, and honest about uncertainty.

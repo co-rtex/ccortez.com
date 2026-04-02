@@ -114,6 +114,7 @@ export const workbenchDefinitionSchema = z
     district: districtSchema,
     visibility: z.enum(['draft', 'published']),
     contentMode: z.enum(['linked', 'placeholder']),
+    presentationMode: z.enum(['kit', 'scene-owned', 'kit-plus-scene']),
     experienceId: z.string().min(3).optional(),
     placement: z.union([corridorPlacementSchema, freeformPlacementSchema]),
     interactionRadius: z.number().positive(),

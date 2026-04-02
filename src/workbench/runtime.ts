@@ -1,4 +1,5 @@
-import { SPAWN_HUB_RADIUS, TREE_COLLIDER_RADIUS, WORLD_COLLISION_OBSTACLES } from '../world/biome';
+import { TREE_COLLIDER_RADIUS, WORLD_COLLISION_OBSTACLES } from '../world/biome';
+import { SPAWN_HUB_RADIUS } from '../world/hub';
 import { SCENIC_REST_SPOTS, getRestSpotSeatAnchor } from '../world/restSpots';
 import { isPointWalkable, isPointWaterBlocked } from '../world/terrain';
 import { isInsideObstacle } from '../engine/movement';
@@ -14,7 +15,7 @@ import type {
   WorkbenchValidationIssue,
 } from '../types/workbench';
 
-const WORKBENCH_FOOTPRINT_RADIUS = 1.28;
+export const WORKBENCH_FOOTPRINT_RADIUS = 1.28;
 const STREAMING_PRELOAD_PADDING = 7.5;
 const STREAMING_UNLOAD_PADDING = 14;
 
@@ -93,8 +94,11 @@ function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValid
   if (record.definition.contentMode === 'linked' && !record.linkedExperience) {
     issues.push({
       code: 'missing-link',
-      message: 'Linked workbench is missing a matching experience record.',
-      severity: 'warning',
+      message:
+        record.definition.visibility === 'published'
+          ? 'Published workbench is missing a matching experience record.'
+          : 'Linked workbench is missing a matching experience record.',
+      severity: record.definition.visibility === 'published' ? 'error' : 'warning',
     });
   }
 
@@ -192,5 +196,9 @@ export function serializeWorkbenchLayout(definitions: WorkbenchDefinition[]): st
     .replace(/"([^"]+)":/g, '$1:')
     .replace(/"/g, "'");
 
-  return `export const WORKBENCH_LAYOUT: WorkbenchDefinition[] = ${serialized};`;
+  return `const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = ${serialized};
+
+export const WORKBENCH_LAYOUT: WorkbenchDefinition[] = applyPublishedWorkbenchRingLayout(RAW_WORKBENCH_LAYOUT);
+
+export const PUBLISHED_WORKBENCH_CLEAR_ZONES = getPublishedWorkbenchClearZones(WORKBENCH_LAYOUT);`;
 }

@@ -2,7 +2,11 @@ export const DISTRICT_DEFAULTS = {
   'work-experience': {
     category: 'work-experience',
     corridorId: 'southeast-trail',
+    distanceAlong: 24,
     lateralOffset: 2.8,
+    seedX: 6.899,
+    seedZ: -22.488,
+    seedRotationY: 2.881,
     visualRecipe: {
       archetype: 'console-desk',
       palette: 'work-ember',
@@ -15,7 +19,11 @@ export const DISTRICT_DEFAULTS = {
   projects: {
     category: 'projects',
     corridorId: 'east-promenade',
+    distanceAlong: 19,
     lateralOffset: 2.3,
+    seedX: 17.632,
+    seedZ: 6.943,
+    seedRotationY: 1.144,
     visualRecipe: {
       archetype: 'atelier-worktable',
       palette: 'project-citrine',
@@ -28,7 +36,11 @@ export const DISTRICT_DEFAULTS = {
   'personal-life': {
     category: 'personal-life',
     corridorId: 'north-rise',
+    distanceAlong: 21,
     lateralOffset: -2.5,
+    seedX: -3.672,
+    seedZ: 20.111,
+    seedRotationY: -0.322,
     visualRecipe: {
       archetype: 'journal-console',
       palette: 'personal-rose',
@@ -41,7 +53,11 @@ export const DISTRICT_DEFAULTS = {
   clubs: {
     category: 'clubs',
     corridorId: 'west-ridge',
+    distanceAlong: 17,
     lateralOffset: -2.7,
+    seedX: -15.782,
+    seedZ: 6.664,
+    seedRotationY: -1.043,
     visualRecipe: {
       archetype: 'commons-table',
       palette: 'club-verde',
@@ -54,7 +70,11 @@ export const DISTRICT_DEFAULTS = {
   extracurriculars: {
     category: 'extracurriculars',
     corridorId: 'southwest-trail',
+    distanceAlong: 17,
     lateralOffset: -2.6,
+    seedX: -6.43,
+    seedZ: -14.678,
+    seedRotationY: -2.911,
     visualRecipe: {
       archetype: 'field-station',
       palette: 'extra-cobalt',
@@ -97,13 +117,12 @@ export function createWorkbenchTemplate({
     district,
     visibility: 'draft',
     contentMode: 'placeholder',
+    presentationMode: 'scene-owned',
     placement: {
-      mode: 'corridor',
-      corridorId: defaults.corridorId,
-      distanceAlong: 18,
-      lateralOffset: defaults.lateralOffset,
-      yawMode: 'follow-road',
-      yawOffset: 0,
+      mode: 'freeform',
+      x: defaults.seedX,
+      z: defaults.seedZ,
+      rotationY: defaults.seedRotationY,
       yOffset: 0.18,
     },
     interactionRadius: 3.2,
@@ -121,15 +140,15 @@ export function renderWorkbenchEntry(entry) {
 }
 
 export function insertWorkbenchIntoLayoutSource(source, entryBlock) {
-  const marker = 'export const WORKBENCH_LAYOUT: WorkbenchDefinition[] = [';
+  const marker = 'const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [';
   const startIndex = source.indexOf(marker);
   if (startIndex < 0) {
-    throw new Error('Unable to locate WORKBENCH_LAYOUT array in content/workbenches/layout.ts');
+    throw new Error('Unable to locate RAW_WORKBENCH_LAYOUT array in content/workbenches/layout.ts');
   }
 
   const closingIndex = source.lastIndexOf('\n];');
   if (closingIndex < 0) {
-    throw new Error('Unable to locate end of WORKBENCH_LAYOUT array in content/workbenches/layout.ts');
+    throw new Error('Unable to locate end of RAW_WORKBENCH_LAYOUT array in content/workbenches/layout.ts');
   }
 
   const arrayBody = source.slice(startIndex + marker.length, closingIndex).trim();

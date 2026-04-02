@@ -10,7 +10,8 @@ declare module '../../scripts/new-workbench.shared.mjs' {
     title: string;
     visibility: 'draft';
     contentMode: 'placeholder';
-    placement: { mode: 'corridor'; corridorId: string };
+    presentationMode: 'scene-owned';
+    placement: { mode: 'freeform'; x: number; z: number; rotationY: number; yOffset: number };
   };
   export function renderWorkbenchEntry(entry: unknown): string;
   export function insertWorkbenchIntoLayoutSource(source: string, entryBlock: string): string;

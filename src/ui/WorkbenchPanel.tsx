@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useGameStore } from '../state/gameStore';
+import { WORKBENCH_INSPECT_HINT, shouldShowWorkbenchInspectHint } from './workbenchPanelHints';
 
 import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+import type { ExperienceRecruiterCard } from '../types/experience';
+import { formatRecruiterCategoryLabel, resolveRecruiterNavigatorCategory } from './recruiterNavigator';
 
 interface WorkbenchPanelProps {
   workbenches: WorkbenchRuntimeRecord[];
@@ -16,7 +19,117 @@ function formatLabel(value: string): string {
     .join(' ');
 }
 
+function buildRecruiterMetaLine(parts: Array<string | undefined>): string {
+  return parts.filter((part) => part && part.trim().length > 0).join(' • ');
+}
+
+export function resolvePanelEyebrow(workbench: WorkbenchRuntimeRecord | undefined): string {
+  if (!workbench) {
+    return 'Recruiter Guide';
+  }
+
+  return resolveRecruiterNavigatorCategory(workbench) === 'secondary' ? 'More About Me' : 'Recruiter Brief';
+}
+
+export function buildWorkbenchMetaChips(workbench: WorkbenchRuntimeRecord): Array<{
+  label: string;
+  tone: 'experience' | 'project' | 'secondary' | 'featured' | 'default';
+}> {
+  const category = resolveRecruiterNavigatorCategory(workbench);
+  const chips: Array<{
+    label: string;
+    tone: 'experience' | 'project' | 'secondary' | 'featured' | 'default';
+  }> = [];
+
+  if (category === 'secondary') {
+    chips.push({
+      label: 'More About Me',
+      tone: 'secondary',
+    });
+  } else {
+    chips.push({
+      label: `Type: ${formatRecruiterCategoryLabel(category)}`,
+      tone: category,
+    });
+  }
+
+  chips.push({
+    label: `District: ${workbench.districtDefinition.label}`,
+    tone: 'default',
+  });
+
+  if (workbench.definition.priorityTier === 'anchor') {
+    chips.push({
+      label: 'Featured',
+      tone: 'featured',
+    });
+  }
+
+  return chips;
+}
+
+interface LinkedWorkbenchContentProps {
+  recruiterCard?: ExperienceRecruiterCard;
+  activeStoryError?: string;
+  ActiveStory?: ExperienceStoryComponent;
+  isLoading: boolean;
+}
+
+export function LinkedWorkbenchContent({
+  recruiterCard,
+  activeStoryError,
+  ActiveStory,
+  isLoading,
+}: LinkedWorkbenchContentProps) {
+  const recruiterMetaLine = recruiterCard
+    ? buildRecruiterMetaLine([
+        recruiterCard.roleLabel,
+        recruiterCard.organization,
+        recruiterCard.dateRange,
+        recruiterCard.location,
+      ])
+    : null;
+
+  return (
+    <>
+      {recruiterCard ? (
+        <section className="recruiter-card">
+          {recruiterMetaLine ? <p className="recruiter-card__meta">{recruiterMetaLine}</p> : null}
+          <p className="recruiter-card__summary">{recruiterCard.summary}</p>
+
+          <div className="recruiter-card__section">
+            <h3>Impact</h3>
+            <ul className="recruiter-card__bullets">
+              {recruiterCard.impactBullets.map((bullet) => (
+                <li key={bullet}>{bullet}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="recruiter-card__section">
+            <h3>Tech Stack</h3>
+            <div className="recruiter-card__chips">
+              {recruiterCard.techStack.map((item) => (
+                <span key={item}>{item}</span>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+      {isLoading ? <p>Loading linked story content...</p> : null}
+      {activeStoryError ? <p>{activeStoryError}</p> : null}
+      {ActiveStory ? (
+        <section className="experience-panel__story">
+          {recruiterCard ? <h3 className="experience-panel__story-heading">Story</h3> : null}
+          <ActiveStory />
+        </section>
+      ) : null}
+    </>
+  );
+}
+
 export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
+  const cameraMode = useGameStore((state) => state.cameraMode);
   const panelWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
   const closeWorkbenchPanel = useGameStore((state) => state.closeWorkbenchPanel);
 
@@ -68,16 +181,21 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
   const activeStory = workbench?.linkedExperience
     ? storyCache[workbench.linkedExperience.manifest.id]
     : undefined;
+  const linkedContentError = workbench?.definition.contentMode === 'linked' && !workbench.linkedExperience
+    ? 'This published workbench is missing its linked experience content.'
+    : undefined;
   const activeStoryError = workbench?.linkedExperience
     ? storyErrors[workbench.linkedExperience.manifest.id]
-    : undefined;
+    : linkedContentError;
   const ActiveStory = activeStory;
+  const recruiterCard = workbench?.linkedExperience?.manifest.recruiterCard;
+  const metaChips = workbench ? buildWorkbenchMetaChips(workbench) : [];
 
   return (
     <aside className={`experience-panel ${panelWorkbenchId ? 'experience-panel--open' : ''}`}>
       <header className="experience-panel__header">
         <div>
-          <p className="experience-panel__eyebrow">Workbench Details</p>
+          <p className="experience-panel__eyebrow">{resolvePanelEyebrow(workbench)}</p>
           <h2>{workbench ? workbench.definition.title : 'Select a Workbench'}</h2>
         </div>
         <button
@@ -93,24 +211,35 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
       <section className="experience-panel__meta">
         {workbench ? (
           <>
-            <span>Category: {formatLabel(workbench.definition.category)}</span>
-            <span>District: {formatLabel(workbench.definition.district)}</span>
-            <span>Visibility: {formatLabel(workbench.definition.visibility)}</span>
-            <span>Mode: {formatLabel(workbench.definition.contentMode)}</span>
-            <span>Anchor: {`${workbench.placement.anchor.x.toFixed(1)}, ${workbench.placement.anchor.z.toFixed(1)}`}</span>
+            {metaChips.map((chip) => (
+              <span
+                key={chip.label}
+                className={`experience-panel__meta-chip experience-panel__meta-chip--${chip.tone}`}
+              >
+                {chip.label}
+              </span>
+            ))}
           </>
         ) : (
-          <span>Walk up to any active workbench to open its details.</span>
+          <span className="experience-panel__meta-chip experience-panel__meta-chip--default">
+            Use the recruiter guide or walk up to any highlight to open its details.
+          </span>
         )}
       </section>
 
       <section className="experience-panel__content">
         {!workbench ? <p>Nothing selected yet.</p> : null}
-        {workbench && workbench.definition.contentMode === 'linked' && !activeStory && !activeStoryError ? (
-          <p>Loading linked story content...</p>
+        {shouldShowWorkbenchInspectHint(cameraMode, workbench) ? (
+          <p className="experience-panel__inspect-hint">{WORKBENCH_INSPECT_HINT}</p>
         ) : null}
-        {activeStoryError ? <p>{activeStoryError}</p> : null}
-        {ActiveStory ? <ActiveStory /> : null}
+        {workbench?.definition.contentMode === 'linked' ? (
+          <LinkedWorkbenchContent
+            recruiterCard={recruiterCard}
+            activeStoryError={activeStoryError}
+            ActiveStory={ActiveStory}
+            isLoading={Boolean(workbench.linkedExperience && !activeStory && !activeStoryError)}
+          />
+        ) : null}
 
         {workbench && workbench.definition.contentMode === 'placeholder' ? (
           <div className="workbench-draft-panel">

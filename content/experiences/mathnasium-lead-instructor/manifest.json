@@ -1,0 +1,28 @@
+{
+  "id": "mathnasium-lead-instructor",
+  "slug": "mathnasium-lead-instructor",
+  "title": "Mathnasium Leadership",
+  "type": "experience",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Lead Instructor",
+    "organization": "Mathnasium",
+    "dateRange": "Aug 2021 - Aug 2024",
+    "location": "South Barrington, IL",
+    "summary": "Delivered high-volume STEM instruction while using progress data and individualized plans to improve student outcomes over multiple years.",
+    "impactBullets": [
+      "Delivered 1,500+ hours of STEM instruction, increasing average student assessment performance by 40%.",
+      "Used data-driven learning plans to track progress and optimize individualized instruction strategies.",
+      "Led with clear communication, consistency, and measurable student support rather than one-size-fits-all teaching."
+    ],
+    "techStack": [
+      "Instruction",
+      "Learning Analytics",
+      "Progress Tracking",
+      "Curriculum Delivery",
+      "STEM Education"
+    ]
+  }
+}

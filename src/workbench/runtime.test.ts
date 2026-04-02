@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { __resetBootstrapFlagForTests, bootstrapExperienceRegistry } from '../content/loader';
+import { __resetExperienceRegistryForTests, getAllExperiences } from '../content/registry';
 import { WORKBENCH_DISTRICTS, WORKBENCH_LAYOUT } from '../../content/workbenches/layout';
 
 import { buildWorkbenchRuntime } from './runtime';
@@ -9,11 +11,67 @@ describe('workbench runtime', () => {
     const records = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, []);
     expect(records).toHaveLength(WORKBENCH_LAYOUT.length);
     expect(records.every((record) => record.districtDefinition.id === record.definition.district)).toBe(true);
+    expect(records[0]?.definition.presentationMode).toBe('scene-owned');
   });
 
-  it('keeps the starter draft benches free of hard placement errors', () => {
+  it('keeps the starter bench layout free of hard placement errors', () => {
     const records = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, []);
-    const errors = records.flatMap((record) => record.issues.filter((issue) => issue.severity === 'error'));
+    const errors = records.flatMap((record) =>
+      record.issues.filter(
+        (issue) => issue.severity === 'error' && issue.code !== 'missing-link',
+      ),
+    );
     expect(errors).toEqual([]);
+  });
+
+  it('links every published recruiter bench to a real experience package', () => {
+    __resetExperienceRegistryForTests();
+    __resetBootstrapFlagForTests();
+    bootstrapExperienceRegistry();
+
+    const records = buildWorkbenchRuntime(
+      WORKBENCH_LAYOUT,
+      WORKBENCH_DISTRICTS,
+      getAllExperiences(),
+    );
+    const publishedRecords = records.filter((record) => record.definition.visibility === 'published');
+    const missingLinks = publishedRecords.flatMap((record) =>
+      record.issues.filter((issue) => issue.code === 'missing-link'),
+    );
+
+    expect(publishedRecords).toHaveLength(13);
+    expect(missingLinks).toEqual([]);
+    expect(
+      publishedRecords.flatMap((record) =>
+        record.issues.filter(
+          (issue) =>
+            issue.severity === 'error' ||
+            issue.code === 'district-spacing' ||
+            issue.code === 'inside-crossroads',
+        ),
+      ),
+    ).toEqual([]);
+  });
+
+  it('surfaces an error when a linked workbench points at missing experience content', () => {
+    const layout = WORKBENCH_LAYOUT.map((definition, index) =>
+      index === 0
+        ? {
+            ...definition,
+            contentMode: 'linked' as const,
+            experienceId: 'missing-experience',
+          }
+        : definition,
+    );
+
+    const records = buildWorkbenchRuntime(layout, WORKBENCH_DISTRICTS, []);
+    expect(records[0]?.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing-link',
+          severity: 'error',
+        }),
+      ]),
+    );
   });
 });

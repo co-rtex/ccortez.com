@@ -8,17 +8,25 @@ interface LoadedExperienceScenesProps {
 }
 
 export function LoadedExperienceScenes({ workbenches }: LoadedExperienceScenesProps) {
-  const loadedSceneIds = useGameStore((state) => state.loadedSceneIds);
-  const focusedWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
+  const scenePresentationById = useGameStore((state) => state.scenePresentationById);
+  const focusedWorkbenchId = useGameStore((state) => state.inspectedWorkbenchId ?? state.panelWorkbenchId);
+  const nearbyWorkbenchId = useGameStore((state) => state.nearbyWorkbenchId);
 
   return (
     <>
-      {loadedSceneIds.map((experienceId) => {
+      {workbenches.map((workbench) => {
+        const experienceId = workbench.linkedExperience?.manifest.id;
+        if (!experienceId) {
+          return null;
+        }
+
+        const presentation = scenePresentationById[experienceId];
+        if (!presentation) {
+          return null;
+        }
+
         const sceneComponent = getLoadedSceneComponent(experienceId);
-        const workbench = workbenches.find(
-          (entry) => entry.linkedExperience?.manifest.id === experienceId,
-        );
-        if (!sceneComponent || !workbench) {
+        if (!sceneComponent) {
           return null;
         }
 
@@ -28,7 +36,10 @@ export function LoadedExperienceScenes({ workbenches }: LoadedExperienceScenesPr
           <SceneComponent
             key={experienceId}
             anchor={workbench.placement.anchor}
+            rotationY={workbench.placement.rotationY}
+            isNearby={nearbyWorkbenchId === workbench.definition.id}
             isFocused={focusedWorkbenchId === workbench.definition.id}
+            presentationState={presentation.state}
           />
         );
       })}

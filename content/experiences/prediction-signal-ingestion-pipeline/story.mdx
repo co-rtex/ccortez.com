@@ -1,0 +1,9 @@
+## Prediction Signal Ingestion Pipeline
+
+This pipeline was built to solve a foundational problem for modeling work: getting outside signals into clean, dependable tables on a schedule without turning maintenance into chaos.
+
+I created scheduled ingestion jobs that pull market and economic data from external APIs, normalize the records, and persist them into PostgreSQL. From there, I built reproducible feature tables that downstream systems could rely on consistently.
+
+Validation was a core requirement, not an afterthought. I designed the writes to be idempotent and added failure logging so the system behaved predictably when data was missing, late, or malformed.
+
+The result is a project that highlights backend reliability and data engineering fundamentals, not just model-side experimentation.

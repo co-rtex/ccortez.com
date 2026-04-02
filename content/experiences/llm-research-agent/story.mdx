@@ -1,0 +1,9 @@
+## LLM Research Agent
+
+The LLM Research Agent project came from wanting something more rigorous than a chatbot wrapper. I wanted a system that could synthesize documents into structured predictions, attach sources, and then be evaluated like an actual pipeline rather than a novelty interaction.
+
+I designed a multi-step retrieval and reasoning flow that produces parseable outputs with calibrated probabilities. Around that, I built an evaluation framework focused on retrieval precision, reasoning consistency, and output calibration so the system could be measured instead of hand-waved.
+
+Reliability work was a major part of the build. I added guardrails, retries, and Pydantic schemas so outputs remained structured and recoverable even when model responses were noisy.
+
+This project reflects how I think about LLM systems: they are only useful when orchestration, evaluation, and structured outputs are treated as first-class engineering problems.

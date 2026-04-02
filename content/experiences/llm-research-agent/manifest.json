@@ -1,0 +1,28 @@
+{
+  "id": "llm-research-agent",
+  "slug": "llm-research-agent",
+  "title": "LLM Research Agent",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Structured Prediction & Eval Framework",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Designed a multi-step research agent that synthesizes documents into sourced predictions, then measures retrieval quality, calibration, and output reliability.",
+    "impactBullets": [
+      "Designed a multi-step research agent that synthesizes documents into sourced predictions with calibrated probabilities.",
+      "Built an eval framework measuring retrieval precision, reasoning consistency, and output calibration over test suites.",
+      "Added guardrails, retry logic, and Pydantic schemas to enforce parseable, reliable structured outputs."
+    ],
+    "techStack": [
+      "Python",
+      "OpenAI API",
+      "Anthropic API",
+      "Retrieval Pipelines",
+      "Pydantic",
+      "Evaluation Frameworks"
+    ]
+  }
+}

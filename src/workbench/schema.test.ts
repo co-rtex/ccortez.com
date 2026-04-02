@@ -13,6 +13,7 @@ describe('workbench schema', () => {
   it('validates the workbench layout registry', () => {
     const layout = validateWorkbenchLayout(WORKBENCH_LAYOUT);
     expect(layout).toHaveLength(WORKBENCH_LAYOUT.length);
-    expect(layout.every((definition) => definition.visibility === 'draft')).toBe(true);
+    expect(layout.some((definition) => definition.visibility === 'published')).toBe(true);
+    expect(layout.some((definition) => definition.presentationMode === 'scene-owned')).toBe(true);
   });
 });

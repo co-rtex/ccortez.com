@@ -1,0 +1,28 @@
+{
+  "id": "quant-signal-workstation",
+  "slug": "quant-signal-workstation",
+  "title": "Quantitative Signal Workstation",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Forecasting Pipeline & Signal Workstation",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Built a market-signal platform that ingests live data, ranks equities, and explains predictions with calibrated evaluation and interpretable outputs.",
+    "impactBullets": [
+      "Built a FastAPI backend ingesting live market data, generating ranked equity signals, and serving SHAP-backed explanations.",
+      "Implemented evaluation pipelines with ROC-AUC, PR-AUC, Brier scores, and calibration curves for model reliability.",
+      "Designed reproducible feature workflows and regime-aware backtesting for evidence-based model selection."
+    ],
+    "techStack": [
+      "Python",
+      "FastAPI",
+      "scikit-learn",
+      "PostgreSQL",
+      "SHAP",
+      "Streamlit"
+    ]
+  }
+}

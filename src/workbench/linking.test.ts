@@ -12,12 +12,20 @@ const mockExperience: ExperienceRecord = {
     slug: 'linked-project',
     title: 'Linked Project',
     type: 'project',
-    worldAnchor: { x: 0, y: 0, z: 0 },
-    triggerRadius: 3,
-    loadDistances: { preload: 8, unload: 12 },
     uiContentRef: '/content/experiences/linked-project/story.mdx',
     sceneModuleRef: '/content/experiences/linked-project/scene.tsx',
     status: 'published',
+    recruiterCard: {
+      roleLabel: 'Linked Project Owner',
+      dateRange: '2026',
+      summary: 'Links a workbench to the correct experience package.',
+      impactBullets: [
+        'Joined workbench runtime records to a published experience.',
+        'Preserved the recruiter-first content contract for linked panels.',
+        'Verified linked scene content resolves from the workbench layer.',
+      ],
+      techStack: ['React', 'Vitest'],
+    },
   },
   loadStory: async () => ({
     default: () => null,

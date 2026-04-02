@@ -1,0 +1,27 @@
+{
+  "id": "footymind",
+  "slug": "footymind",
+  "title": "FootyMind",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Data-Driven Sports Analytics Application",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Built a sports analytics application that engineers match features, trains classification models, and validates season-over-season performance to avoid overfitting.",
+    "impactBullets": [
+      "Engineered features from historical match data and trained classification models using scikit-learn pipelines.",
+      "Evaluated season-over-season performance to validate model generalization and reduce overfitting risk.",
+      "Combined sports context, feature design, and model evaluation into a cleaner decision workflow."
+    ],
+    "techStack": [
+      "Python",
+      "scikit-learn",
+      "Feature Engineering",
+      "Classification Models",
+      "Sports Analytics"
+    ]
+  }
+}

@@ -3,11 +3,13 @@ import { useMemo } from 'react';
 import { Vector3 } from 'three';
 
 import { useGameStore } from '../state/gameStore';
+import { PLAYER_CAMERA_LOOK_HEIGHT } from './playerAvatar';
 import { SCENIC_FORWARD_XZ } from './scenic';
 import { getRestSpotSeatAnchor, getScenicRestSpotById } from './restSpots';
 
 const followOffset = new Vector3(0, 15, 15);
-const lookOffset = new Vector3(0, 1.2, 0);
+const editorFocusOffset = new Vector3(0, 11.5, 11.5);
+const lookOffset = new Vector3(0, PLAYER_CAMERA_LOOK_HEIGHT, 0);
 const DEFAULT_CAMERA_BLEND_SPEED = 6;
 
 export function CameraRig(): null {
@@ -18,7 +20,27 @@ export function CameraRig(): null {
     const state = useGameStore.getState();
     let blendSpeed = DEFAULT_CAMERA_BLEND_SPEED;
 
-    if (state.playerMode === 'seated' && state.activeRestSpotId) {
+    if (state.cameraMode === 'workbench-inspect') {
+      return;
+    }
+
+    if (state.cameraMode === 'editor-focus' && state.playerMode === 'exploring' && state.editorCameraTarget) {
+      targetPosition
+        .set(state.editorCameraTarget.x, state.editorCameraTarget.y, state.editorCameraTarget.z)
+        .add(editorFocusOffset);
+      lookTarget.set(
+        state.editorCameraTarget.x,
+        state.editorCameraTarget.y + 1.4,
+        state.editorCameraTarget.z,
+      );
+
+      const interpolation = 1 - Math.exp(-blendSpeed * delta);
+      camera.position.lerp(targetPosition, interpolation);
+      camera.lookAt(lookTarget);
+      return;
+    }
+
+    if (state.cameraMode === 'seated' && state.playerMode === 'seated' && state.activeRestSpotId) {
       const activeRestSpot = getScenicRestSpotById(state.activeRestSpotId);
       if (activeRestSpot) {
         const seatAnchor = getRestSpotSeatAnchor(activeRestSpot);

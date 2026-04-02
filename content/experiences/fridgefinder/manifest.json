@@ -1,0 +1,29 @@
+{
+  "id": "fridgefinder",
+  "slug": "fridgefinder",
+  "title": "FridgeFinder",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Full-Stack AI Recipe Platform",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Built an AI-assisted recipe and nutrition platform that combines FastAPI services, OpenAI-powered generation, React UI flows, and normalized PostgreSQL persistence.",
+    "impactBullets": [
+      "Built a FastAPI backend with REST endpoints to parse ingredients and generate AI recipes using OpenAI APIs.",
+      "Designed normalized PostgreSQL schemas for users and recipes, enabling scalable persistence and query performance.",
+      "Built React flows for recipe and nutrition experiences while containerizing the stack for reproducible deployment.",
+      "Shipped AI-generated recipe responses with sub-200ms endpoint latency."
+    ],
+    "techStack": [
+      "Python",
+      "FastAPI",
+      "React",
+      "OpenAI API",
+      "PostgreSQL",
+      "Docker"
+    ]
+  }
+}

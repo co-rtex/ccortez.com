@@ -1,0 +1,28 @@
+{
+  "id": "finance-ops-reconciliation",
+  "slug": "finance-ops-reconciliation",
+  "title": "Finance Ops Reconciliation Automation",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Reconciliation Automation Pipeline",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Built a finance-operations reconciliation workflow that aligns multi-source data, enforces schemas, and produces auditable outputs with much lower manual review time.",
+    "impactBullets": [
+      "Built reconciliation pipelines across multi-source datasets, cutting manual review time by 80%.",
+      "Generated audit-trail reports with schema enforcement, validation checks, and traceability logging.",
+      "Structured the workflow to make exceptions visible while keeping the core process repeatable and reliable."
+    ],
+    "techStack": [
+      "Python",
+      "Pandas",
+      "SQL",
+      "PostgreSQL",
+      "Data Validation",
+      "Audit Logging"
+    ]
+  }
+}

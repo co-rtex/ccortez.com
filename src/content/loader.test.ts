@@ -17,21 +17,28 @@ function createModuleMaps(): ContentModuleMaps {
         slug: 'published',
         title: 'Published',
         type: 'experience',
-        worldAnchor: { x: 0, y: 0, z: 0 },
-        triggerRadius: 3,
-        loadDistances: { preload: 8, unload: 12 },
         uiContentRef: 'story.mdx',
         sceneModuleRef: 'scene.tsx',
         status: 'published',
+        recruiterCard: {
+          roleLabel: 'Published Role',
+          organization: 'Published Org',
+          dateRange: '2026',
+          location: 'Madison, WI',
+          summary: 'A published recruiter-facing card.',
+          impactBullets: [
+            'Improved an important system.',
+            'Reduced operational friction for users.',
+            'Shipped a validated solution for recruiters.',
+          ],
+          techStack: ['React', 'TypeScript'],
+        },
       },
       '/content/experiences/draft/manifest.json': {
         id: 'draft',
         slug: 'draft',
         title: 'Draft',
         type: 'project',
-        worldAnchor: { x: 2, y: 0, z: 1 },
-        triggerRadius: 3,
-        loadDistances: { preload: 8, unload: 12 },
         uiContentRef: 'story.mdx',
         status: 'draft',
       },
@@ -73,5 +80,17 @@ describe('buildExperienceRecords', () => {
     delete maps.storyModules['/content/experiences/published/story.mdx'];
 
     expect(() => buildExperienceRecords(maps)).toThrow(/missing story module/i);
+  });
+
+  it('throws when legacy manifest spatial fields are still present', () => {
+    const maps = createModuleMaps();
+    maps.manifestModules['/content/experiences/draft/manifest.json'] = {
+      ...(maps.manifestModules['/content/experiences/draft/manifest.json'] as Record<string, unknown>),
+      worldAnchor: { x: 2, y: 0, z: 1 },
+      triggerRadius: 3,
+      loadDistances: { preload: 8, unload: 12 },
+    };
+
+    expect(() => buildExperienceRecords(maps)).toThrow(/unrecognized key|worldAnchor/i);
   });
 });

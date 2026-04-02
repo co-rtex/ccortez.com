@@ -13,7 +13,14 @@ import { useGameStore } from '../state/gameStore';
 import type { CollisionFeedbackReason } from '../types/collisionFeedback';
 
 import { PLAYER_START, WORLD_BOUNDS } from './constants';
+import { PlayerAvatar } from './PlayerCharacterAvatar';
 import { WORLD_COLLISION_OBSTACLES } from './biome';
+import {
+  createInitialPlayerLocomotionState,
+  resolveCameraAwareMovementInput,
+  shouldRenderPlayerAvatar,
+  stepPlayerLocomotionState,
+} from './playerAvatar';
 import { getRestSpotExitAnchor, getRestSpotSeatAnchor, getScenicRestSpotById } from './restSpots';
 import {
   findNearestWalkablePoint,
@@ -67,6 +74,7 @@ function getDefaultKeyboardMode(): boolean {
 
 export function PlayerController() {
   const groupRef = useRef<Group>(null);
+  const locomotionRef = useRef(createInitialPlayerLocomotionState());
   const pressedKeysRef = useRef<Set<string>>(new Set());
   const lastWaterDebugTimestampRef = useRef(0);
   const lastFeedbackTimestampByReasonRef = useRef<Record<CollisionFeedbackReason, number>>({
@@ -79,7 +87,9 @@ export function PlayerController() {
   const previousActiveRestSpotIdRef = useRef<string | null>(null);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
   const emitCollisionFeedback = useGameStore((state) => state.emitCollisionFeedback);
+  const clearEditorCameraTarget = useGameStore((state) => state.clearEditorCameraTarget);
   const playerMode = useGameStore((state) => state.playerMode);
+  const cameraMode = useGameStore((state) => state.cameraMode);
   const activeRestSpotId = useGameStore((state) => state.activeRestSpotId);
   const [keyboardMode, setKeyboardMode] = useState(getDefaultKeyboardMode);
   const debugWaterMode = useMemo(
@@ -113,6 +123,12 @@ export function PlayerController() {
       window.removeEventListener('resize', updateMode);
     };
   }, []);
+
+  useEffect(() => {
+    if (cameraMode === 'workbench-inspect') {
+      pressedKeysRef.current.clear();
+    }
+  }, [cameraMode]);
 
   useEffect(() => {
     if (!keyboardMode) {
@@ -168,6 +184,12 @@ export function PlayerController() {
 
         playerGroup.position.set(seatedPosition.x, seatedPosition.y, seatedPosition.z);
         setPlayerPosition(seatedPosition);
+        locomotionRef.current = stepPlayerLocomotionState(
+          locomotionRef.current,
+          { x: 0, z: 0 },
+          delta,
+          true,
+        );
         previousPlayerModeRef.current = 'seated';
         previousActiveRestSpotIdRef.current = activeRestSpotId;
         return;
@@ -198,7 +220,10 @@ export function PlayerController() {
       }
     }
 
-    const rawInput = readMovementInput(pressedKeysRef.current);
+    const rawInput = resolveCameraAwareMovementInput(
+      readMovementInput(pressedKeysRef.current),
+      cameraMode,
+    );
     const inputLength = Math.hypot(rawInput.x, rawInput.z);
     const runModifierActive = hasAnyKey(pressedKeysRef.current, keyMap.run);
     const targetSpeed = resolveMovementSpeed(keyboardMode, runModifierActive);
@@ -213,8 +238,12 @@ export function PlayerController() {
           }
         : {
             x: 0,
-            z: 0,
-          };
+          z: 0,
+        };
+
+    if (playerMode === 'exploring' && inputLength > 0) {
+      clearEditorCameraTarget();
+    }
 
     const nextPosition = resolvePlayerMovement(
       currentPosition,
@@ -291,20 +320,26 @@ export function PlayerController() {
       lastSafePositionRef.current = { x: nextPosition.x, z: nextPosition.z };
     }
 
+    locomotionRef.current = stepPlayerLocomotionState(
+      locomotionRef.current,
+      {
+        x: nextPosition.x - currentPosition.x,
+        z: nextPosition.z - currentPosition.z,
+      },
+      delta,
+      cameraMode === 'workbench-inspect' || playerMode !== 'exploring',
+    );
+
     playerGroup.position.set(nextPosition.x, nextPosition.y, nextPosition.z);
     setPlayerPosition(nextPosition);
   });
 
   return (
     <group ref={groupRef} position={[spawnPoint.x, spawnPoint.y, spawnPoint.z]}>
-      <mesh castShadow receiveShadow visible={playerMode !== 'seated'}>
-        <capsuleGeometry args={[0.4, 1, 10, 16]} />
-        <meshStandardMaterial color="#f4be99" roughness={0.52} metalness={0.05} />
-      </mesh>
-      <mesh castShadow position={[0, 0.98, 0]} visible={playerMode !== 'seated'}>
-        <sphereGeometry args={[0.34, 18, 18]} />
-        <meshStandardMaterial color="#2b2f4a" roughness={0.66} />
-      </mesh>
+      <PlayerAvatar
+        locomotionRef={locomotionRef}
+        visible={shouldRenderPlayerAvatar(playerMode)}
+      />
     </group>
   );
 }

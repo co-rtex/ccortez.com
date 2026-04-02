@@ -13,6 +13,8 @@ export function computeWorkbenchStreamingActions(
   workbenches: WorkbenchRuntimeRecord[],
   playerPosition: WorldAnchor,
   loadedExperienceIds: Set<string>,
+  pinnedWorkbenchId: string | null = null,
+  retainedExperienceIds: Set<string> = new Set(),
 ): WorkbenchStreamingActions {
   const toLoad: string[] = [];
   const toUnload: string[] = [];
@@ -25,13 +27,19 @@ export function computeWorkbenchStreamingActions(
 
     const distance = distanceXZ(workbench.placement.anchor, playerPosition);
     const isLoaded = loadedExperienceIds.has(experienceId);
+    const isPinned = pinnedWorkbenchId === workbench.definition.id;
 
-    if (!isLoaded && distance <= workbench.preloadDistance) {
+    if (!isLoaded && (isPinned || distance <= workbench.preloadDistance)) {
       toLoad.push(experienceId);
       continue;
     }
 
-    if (isLoaded && distance > workbench.unloadDistance) {
+    if (
+      isLoaded &&
+      !isPinned &&
+      !retainedExperienceIds.has(experienceId) &&
+      distance > workbench.unloadDistance
+    ) {
       toUnload.push(experienceId);
     }
   }

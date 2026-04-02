@@ -21,9 +21,9 @@ import {
   BUSH_POINTS,
   COASTAL_ROCK_POINTS,
   FLOWER_POINTS,
-  SPAWN_HUB_RADIUS,
   TREE_POINTS,
 } from './biome';
+import { SPAWN_HUB_RADIUS } from './hub';
 import {
   OCEAN_LEVEL,
   LAKE_SHORELINE_SAMPLE_DETAIL,
@@ -468,12 +468,6 @@ function NeighborhoodHub() {
     const lift = MathUtils.clamp(edgeHeightMax - centerHeight, 0, 0.24);
     return centerHeight + lift + 0.04;
   }, []);
-  const houseAnchors: Array<[number, number]> = [
-    [-4.6, 0],
-    [4.6, 0],
-    [0, 4.6],
-    [0, -4.6],
-  ];
 
   return (
     <group>
@@ -490,28 +484,6 @@ function NeighborhoodHub() {
       <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, centerY + 0.29, 0]}>
         <ringGeometry args={[SPAWN_HUB_RADIUS - 0.8, SPAWN_HUB_RADIUS - 0.35, 48]} />
         <meshStandardMaterial color="#f6e7c8" roughness={0.84} />
-      </mesh>
-
-      {houseAnchors.map(([x, z], index) => (
-        <group key={`hub-house-${index}`} position={[x, centerY + 0.22, z]}>
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[1.55, 1.1, 1.55]} />
-            <meshStandardMaterial color="#f5dfbf" roughness={0.82} />
-          </mesh>
-          <mesh castShadow position={[0, 0.96, 0]}>
-            <coneGeometry args={[1.18, 0.85, 4]} />
-            <meshStandardMaterial color="#be7256" roughness={0.84} />
-          </mesh>
-        </group>
-      ))}
-
-      <mesh castShadow position={[0, centerY + 0.6, 0]}>
-        <cylinderGeometry args={[0.22, 0.28, 1.2, 12]} />
-        <meshStandardMaterial color="#6d7577" roughness={0.8} metalness={0.18} />
-      </mesh>
-      <mesh castShadow position={[0, centerY + 1.42, 0]}>
-        <sphereGeometry args={[0.34, 14, 14]} />
-        <meshStandardMaterial color="#ffe9b9" emissive="#f8bc6d" emissiveIntensity={0.45} roughness={0.3} />
       </mesh>
     </group>
   );

@@ -4,25 +4,25 @@ Open-world portfolio backbone built with `Vite + React + TypeScript + React Thre
 
 ## What Exists Now
 
-- Single-world overworld scene (desktop-first) with fixed angled camera.
-- WASD player movement with world bounds and obstacle collision.
-- Landmark proxies generated from local manifests.
-- Data-driven workbench layout registry with road-based districts.
-- Proximity prompt + expandable details panel.
-- Streaming manager that preloads/unloads scene modules by distance.
-- Local content contracts (`JSON + MDX + optional scene module`).
-- CLI scaffolders for new experiences and draft workbenches.
+- Single-world recruiter-focused overworld with a fixed exploration camera.
+- Desktop-first WASD traversal with run, collision, water blocking, recovery, and scenic rest spots.
+- Workbench-led districts for published work experience and project content.
+- Recruiter-first detail panels that show summary metadata before long-form story content.
+- Distance-based scene streaming driven by workbench runtime records, not manifest coordinates.
+- Dev-only workbench editor for placement, validation, selection, and layout export.
 
 ## Scripts
 
-- `pnpm dev`: run local dev server.
-- `pnpm build`: typecheck and build.
-- `pnpm test`: run unit tests with coverage.
-- `pnpm lint`: run ESLint.
-- `pnpm new:experience <id> --title "Title" --type experience|project`: scaffold a new experience package.
-- `pnpm new:workbench <id> --title "Title" --district <district>`: append a draft workbench placeholder to the central layout registry.
+Examples below use `npm`, but the same package scripts work with other package managers.
 
-## Experience Package Contract
+- `npm run dev`: run the local Vite dev server.
+- `npm run build`: typecheck and build production assets.
+- `npm run test`: run Vitest with coverage.
+- `npm run lint`: run ESLint.
+- `npm run new:experience -- <id> --title "Title" --type experience|project`: scaffold a content package.
+- `npm run new:workbench -- <id> --title "Title" --district <district>`: append a draft workbench to the central layout registry.
+
+## Content Contract
 
 Each experience lives in `content/experiences/<id>/`:
 
@@ -31,33 +31,45 @@ Each experience lives in `content/experiences/<id>/`:
 - `scene.tsx` (optional)
 - `assets/`
 
-Manifest fields:
+Experience manifests are content-focused. They define:
 
 - `id`, `slug`, `title`, `type`
-- `worldAnchor`
-- `triggerRadius`
-- `loadDistances` (`preload`, `unload`)
 - `uiContentRef`
 - `sceneModuleRef` (optional)
 - `status` (`draft`, `published`)
+- `recruiterCard` for published content
 
-`draft` entries are hidden from the world until promoted to `published`.
+Scene placement, interaction radius, visibility, and streaming are owned by workbench layout records in `content/workbenches/layout.ts`.
+
+Optional scene modules receive runtime placement props from the workbench layer:
+
+- `anchor`
+- `rotationY`
+- `isNearby`
+- `isFocused`
 
 ## Workbench Layout System
 
-Workbench placement now lives in `content/workbenches/layout.ts`, not inside each experience manifest.
+Workbench layout is the live world model.
 
 - Workbenches are the in-world interaction objects.
-- Each workbench can either link to one experience package or act as a placeholder draft.
-- Placement defaults to named road corridors using `distanceAlong + lateralOffset`, with freeform placement available for special cases.
+- Each workbench can link to one experience package or remain a draft placeholder.
+- Placement can be freeform or corridor-relative.
+- Interaction radius and scene streaming distance are derived from the workbench definition.
 - In dev mode, add `?workbenchEditor=1` or press `Ctrl+Shift+W` to open the layout editor.
 
-## Next Workflow
+## Current Product Scope
 
-Backbone is intentionally modular so each future experience can be delivered one at a time:
+This stabilization baseline is intentionally recruiter-first.
 
-1. Create or tune a draft workbench in `content/workbenches/layout.ts` or via `pnpm new:workbench`.
-2. Position and refine it with the dev workbench editor.
+- Published districts: `work-experience`, `projects`
+- Draft-only future districts: `personal-life`, `clubs`, `extracurriculars`
+- Mobile remains a fallback browsing mode, not a full traversal target
+
+## Recommended Workflow
+
+1. Create or tune a draft workbench in `content/workbenches/layout.ts` or via `new:workbench`.
+2. Refine placement in the dev workbench editor.
 3. Create or update the linked experience package in `content/experiences/<id>/`.
-4. Link the workbench by `experienceId` and publish it when ready.
-5. Validate with tests, then checkpoint the world.
+4. Add recruiter metadata before publishing recruiter-facing content.
+5. Run lint, tests, and a production build before continuing with new features.

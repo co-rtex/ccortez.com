@@ -1,6 +1,8 @@
 import { MathUtils } from 'three';
 
+import { PUBLISHED_WORKBENCH_CLEAR_ZONES } from '../../content/workbenches/layout';
 import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
+import { SPAWN_HUB_RADIUS } from './hub';
 import {
   OCEAN_LEVEL,
   getIslandDistanceNormalized,
@@ -21,13 +23,13 @@ export interface RockPoint extends ScatterPoint {
   size: number;
 }
 
-export const SPAWN_HUB_RADIUS = 8.4;
 export const TREE_TRUNK_RADIUS = 0.27;
 export const TREE_TRUNK_HEIGHT = 2.1;
 export const TREE_COLLIDER_BUFFER = 0.12;
 export const TREE_COLLIDER_RADIUS = TREE_TRUNK_RADIUS + TREE_COLLIDER_BUFFER;
 export const ROCK_CORE_COLLIDER_SCALE = 0.72;
 export const ROCK_COLLIDER_BUFFER = 0.04;
+export const WORKBENCH_GROUND_COVER_CLEAR_RADIUS = 2.2;
 
 export const ROAD_PATH_NETWORK_XZ: Array<Array<[number, number]>> = [
   [
@@ -198,6 +200,16 @@ function isInNeighborhood(pointX: number, pointZ: number): boolean {
   return Math.hypot(pointX, pointZ) < SPAWN_HUB_RADIUS + 1.8;
 }
 
+function isInsideWorkbenchClearZone(
+  pointX: number,
+  pointZ: number,
+  radius = Number.POSITIVE_INFINITY,
+): boolean {
+  return PUBLISHED_WORKBENCH_CLEAR_ZONES.some((zone) =>
+    Math.hypot(pointX - zone.x, pointZ - zone.z) < Math.min(zone.radius, radius),
+  );
+}
+
 function isGroundedPlacement(pointX: number, pointZ: number, radiusPadding = 0.38): boolean {
   return isPointWalkable(pointX, pointZ, radiusPadding);
 }
@@ -211,6 +223,7 @@ export const TREE_POINTS: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.38) ||
     distanceToRoad(x, z) < 1.75 ||
     isInNeighborhood(x, z) ||
+    isInsideWorkbenchClearZone(x, z) ||
     getIslandDistanceNormalized(x, z) > 0.9,
 });
 
@@ -223,6 +236,7 @@ export const BUSH_POINTS: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.28) ||
     distanceToRoad(x, z) < 1.2 ||
     isInNeighborhood(x, z) ||
+    isInsideWorkbenchClearZone(x, z, WORKBENCH_GROUND_COVER_CLEAR_RADIUS) ||
     getIslandDistanceNormalized(x, z) > 0.94,
 });
 
@@ -234,6 +248,7 @@ export const FLOWER_POINTS: ScatterPoint[] = generateScatterPoints({
     !isGroundedPlacement(x, z, 0.22) ||
     isNearLake(x, z, 0.2) ||
     Math.hypot(x, z) < SPAWN_HUB_RADIUS + 2.4 ||
+    isInsideWorkbenchClearZone(x, z, WORKBENCH_GROUND_COVER_CLEAR_RADIUS) ||
     getIslandDistanceNormalized(x, z) > 0.95,
 });
 
@@ -246,6 +261,7 @@ const rawBoulderPoints: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.35) ||
     distanceToRoad(x, z) < 1.35 ||
     isInNeighborhood(x, z) ||
+    isInsideWorkbenchClearZone(x, z) ||
     getIslandDistanceNormalized(x, z) > 0.91,
 });
 

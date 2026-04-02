@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { getLoadedSceneIds, loadExperienceScene, unloadExperienceScene } from '../content/runtime';
 import { useGameStore } from '../state/gameStore';
 import { getNearestWorkbenchInRange } from '../workbench/interaction';
+import { computeWorkbenchScenePresentation } from '../workbench/presentation';
 import { computeWorkbenchStreamingActions } from '../workbench/streaming';
 
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -22,7 +23,24 @@ export function WorkbenchDirector({ workbenches }: WorkbenchDirectorProps): null
     }
 
     const loadedIds = new Set(state.loadedSceneIds);
-    const actions = computeWorkbenchStreamingActions(workbenches, state.playerPosition, loadedIds);
+    const nextPresentation = computeWorkbenchScenePresentation(
+      workbenches,
+      state.playerPosition,
+      loadedIds,
+      state.scenePresentationById,
+      state.inspectedWorkbenchId ?? state.panelWorkbenchId,
+      performance.now(),
+    );
+
+    state.setScenePresentationById(nextPresentation);
+
+    const actions = computeWorkbenchStreamingActions(
+      workbenches,
+      state.playerPosition,
+      loadedIds,
+      state.inspectedWorkbenchId,
+      new Set(Object.keys(nextPresentation)),
+    );
 
     if (actions.toUnload.length > 0) {
       for (const id of actions.toUnload) {

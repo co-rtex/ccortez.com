@@ -1,0 +1,28 @@
+{
+  "id": "prediction-signal-ingestion-pipeline",
+  "slug": "prediction-signal-ingestion-pipeline",
+  "title": "Prediction Signal Ingestion Pipeline",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Scheduled Data Ingestion Pipeline",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Built scheduled ingestion jobs that normalize market and economic signals into dependable PostgreSQL tables with validation, scheduling, and failure-aware writes.",
+    "impactBullets": [
+      "Built scheduled ingestion pipelines pulling market and economic signals into normalized PostgreSQL tables.",
+      "Engineered reproducible feature tables and automated validation with idempotent writes and failure logging.",
+      "Turned raw external feeds into dependable downstream inputs for modeling and decision workflows."
+    ],
+    "techStack": [
+      "Python",
+      "Pandas",
+      "REST APIs",
+      "PostgreSQL",
+      "Scheduling",
+      "Data Validation"
+    ]
+  }
+}

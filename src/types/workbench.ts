@@ -17,6 +17,7 @@ export type WorkbenchDistrict =
 export type WorkbenchVisibility = 'draft' | 'published';
 export type WorkbenchContentMode = 'linked' | 'placeholder';
 export type WorkbenchPriorityTier = 'anchor' | 'standard' | 'satellite';
+export type WorkbenchPresentationMode = 'kit' | 'scene-owned' | 'kit-plus-scene';
 
 export type WorkbenchCorridorId =
   | 'south-spine'
@@ -117,6 +118,7 @@ export interface WorkbenchDefinition {
   district: WorkbenchDistrict;
   visibility: WorkbenchVisibility;
   contentMode: WorkbenchContentMode;
+  presentationMode: WorkbenchPresentationMode;
   experienceId?: string;
   placement: WorkbenchPlacement;
   interactionRadius: number;

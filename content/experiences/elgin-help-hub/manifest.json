@@ -1,0 +1,27 @@
+{
+  "id": "elgin-help-hub",
+  "slug": "elgin-help-hub",
+  "title": "Elgin Help Hub",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Community Resource Web Platform",
+    "organization": "Personal Project",
+    "dateRange": "2026",
+    "summary": "Built a responsive community-resource platform focused on speed, accessibility, and reliable listings for people trying to find local aid services quickly.",
+    "impactBullets": [
+      "Built a responsive web platform enabling fast access to local aid resources using React and REST services.",
+      "Structured data ingestion pipelines to standardize community listings for reliability and future expansion.",
+      "Designed the platform around practical usefulness, not just a static directory experience."
+    ],
+    "techStack": [
+      "React",
+      "REST APIs",
+      "Responsive UI",
+      "Data Ingestion",
+      "Community Platforms"
+    ]
+  }
+}

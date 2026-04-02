@@ -9,9 +9,14 @@ export interface WorldAnchor {
   z: number;
 }
 
-export interface LoadDistances {
-  preload: number;
-  unload: number;
+export interface ExperienceRecruiterCard {
+  roleLabel: string;
+  organization?: string;
+  dateRange: string;
+  location?: string;
+  summary: string;
+  impactBullets: string[];
+  techStack: string[];
 }
 
 export interface ExperienceManifest {
@@ -19,12 +24,10 @@ export interface ExperienceManifest {
   slug: string;
   title: string;
   type: ExperienceType;
-  worldAnchor: WorldAnchor;
-  triggerRadius: number;
-  loadDistances: LoadDistances;
   uiContentRef: string;
   sceneModuleRef?: string;
   status: ExperienceStatus;
+  recruiterCard?: ExperienceRecruiterCard;
 }
 
 export type ExperienceStoryComponent = ComponentType;
@@ -35,8 +38,13 @@ export interface ExperienceStoryModule {
 
 export interface ExperienceSceneProps {
   anchor: WorldAnchor;
+  rotationY: number;
+  isNearby: boolean;
   isFocused: boolean;
+  presentationState: ExperienceScenePresentationState;
 }
+
+export type ExperienceScenePresentationState = 'entering' | 'visible' | 'exiting';
 
 export type ExperienceSceneComponent = ComponentType<ExperienceSceneProps>;
 

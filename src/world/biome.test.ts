@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { PUBLISHED_WORKBENCH_CLEAR_ZONES } from '../../content/workbenches/layout';
 import {
   BOULDER_POINTS,
   BUSH_POINTS,
@@ -36,6 +37,16 @@ function samplePathPoints(polyline: Array<[number, number]>): Array<{ x: number;
   }
 
   return points;
+}
+
+function isInsideClearZone(
+  point: { x: number; z: number },
+  radiusOverride?: number,
+): boolean {
+  return PUBLISHED_WORKBENCH_CLEAR_ZONES.some((zone) => {
+    const radius = radiusOverride ?? zone.radius;
+    return Math.hypot(point.x - zone.x, point.z - zone.z) < radius;
+  });
 }
 
 describe('biome placement', () => {
@@ -125,6 +136,26 @@ describe('biome placement', () => {
         rock.size * ROCK_CORE_COLLIDER_SCALE + ROCK_COLLIDER_BUFFER,
         8,
       );
+    }
+  });
+
+  it('keeps workbench clear zones free of tree and boulder obstacles', () => {
+    for (const tree of TREE_POINTS) {
+      expect(isInsideClearZone(tree)).toBe(false);
+    }
+
+    for (const boulder of BOULDER_POINTS) {
+      expect(isInsideClearZone(boulder)).toBe(false);
+    }
+  });
+
+  it('keeps immediate workbench footprints free of bushes and flowers', () => {
+    for (const bush of BUSH_POINTS) {
+      expect(isInsideClearZone(bush, 2.2)).toBe(false);
+    }
+
+    for (const flower of FLOWER_POINTS) {
+      expect(isInsideClearZone(flower, 2.2)).toBe(false);
     }
   });
 });

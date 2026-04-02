@@ -11,9 +11,13 @@ export interface NewWorkbenchTemplate {
   title: string;
   visibility: 'draft';
   contentMode: 'placeholder';
+  presentationMode: 'scene-owned';
   placement: {
-    mode: 'corridor';
-    corridorId: string;
+    mode: 'freeform';
+    x: number;
+    z: number;
+    rotationY: number;
+    yOffset: number;
   };
 }
 

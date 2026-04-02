@@ -1,9 +1,15 @@
 import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
+import type { ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial } from 'three';
 
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
+import {
+  shouldShowPersistentWorkbenchTitleBadge,
+  shouldShowWorkbenchProximityPrompt,
+} from './workbenchLandmarkLabels';
 import type {
   WorkbenchAccentMaterial,
   WorkbenchHeroProp,
@@ -318,6 +324,7 @@ interface WorkbenchLandmarkProps {
   isNearby: boolean;
   isSelected: boolean;
   editorEnabled: boolean;
+  interactionsDisabled?: boolean;
   onOpen: (id: string) => void;
   onSelect: (id: string) => void;
 }
@@ -327,6 +334,7 @@ export function WorkbenchLandmark({
   isNearby,
   isSelected,
   editorEnabled,
+  interactionsDisabled = false,
   onOpen,
   onSelect,
 }: WorkbenchLandmarkProps) {
@@ -343,6 +351,9 @@ export function WorkbenchLandmark({
     [editorEnabled, workbench.definition.visualRecipe.palette, workbench.definition.visibility],
   );
   const accentMaterial = accentMaterialMap[workbench.definition.visualRecipe.accentMaterial];
+  const presentationMode = workbench.definition.presentationMode;
+  const rendersKit = presentationMode !== 'scene-owned';
+  const ringRadius = rendersKit ? 1.08 : 2.38;
   const issueSeverity = workbench.issues.some((issue) => issue.severity === 'error')
     ? 'error'
     : workbench.issues.length > 0
@@ -374,8 +385,19 @@ export function WorkbenchLandmark({
     }
   });
 
-  const indicatorColor =
-    issueSeverity === 'error' ? '#f48f5c' : issueSeverity === 'warning' ? '#f4cc82' : palette.accent;
+  const indicatorColor = getWorkbenchRingColor(workbench, issueSeverity, palette.accent);
+
+  function handleClick(event: ThreeEvent<MouseEvent>): void {
+    if (interactionsDisabled) {
+      return;
+    }
+
+    event.stopPropagation();
+    onSelect(workbench.definition.id);
+    if (!editorEnabled) {
+      onOpen(workbench.definition.id);
+    }
+  }
 
   return (
     <group
@@ -386,56 +408,69 @@ export function WorkbenchLandmark({
         workbench.placement.anchor.z,
       ]}
       rotation={[0, workbench.placement.rotationY, 0]}
-      onPointerDown={(event) => {
-        event.stopPropagation();
-        onSelect(workbench.definition.id);
-        onOpen(workbench.definition.id);
-      }}
+      onClick={handleClick}
       onPointerOver={() => {
-        document.body.style.cursor = 'pointer';
+        if (!interactionsDisabled) {
+          document.body.style.cursor = 'pointer';
+        }
       }}
       onPointerOut={() => {
         document.body.style.cursor = 'default';
       }}
     >
-      <mesh castShadow receiveShadow position={[0, 0.12, 0]}>
-        <cylinderGeometry args={[1.18, 1.36, 0.26, 24]} />
-        <meshStandardMaterial color={palette.base} roughness={0.52} metalness={0.18} />
-      </mesh>
+      {rendersKit ? (
+        <mesh castShadow receiveShadow position={[0, 0.12, 0]}>
+          <cylinderGeometry args={[1.18, 1.36, 0.26, 24]} />
+          <meshStandardMaterial color={palette.base} roughness={0.52} metalness={0.18} />
+        </mesh>
+      ) : (
+        <mesh position={[0, 1.24, 0]}>
+          <boxGeometry args={[5.8, 2.8, 5.8]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
 
-      <mesh position={[0, 0.22, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1.08, 0.08, 10, 32]} />
+      <mesh position={[0, rendersKit ? 0.22 : 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[ringRadius, rendersKit ? 0.08 : 0.055, 10, 48]} />
         <meshStandardMaterial
           ref={ringMaterialRef}
           color={indicatorColor}
           emissive={indicatorColor}
-          emissiveIntensity={0.34}
+          emissiveIntensity={rendersKit ? 0.34 : 0.48}
+          transparent={!rendersKit}
+          opacity={rendersKit ? 1 : 0.82}
           roughness={accentMaterial.roughness}
           metalness={accentMaterial.metalness}
         />
       </mesh>
 
-      <mesh castShadow position={[-0.52, 0.26, -0.26]}>
-        <boxGeometry args={[0.12, 0.52, 0.12]} />
-        <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
-      </mesh>
-      <mesh castShadow position={[0.52, 0.26, -0.26]}>
-        <boxGeometry args={[0.12, 0.52, 0.12]} />
-        <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
-      </mesh>
-      <mesh castShadow position={[-0.52, 0.26, 0.26]}>
-        <boxGeometry args={[0.12, 0.52, 0.12]} />
-        <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
-      </mesh>
-      <mesh castShadow position={[0.52, 0.26, 0.26]}>
-        <boxGeometry args={[0.12, 0.52, 0.12]} />
-        <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
-      </mesh>
+      {rendersKit ? (
+        <>
+          <mesh castShadow position={[-0.52, 0.26, -0.26]}>
+            <boxGeometry args={[0.12, 0.52, 0.12]} />
+            <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
+          </mesh>
+          <mesh castShadow position={[0.52, 0.26, -0.26]}>
+            <boxGeometry args={[0.12, 0.52, 0.12]} />
+            <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
+          </mesh>
+          <mesh castShadow position={[-0.52, 0.26, 0.26]}>
+            <boxGeometry args={[0.12, 0.52, 0.12]} />
+            <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
+          </mesh>
+          <mesh castShadow position={[0.52, 0.26, 0.26]}>
+            <boxGeometry args={[0.12, 0.52, 0.12]} />
+            <meshStandardMaterial color={palette.trim} roughness={0.42} metalness={0.2} />
+          </mesh>
+        </>
+      ) : null}
 
-      {renderArchetypeTop(workbench.definition.visualRecipe.archetype, palette)}
-      {renderPropKit(workbench.definition.visualRecipe.propKit, palette)}
+      {rendersKit ? renderArchetypeTop(workbench.definition.visualRecipe.archetype, palette) : null}
+      {rendersKit ? renderPropKit(workbench.definition.visualRecipe.propKit, palette) : null}
 
-      <group ref={heroRef}>{renderHeroProp(workbench.definition.visualRecipe.heroProp, palette)}</group>
+      {rendersKit ? (
+        <group ref={heroRef}>{renderHeroProp(workbench.definition.visualRecipe.heroProp, palette)}</group>
+      ) : null}
 
       {editorEnabled && workbench.definition.visibility === 'draft' ? (
         <Html center distanceFactor={16} position={[0, 2.2, 0]}>
@@ -443,14 +478,22 @@ export function WorkbenchLandmark({
         </Html>
       ) : null}
 
-      {isNearby && workbench.definition.visibility === 'published' ? (
-        <Html center distanceFactor={16} position={[0, 2.7, 0]}>
-          <div className="landmark-tooltip">Press E or Click</div>
+      {shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled) ? (
+        <Html center distanceFactor={16} position={[0, rendersKit ? 2.95 : 4.15, 0]}>
+          <div className="landmark-tooltip landmark-tooltip--title">{workbench.definition.title}</div>
+        </Html>
+      ) : null}
+
+      {shouldShowWorkbenchProximityPrompt(workbench, isNearby) ? (
+        <Html center distanceFactor={16} position={[0, rendersKit ? 2.38 : 3.45, 0]}>
+          <div className="landmark-tooltip">
+            {editorEnabled ? 'Click to select. Press E to open.' : 'Press E or Click'}
+          </div>
         </Html>
       ) : null}
 
       {editorEnabled && isSelected ? (
-        <Html center distanceFactor={18} position={[0, 3.3, 0]}>
+        <Html center distanceFactor={18} position={[0, rendersKit ? 3.3 : 4.1, 0]}>
           <div className="landmark-tooltip landmark-tooltip--editor">{workbench.definition.title}</div>
         </Html>
       ) : null}

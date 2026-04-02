@@ -1,0 +1,28 @@
+{
+  "id": "wisconsin-dnr-data-entry",
+  "slug": "wisconsin-dnr-data-entry",
+  "title": "Wisconsin Department of Natural Resources",
+  "type": "experience",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Data Entry Specialist",
+    "organization": "Wisconsin Department of Natural Resources",
+    "dateRange": "Dec 2025 - Present",
+    "location": "Madison, WI",
+    "summary": "Transforms unstructured regulatory submissions into reliable internal datasets, balancing accuracy, anomaly detection, and consistency in an environmental data context.",
+    "impactBullets": [
+      "Transformed unstructured regulatory submissions into validated datasets supporting environmental analysis.",
+      "Performed consistency checks and anomaly detection to maintain integrity across internal data systems.",
+      "Improved data reliability by turning manual, inconsistent inputs into structured records that teams could trust."
+    ],
+    "techStack": [
+      "Data Validation",
+      "Quality Control",
+      "Dataset Structuring",
+      "Regulatory Data",
+      "Operational Accuracy"
+    ]
+  }
+}

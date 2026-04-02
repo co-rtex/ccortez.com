@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react';
 
 import { WORKBENCH_DISTRICTS } from '../../content/workbenches/layout';
-import { projectPointOntoCorridor } from '../workbench/placement';
+import {
+  switchWorkbenchPlacementMode,
+  type WorkbenchEditorTransformMode,
+} from '../workbench/editor';
 
 import type { ExperienceRecord } from '../types/experience';
 import type {
@@ -13,6 +16,7 @@ import type {
   WorkbenchDistrict,
   WorkbenchHeroProp,
   WorkbenchPaletteToken,
+  WorkbenchPresentationMode,
   WorkbenchPropKit,
 } from '../types/workbench';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -22,12 +26,19 @@ interface WorkbenchEditorOverlayProps {
   records: WorkbenchRuntimeRecord[];
   experiences: ExperienceRecord[];
   selectedWorkbenchId: string | null;
+  transformMode: WorkbenchEditorTransformMode;
   exportSource: string;
   onSelectWorkbench: (id: string) => void;
   onAddWorkbench: () => void;
   onDuplicateWorkbench: (id: string) => void;
   onDeleteWorkbench: (id: string) => void;
   onUpdateWorkbench: (id: string, updater: (current: WorkbenchDefinition) => WorkbenchDefinition) => void;
+  onTransformModeChange: (mode: WorkbenchEditorTransformMode) => void;
+  onOpenSelectedWorkbench: () => void;
+  onConvertSelectedToFreeform: () => void;
+  onSnapSelected: () => void;
+  onResetSelected: () => void;
+  onFocusSelected: () => void;
 }
 
 const categoryOptions: WorkbenchCategory[] = [
@@ -89,6 +100,12 @@ const animationOptions: Array<WorkbenchAnimationStyle | ''> = [
   'still',
 ];
 
+const presentationModeOptions: WorkbenchPresentationMode[] = [
+  'kit',
+  'scene-owned',
+  'kit-plus-scene',
+];
+
 function formatLabel(value: string): string {
   return value
     .split('-')
@@ -106,12 +123,19 @@ export function WorkbenchEditorOverlay({
   records,
   experiences,
   selectedWorkbenchId,
+  transformMode,
   exportSource,
   onSelectWorkbench,
   onAddWorkbench,
   onDuplicateWorkbench,
   onDeleteWorkbench,
   onUpdateWorkbench,
+  onTransformModeChange,
+  onOpenSelectedWorkbench,
+  onConvertSelectedToFreeform,
+  onSnapSelected,
+  onResetSelected,
+  onFocusSelected,
 }: WorkbenchEditorOverlayProps) {
   const [copied, setCopied] = useState(false);
   const selectedDefinition = useMemo(
@@ -172,6 +196,18 @@ export function WorkbenchEditorOverlay({
 
       {selectedDefinition ? (
         <>
+          <section className="workbench-editor__selection">
+            <div>
+              <p className="workbench-editor__eyebrow">Selected Bench</p>
+              <h3>{selectedDefinition.title}</h3>
+            </div>
+            <div className="workbench-editor__selection-meta">
+              <span>{formatLabel(transformMode)}</span>
+              <span>{selectedDefinition.placement.mode}</span>
+              <span>{selectedRecord?.issues.length ? `${selectedRecord.issues.length} issue(s)` : 'Valid'}</span>
+            </div>
+          </section>
+
           <section className="workbench-editor__toolbar">
             <button type="button" className="panel-close" onClick={() => onDuplicateWorkbench(selectedDefinition.id)}>
               Duplicate
@@ -190,6 +226,48 @@ export function WorkbenchEditorOverlay({
               }
             >
               {selectedDefinition.visibility === 'published' ? 'Mark Draft' : 'Publish'}
+            </button>
+          </section>
+
+          <section className="workbench-editor__transform-bar">
+            <button
+              type="button"
+              className={`panel-close ${transformMode === 'move' ? 'workbench-editor__tool--active' : ''}`}
+              onClick={() => onTransformModeChange('move')}
+            >
+              Move (`G`)
+            </button>
+            <button
+              type="button"
+              className={`panel-close ${transformMode === 'rotate' ? 'workbench-editor__tool--active' : ''}`}
+              onClick={() => onTransformModeChange('rotate')}
+            >
+              Rotate (`R`)
+            </button>
+            <button
+              type="button"
+              className={`panel-close ${transformMode === 'height' ? 'workbench-editor__tool--active' : ''}`}
+              onClick={() => onTransformModeChange('height')}
+            >
+              Height (`T`)
+            </button>
+            <button type="button" className="panel-close" onClick={onSnapSelected}>
+              Snap (`C`)
+            </button>
+          </section>
+
+          <section className="workbench-editor__toolbar">
+            <button type="button" className="panel-close" onClick={onOpenSelectedWorkbench}>
+              Open Selected (`E`)
+            </button>
+            <button type="button" className="panel-close" onClick={onConvertSelectedToFreeform}>
+              Convert to Freeform
+            </button>
+            <button type="button" className="panel-close" onClick={onResetSelected}>
+              Reset Seed
+            </button>
+            <button type="button" className="panel-close" onClick={onFocusSelected}>
+              Focus Camera (`F`)
             </button>
           </section>
 
@@ -283,6 +361,24 @@ export function WorkbenchEditorOverlay({
               </select>
             </label>
             <label>
+              <span>Presentation</span>
+              <select
+                value={selectedDefinition.presentationMode}
+                onChange={(event) =>
+                  updateSelected((current) => ({
+                    ...current,
+                    presentationMode: event.target.value as WorkbenchPresentationMode,
+                  }))
+                }
+              >
+                {presentationModeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {formatLabel(option)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
               <span>Linked Experience</span>
               <select
                 value={selectedDefinition.experienceId ?? ''}
@@ -350,48 +446,12 @@ export function WorkbenchEditorOverlay({
               <select
                 value={selectedDefinition.placement.mode}
                 onChange={(event) =>
-                  updateSelected((current) => {
-                    if (event.target.value === current.placement.mode) {
-                      return current;
-                    }
-
-                    if (event.target.value === 'freeform') {
-                      const record = selectedRecord;
-                      return record
-                        ? {
-                            ...current,
-                            placement: {
-                              mode: 'freeform',
-                              x: record.placement.anchor.x,
-                              z: record.placement.anchor.z,
-                              rotationY: record.placement.rotationY,
-                              yOffset: current.placement.yOffset,
-                            },
-                          }
-                        : current;
-                    }
-
-                    const district = WORKBENCH_DISTRICTS.find((entry) => entry.id === current.district);
-                    const corridorId = district?.corridors[0] ?? 'east-promenade';
-                    const record = selectedRecord;
-                    const projected = projectPointOntoCorridor(
-                      corridorId,
-                      record?.placement.anchor.x ?? 0,
-                      record?.placement.anchor.z ?? 0,
-                    );
-                    return {
-                      ...current,
-                      placement: {
-                        mode: 'corridor',
-                        corridorId,
-                        distanceAlong: projected.distanceAlong,
-                        lateralOffset: projected.lateralOffset,
-                        yawMode: 'follow-road',
-                        yawOffset: 0,
-                        yOffset: current.placement.yOffset,
-                      },
-                    };
-                  })
+                  updateSelected((current) =>
+                    switchWorkbenchPlacementMode(
+                      current,
+                      event.target.value as WorkbenchDefinition['placement']['mode'],
+                    ),
+                  )
                 }
               >
                 <option value="corridor">Corridor</option>
@@ -595,6 +655,25 @@ export function WorkbenchEditorOverlay({
                 </label>
               </>
             )}
+          </section>
+
+          <section className="workbench-editor__subgrid workbench-editor__subgrid--resolved">
+            <label>
+              <span>Resolved X</span>
+              <input value={selectedRecord?.placement.anchor.x.toFixed(2) ?? ''} readOnly />
+            </label>
+            <label>
+              <span>Resolved Z</span>
+              <input value={selectedRecord?.placement.anchor.z.toFixed(2) ?? ''} readOnly />
+            </label>
+            <label>
+              <span>Resolved Y</span>
+              <input value={selectedRecord?.placement.anchor.y.toFixed(2) ?? ''} readOnly />
+            </label>
+            <label>
+              <span>Resolved Rotation Y</span>
+              <input value={selectedRecord?.placement.rotationY.toFixed(2) ?? ''} readOnly />
+            </label>
           </section>
 
           <section className="workbench-editor__subgrid">
