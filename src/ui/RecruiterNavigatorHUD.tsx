@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import {
   deriveRecruiterNavigatorData,
@@ -31,6 +31,7 @@ interface RecruiterNavigatorContentProps {
     yPercent: number;
   };
   onWorkbenchOpen: (workbenchId: string) => void;
+  onHide?: () => void;
 }
 
 function renderShortlistSection(
@@ -75,13 +76,26 @@ function RecruiterNavigatorContent({
   sections,
   playerMarker,
   onWorkbenchOpen,
+  onHide,
 }: RecruiterNavigatorContentProps) {
   return (
     <>
       <header className="recruiter-navigator__header">
-        <div>
-          <p className="recruiter-navigator__eyebrow">Recruiter Guide</p>
-          <h2>Start Here</h2>
+        <div className="recruiter-navigator__header-row">
+          <div>
+            <p className="recruiter-navigator__eyebrow">Recruiter Guide</p>
+            <h2>Start Here</h2>
+          </div>
+          {onHide ? (
+            <button
+              type="button"
+              className="recruiter-navigator__visibility-button"
+              onClick={onHide}
+              aria-label="Hide recruiter guide"
+            >
+              Hide
+            </button>
+          ) : null}
         </div>
         <div className="recruiter-navigator__counts" aria-label="Published highlight counts">
           <span>{counts.experience} experiences</span>
@@ -153,6 +167,7 @@ export function RecruiterNavigatorHUD({
   mobileLiteMode,
   onWorkbenchOpen,
 }: RecruiterNavigatorHUDProps) {
+  const [isHidden, setIsHidden] = useState(false);
   const data = useMemo(
     () => deriveRecruiterNavigatorData(workbenches, playerPosition, activeWorkbenchId, nearbyWorkbenchId),
     [activeWorkbenchId, nearbyWorkbenchId, playerPosition, workbenches],
@@ -181,9 +196,31 @@ export function RecruiterNavigatorHUD({
     );
   }
 
+  if (isHidden) {
+    return (
+      <div className="recruiter-navigator recruiter-navigator--collapsed">
+        <button
+          type="button"
+          className="recruiter-navigator__visibility-button recruiter-navigator__visibility-button--show"
+          onClick={() => setIsHidden(false)}
+          aria-label="Show recruiter guide"
+        >
+          Show Recruiter Guide
+        </button>
+      </div>
+    );
+  }
+
   return (
     <section className="recruiter-navigator" aria-label="Recruiter guide">
-      {content}
+      <RecruiterNavigatorContent
+        counts={data.counts}
+        markers={data.markers}
+        sections={data.shortlistSections}
+        playerMarker={data.playerMarker}
+        onWorkbenchOpen={onWorkbenchOpen}
+        onHide={() => setIsHidden(true)}
+      />
     </section>
   );
 }

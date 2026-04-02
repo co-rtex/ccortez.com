@@ -148,6 +148,7 @@ describe('RecruiterNavigatorHUD', () => {
     );
 
     expect(markup).toContain('Recruiter Guide');
+    expect(markup).toContain('Hide');
     expect(markup).toContain('Experiences');
     expect(markup).toContain('Projects');
     expect(markup).toContain('More About Me');

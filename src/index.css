@@ -104,6 +104,13 @@ body {
   gap: 0.45rem;
 }
 
+.recruiter-navigator__header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
 .recruiter-navigator__header h2 {
   margin: 0;
   font-family: 'Syne', 'Avenir Next', sans-serif;
@@ -134,6 +141,29 @@ body {
   color: #f7eee1;
   font-size: 0.72rem;
   font-weight: 700;
+}
+
+.recruiter-navigator__visibility-button {
+  appearance: none;
+  border: 1px solid rgba(244, 226, 191, 0.24);
+  background: rgba(255, 249, 236, 0.08);
+  color: #f7eee1;
+  font-size: 0.76rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0.45rem 0.72rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.recruiter-navigator__visibility-button:hover,
+.recruiter-navigator__visibility-button:focus-visible {
+  background: rgba(255, 249, 236, 0.14);
+  border-color: rgba(244, 226, 191, 0.34);
+}
+
+.recruiter-navigator__visibility-button--show {
+  width: 100%;
 }
 
 .recruiter-navigator__intro {
@@ -362,6 +392,13 @@ body {
 
 .recruiter-navigator--mobile {
   width: min(100%, 440px);
+}
+
+.recruiter-navigator--collapsed {
+  width: auto;
+  max-width: min(280px, 34vw);
+  padding: 0.75rem;
+  overflow: visible;
 }
 
 .recruiter-navigator__toggle {
