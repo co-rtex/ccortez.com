@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { ACESFilmicToneMapping, PCFSoftShadowMap, SRGBColorSpace } from 'three';
+import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from 'three';
 import { useState } from 'react';
 
 import { CameraRig } from '../world/CameraRig';
@@ -47,7 +47,9 @@ export function OverworldScene({
   return (
     <Canvas
       className="world-canvas"
-      shadows
+      // three r183 deprecated PCFSoftShadowMap and falls back to PCFShadowMap with a warning on every
+      // shadow render, so request PCF directly: same output, no per-frame console spam.
+      shadows="percentage"
       dpr={[1, 1.6]}
       gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
       camera={{ position: [0, 16, 16], fov: 40, near: 0.1, far: 360 }}
@@ -56,7 +58,7 @@ export function OverworldScene({
         gl.toneMapping = ACESFilmicToneMapping;
         gl.toneMappingExposure = 0.76;
         gl.shadowMap.enabled = true;
-        gl.shadowMap.type = PCFSoftShadowMap;
+        gl.shadowMap.type = PCFShadowMap;
       }}
     >
       <WorldEnvironment />
