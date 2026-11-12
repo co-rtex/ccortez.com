@@ -1,4 +1,8 @@
 import { Text } from '@react-three/drei';
+// Self-hosted label fonts: without a `font`, troika downloads fallback fonts from a public CDN at runtime.
+// troika reads woff/ttf/otf, not woff2.
+import labelFontBold from '@fontsource/manrope/files/manrope-latin-700-normal.woff?url';
+import labelFontRegular from '@fontsource/manrope/files/manrope-latin-500-normal.woff?url';
 
 import { getTerrainHeight } from './terrain';
 
@@ -42,6 +46,7 @@ export function RecruiterArcMarkers() {
               />
             </mesh>
             <Text
+              font={labelFontBold}
               position={[0, 0.92, 0]}
               fontSize={0.48}
               color="#f6f0e5"
@@ -53,6 +58,7 @@ export function RecruiterArcMarkers() {
               {marker.label}
             </Text>
             <Text
+              font={labelFontRegular}
               position={[0, 0.46, 0]}
               fontSize={0.18}
               color="#dce7ea"
