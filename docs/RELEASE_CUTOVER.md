@@ -1,50 +1,74 @@
 # Release and domain cutover runbook
 
-Goal: `ccortez.com` serves the professional portfolio (Vercel), `game.ccortez.com` serves this 3D game
-(GitHub Pages). **Nothing here has been executed.** Every step that touches GitHub settings, Vercel, or DNS
-needs Christian's explicit go-ahead.
+Goal: `ccortez.com` serves the professional portfolio (Vercel); `game.ccortez.com` serves this 3D game
+(GitHub Pages). **Steps 1 and later change production and need Christian's explicit approval.** Everything
+in "Already done" was safe and reversible.
 
-## Current state (2026-11-12)
+## Verified current state (2026-11-13)
 
-- `ccortez.com` → GitHub Pages, deployed from `main` of `co-rtex/ccortez.com` by `.github/workflows/deploy-pages.yml`.
-- `public/CNAME` contains `ccortez.com`.
-- Professional site: local repo `~/Desktop/Projects/portfolio-professional`, static export, not yet on GitHub or Vercel.
+| Item | Value | How checked |
+| --- | --- | --- |
+| `ccortez.com` | A 185.199.108.153, .109, .110, .111 (GitHub Pages), TTL 14400 s | `dig A ccortez.com` |
+| `www.ccortez.com` | CNAME `co-rtex.github.io`; 301 → `https://ccortez.com/` | `dig`, `curl -I` |
+| `game.ccortez.com` | no record | `dig` |
+| Nameservers | `ns-cloud-a1…a4.googledomains.com` (Google Domains DNS, now managed through Squarespace Domains or Google Cloud DNS; check which account holds the zone) | `dig NS` |
+| GitHub Pages | source: GitHub Actions workflow on `main`; custom domain `ccortez.com`; certificate approved for `ccortez.com` + `www`; HTTPS enforced | `gh api repos/co-rtex/ccortez.com/pages` |
+| `http://ccortez.com` | 301 → https | `curl -I` |
+| Vercel `portfolio-professional` | live at https://portfolio-professional-tau.vercel.app, Git-connected (pushes to `main` deploy), **no custom domains** | `vercel domains ls` |
 
-## Order of operations
+Because Pages deploys from a workflow, the custom domain is the **Pages setting**, not the `public/CNAME` file.
+Keep the file in sync anyway for anyone reading the repository.
 
-The order keeps one of the two sites reachable at the apex at all times and lets each step be checked
-before the next.
+## Already done (safe, reversible)
 
-1. **Lower DNS TTLs** for `ccortez.com` and `www` to 300 s a day ahead, if the DNS provider allows it.
-2. **Publish the professional site to a preview.**
-   - Create a GitHub repository for `portfolio-professional` and push `main`.
-   - Import it into Vercel (framework preset: Next.js, default build command). Static export works as-is.
-   - Check the preview URL: home, all five case studies, `/resume/`, the PDF, `/sitemap.xml`, `/robots.txt`.
-3. **Add the game subdomain.**
-   - DNS: `CNAME game → co-rtex.github.io`.
-   - Merge the sprint branch into `main` of `co-rtex/ccortez.com` (after review).
-4. **Move the game to `game.ccortez.com`.**
-   - Change `public/CNAME` to `game.ccortez.com`, commit to `main`; the Pages workflow redeploys.
-   - In GitHub → Settings → Pages, confirm the custom domain reads `game.ccortez.com`; enable "Enforce HTTPS"
-     once the certificate is issued.
-   - From this moment GitHub Pages stops answering for the apex, so do step 5 immediately.
-5. **Point the apex at Vercel.**
-   - In Vercel → Project → Domains, add `ccortez.com` and `www.ccortez.com`.
-   - In DNS, replace the GitHub Pages apex `A` records (185.199.108.153, .109, .110, .111) with the records the
-     Vercel domain screen shows, and point `www` at the CNAME Vercel shows.
-6. **Verify.**
-   - `https://ccortez.com` shows the professional site with a valid certificate; `www` redirects to the apex.
-   - `https://game.ccortez.com` loads the island; the recruiter guide link goes back to `ccortez.com`.
-   - Cross-links: professional header/footer/contact → game; game guide → professional.
+- Professional site built, tested and deployed to `portfolio-professional-tau.vercel.app` (38/38 browser tests
+  against the deployment; Lighthouse mobile 99/100/100/100).
+- Game sprint branch pushed with CI; PR #1 open, not merged. The same build is on a staging-only Vercel project at
+  https://ccortez-game-preview.vercel.app for phone testing (`vercel.app` only; not part of production).
+- `scripts/verify-release.sh` passes against both staging URLs.
+
+## Cutover procedure
+
+Do the steps in order. Steps 1–4 do not change what visitors see.
+
+1. **Release the game update at the current address.** Mark PR #1 ready, confirm CI is green, and merge it into
+   `main`. The Pages workflow redeploys; `ccortez.com` keeps serving the game, now updated. Check it in a browser.
+2. **Lower the TTL** of the apex `A` records and `www` to 300 s in the DNS console, then wait at least the old TTL
+   (4 hours) so caches pick up the short TTL.
+3. **Create the game record:** `game` CNAME `co-rtex.github.io.` (TTL 300). Confirm with `dig +short CNAME game.ccortez.com`.
+4. **Attach domains in Vercel** (project `portfolio-professional` → Settings → Domains): add `ccortez.com` and
+   `www.ccortez.com`, with `www` redirecting to the apex. Vercel will show "Invalid configuration" and the exact
+   DNS records it wants; note them. Nothing changes for visitors yet.
+5. **Switch (do 5a and 5b back to back):**
+   - 5a. Move Pages to the subdomain: Settings → Pages → Custom domain → `game.ccortez.com` → Save
+     (or `gh api -X PUT repos/co-rtex/ccortez.com/pages -f cname=game.ccortez.com`). Commit
+     `public/CNAME` = `game.ccortez.com` to `main`.
+   - 5b. In DNS, replace the four GitHub `A` records for the apex with the record(s) Vercel showed in step 4
+     (commonly `A 76.76.21.21`), and point `www` at the CNAME Vercel showed (commonly `cname.vercel-dns.com`).
+     Use Vercel's values, not these examples, if they differ.
+6. **Wait for certificates.** Vercel issues certificates for the apex and `www` automatically once DNS resolves to it.
+   GitHub issues one for `game.ccortez.com`; then tick "Enforce HTTPS" on the Pages settings page
+   (`gh api -X PUT repos/co-rtex/ccortez.com/pages -F https_enforced=true`).
+7. **Verify.**
+   - `scripts/verify-release.sh` (defaults to the real domains and adds redirect and DNS checks).
+   - In `portfolio-professional`: `BASE_URL=https://ccortez.com npm run test:e2e`.
+   - By hand, on a phone and a laptop: home page, resume PDF, a case study, "Play the 3D version", and in the game
+     "Portfolio & resume".
+
+Between 5a and 5b the apex may briefly return GitHub's 404 for visitors whose DNS still points at GitHub. With a
+300 s TTL that window is a few minutes.
 
 ## Rollback
 
-- **Apex:** restore the four GitHub Pages `A` records for `ccortez.com` and remove the Vercel records.
-- **Game:** revert the `public/CNAME` commit (back to `ccortez.com`) and push to `main`; set the Pages custom
-  domain back to `ccortez.com`.
-- The Vercel project and preview can stay up; they do not affect the apex once DNS points elsewhere.
+- **Apex and www:** restore the four GitHub Pages `A` records (185.199.108.153, 185.199.109.153,
+  185.199.110.153, 185.199.111.153) and `www` CNAME `co-rtex.github.io.`; set the Pages custom domain back to
+  `ccortez.com`; revert the `public/CNAME` commit. The Vercel project can stay; it only serves domains that point
+  at it.
+- **Game update only (step 1):** revert the merge commit on `main`; the Pages workflow redeploys the previous build.
+- Keep the short TTL until the new setup has been stable for a day, then raise it again.
 
-## Known follow-ups after cutover
+## After cutover
 
-- Game workbench stories link to `https://ccortez.com/work/...`; those resolve only after step 5.
-- The professional site's `metadataBase`, canonical URLs and sitemap already assume `https://ccortez.com`.
+- Game workbench stories link to `https://ccortez.com/work/...`; those resolve once step 5b is live.
+- The professional site's canonical URLs, sitemap and Open Graph tags already use `https://ccortez.com`.
+- Delete the staging Vercel project `ccortez-game-preview` when it is no longer useful (optional).
