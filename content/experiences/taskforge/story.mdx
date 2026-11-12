@@ -1,0 +1,11 @@
+## TaskForge
+
+TaskForge implements the hard parts of a background job system directly instead of wrapping a queue framework. Each way a job system fails, such as a worker dying while it holds work or a notification getting lost after a commit, has an explicit mechanism and a test.
+
+PostgreSQL is the only authoritative store. The API writes a job and its outbox row in one transaction, and a publisher sends small advisory notifications to a broker that only wakes workers up. Workers pull: one SQL transaction checks capacity and priority, creates the attempt, and grants a lease.
+
+A running attempt heartbeats to renew its lease under a fencing token, so a worker that wakes up after its lease expired cannot commit anything. A reconciler repairs what no live process will: stale sessions, expired leases, and attempts past their deadline. TaskForge promises at-least-once execution and says plainly that handlers with side effects must be idempotent.
+
+It has 1,000+ Go tests. In a local benchmark with 12 workers, all 10,000 jobs completed while 24 worker processes were killed mid-run.
+
+The case study, with an architecture diagram, is at [ccortez.com/work/taskforge](https://ccortez.com/work/taskforge/). Source: [github.com/co-rtex/TaskForge](https://github.com/co-rtex/TaskForge).

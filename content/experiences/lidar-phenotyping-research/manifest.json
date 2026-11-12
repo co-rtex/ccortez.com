@@ -1,0 +1,30 @@
+{
+  "id": "lidar-phenotyping-research",
+  "slug": "lidar-phenotyping-research",
+  "title": "LiDAR Phenotyping Research",
+  "type": "experience",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Software Engineering Research Assistant",
+    "organization": "UW–Madison / USDA Collaboration",
+    "dateRange": "May 2026 - Present",
+    "location": "Madison, WI",
+    "summary": "Builds the pipelines and validation tooling for a field phenotyping platform that fuses LiDAR with encoder and IMU streams into 3D point clouds and plant traits.",
+    "impactBullets": [
+      "Built Python and Bash pipelines on Linux that have processed 1,950+ scans (about 1 TB) across 50+ projects, cutting runtime from 60–90 to 20–35 minutes.",
+      "Developed the validation and research-delivery layer: plot-to-genotype map checks, QC artifacts, byte-identical map snapshots, and auto-generated genotype-ranking plots.",
+      "Created a FastAPI pipeline-configuration app with schema introspection, validation previews, and locked-field enforcement, covered by 360+ pytest tests.",
+      "Added automated quality checks that flagged 90–110 anomalous scans, validated against manual review with precision and recall."
+    ],
+    "techStack": [
+      "Python",
+      "Bash",
+      "Linux",
+      "FastAPI",
+      "pytest",
+      "Redis"
+    ]
+  }
+}

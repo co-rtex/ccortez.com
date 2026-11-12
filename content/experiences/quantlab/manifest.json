@@ -1,0 +1,30 @@
+{
+  "id": "quantlab",
+  "slug": "quantlab",
+  "title": "QuantLab",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Portfolio Risk & Research Platform",
+    "organization": "Personal Project",
+    "dateRange": "May 2026",
+    "summary": "A self-hosted Python research platform for reproducible portfolio backtesting and risk analytics, with long computations run as tracked background jobs.",
+    "impactBullets": [
+      "Built a Python research backend that ingests and indexes 1M+ OHLCV records (synthetic data in the public repo) for reproducible backtesting and risk analytics.",
+      "Ran 30-second to 10-minute analytics jobs on 4–8 Redis/RQ workers with idempotency hashes, retries, timeouts, and job-state tracking.",
+      "Validated the 18-endpoint FastAPI/PostgreSQL API with automated tests and GitHub Actions CI.",
+      "Computes volatility, beta, Sharpe ratio, drawdown, value at risk, and expected shortfall, reporting undefined values as undefined."
+    ],
+    "techStack": [
+      "Python",
+      "FastAPI",
+      "PostgreSQL",
+      "Redis",
+      "RQ",
+      "Docker",
+      "GitHub Actions"
+    ]
+  }
+}

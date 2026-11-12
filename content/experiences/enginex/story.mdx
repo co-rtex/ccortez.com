@@ -1,0 +1,11 @@
+## EngineX
+
+EngineX is an educational exchange lab: a limit-order matching engine built around three promises. The same input always produces byte-for-byte the same state, an acknowledged order survives a crash, and one slow client cannot stall everyone else.
+
+All state is owned by a single sequencer. Validation is a pure step, and only a committed command gets a sequence number and changes the books, which match by price and then time. Because the state can be hashed with SHA-256, a replay can prove it reached exactly the same result.
+
+Durability comes from a CRC32C-framed write-ahead journal. An order is acknowledged only after its frame is synced to disk, with group commit to amortize the cost. On restart the journal is replayed and verified, a torn tail is repaired, and a corrupted journal is refused. Fork crash-point tests and a SIGKILL harness check that behavior.
+
+The TCP service adds bounded queues, slow-consumer disconnects, and snapshot-plus-sequenced-update resync for market data. Local benchmarks reach 8.2M matching commands per second at 417 ns p99.9; these are local numbers, not production figures.
+
+The full case study is at [ccortez.com/work/enginex](https://ccortez.com/work/enginex/).
