@@ -31,7 +31,7 @@ Keep the file in sync anyway for anyone reading the repository.
 
 Do the steps in order. Steps 1–4 do not change what visitors see.
 
-1. **Release the game update at the current address.** Mark PR #1 ready, confirm CI is green, and merge it into
+1. **Done 2026-11-12 (merge `6b0c825`, verified live).** **Release the game update at the current address.** Mark PR #1 ready, confirm CI is green, and merge it into
    `main`. The Pages workflow redeploys; `ccortez.com` keeps serving the game, now updated. Check it in a browser.
 2. **Lower the TTL** of the apex `A` records and `www` to 300 s in the DNS console, then wait at least the old TTL
    (4 hours) so caches pick up the short TTL.

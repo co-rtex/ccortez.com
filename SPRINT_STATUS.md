@@ -1,8 +1,20 @@
 # Sprint status — 3D game (target: game.ccortez.com)
 
-**Branch:** `portfolio/dual-site-sprint`, pushed; PR https://github.com/co-rtex/ccortez.com/pull/1 (not merged).
+**Branch:** `portfolio/dual-site-sprint`. PR https://github.com/co-rtex/ccortez.com/pull/1 **merged** into `main`
+as `6b0c825` on 2026-11-12 (approved by Christian; runbook step 1).
 **Staging:** https://ccortez-game-preview.vercel.app (same build, `vercel.app` only).
-**Current milestone:** game polish complete and verified; release waits on approval (`docs/RELEASE_CUTOVER.md`).
+**Current milestone:** updated game is live at https://ccortez.com; the domain move to `game.ccortez.com` (runbook
+steps 2–7) waits on approval.
+
+## Release step 1 evidence (2026-11-12)
+- Pages workflow run 43322631567 on `6b0c825`: build success, deploy success; `ccortez.com` last-modified
+  22:45:49 GMT, title "Christian Cortez — 3D Portfolio Island".
+- `PRO=<vercel> GAME=https://ccortez.com scripts/verify-release.sh`: all checks pass.
+- Scripted Chromium checks on production: no console errors, movement, How to play dialog, panel layout,
+  no-WebGL fallback, mobile link, no overflow.
+- Lighthouse on production: accessibility, best practices and SEO 100 on desktop and mobile.
+- Until the cutover, the game's "Portfolio & resume" links point at `ccortez.com`, which still serves the game.
+- Rollback for this step: revert merge commit `6b0c825` on `main` (`git revert -m 1 6b0c825`).
 
 ## Repository reconciliation (2026-11-13)
 - Remote branch was only the two planning commits because local work had not been pushed (push was not yet
@@ -38,14 +50,14 @@
   canvas 5.2 s. Lighthouse performance stays low (software WebGL in headless Chrome inflates blocking time).
 
 ## Decisions for Christian
-1. Approve the cutover (`docs/RELEASE_CUTOVER.md`), starting with merging PR #1.
+1. Approve the domain cutover (`docs/RELEASE_CUTOVER.md`, steps 2–7).
 2. Which account manages the `googledomains.com` DNS zone (Squarespace Domains or Google Cloud DNS)?
 3. Restore any removed game metrics that are accurate (finance-ops 80%, FridgeFinder sub-200 ms, HLR 30%,
    Mathnasium 40%); DNR, HLR and Mathnasium remain because they are not in the source-of-truth file.
 4. Subdomain name: this sprint uses `game.ccortez.com`; the older plan branch said `play.ccortez.com`.
 
 ## Blockers
-- DNS, Pages domain and merging to `main` need explicit approval.
+- DNS and the Pages/Vercel domain changes need explicit approval.
 
 ## Next step
 After approval: run the cutover steps in order, then `scripts/verify-release.sh` and the professional e2e suite
