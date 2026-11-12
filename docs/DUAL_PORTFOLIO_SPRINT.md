@@ -50,4 +50,4 @@ Professional = friendly polished engineering dashboard + editorial clarity; not 
 - Safe rollback available for custom-domain migration.
 
 ## Status
-Planning branch only: this document and attribution preferences do not modify the live game or DNS. Build and test claims must be supplied by the executing local developer after running them.
+See `SPRINT_STATUS.md` in this repository and in `~/Desktop/Projects/portfolio-professional` for verified progress, test output, and the release runbook (`docs/RELEASE_CUTOVER.md`). No live deployment or DNS has been changed.

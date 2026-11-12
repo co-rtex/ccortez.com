@@ -1,6 +1,8 @@
-# ccortez.com Backbone
+# Christian Cortez — 3D portfolio island
 
-Open-world portfolio backbone built with `Vite + React + TypeScript + React Three Fiber`.
+Open-world portfolio built with `Vite + React + TypeScript + React Three Fiber`. Planned home:
+`game.ccortez.com` (see `docs/RELEASE_CUTOVER.md`). The text portfolio and resume live in a separate
+repository and deploy to `ccortez.com`; the in-game recruiter guide links to it.
 
 ## What Exists Now
 
