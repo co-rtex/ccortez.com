@@ -6,6 +6,7 @@ import {
   type RecruiterMapMarker,
   type RecruiterStartEntry,
 } from './recruiterNavigator';
+import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
 
 import type { WorldAnchor } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -113,6 +114,10 @@ function RecruiterNavigatorContent({
       <p className="recruiter-navigator__intro">
         Start in the middle plaza for a quick introduction, then use the map or shortlist to jump
         into career highlights. Personal and campus context stays visible, but secondary.
+      </p>
+      <p className="recruiter-navigator__alt-link">
+        Short on time?{' '}
+        <a href={PROFESSIONAL_SITE_URL}>Read the text portfolio and resume</a>
       </p>
 
       {startEntry ? (

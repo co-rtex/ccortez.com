@@ -166,6 +166,8 @@ describe('RecruiterNavigatorHUD', () => {
     expect(markup).toContain('Open Start Here (Start Here)');
     expect(markup).toContain('Open Experience Stop (Experience)');
     expect(markup).toContain('Open Project Stop (Project)');
+    expect(markup).toContain('href="https://ccortez.com"');
+    expect(markup).toContain('Read the text portfolio and resume');
   });
 
   it('renders active and nearby marker states in the schematic map', () => {

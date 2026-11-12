@@ -173,6 +173,30 @@ body {
   line-height: 1.55;
 }
 
+.recruiter-navigator__alt-link {
+  margin: 0;
+  color: #f6e0bf;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.recruiter-navigator__alt-link a {
+  color: #ffd38a;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.recruiter-navigator__alt-link a:hover {
+  color: #fff1d2;
+}
+
+.recruiter-navigator__alt-link a:focus-visible {
+  outline: 2px solid #ffd38a;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 .recruiter-navigator__map {
   position: relative;
   min-height: 170px;
