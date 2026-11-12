@@ -1,4 +1,4 @@
-import { MathUtils } from 'three';
+import { clamp, lerp, smootherstep, smoothstep } from './scalarMath';
 
 import { PUBLISHED_WORKBENCH_PLAZA_METRICS } from '../../content/workbenches/layout';
 import { WORLD_WATER_BODIES } from './constants';
@@ -43,9 +43,9 @@ export function getIslandDistanceNormalized(x: number, z: number): number {
 
 function applyIslandFalloff(height: number, x: number, z: number): number {
   const islandDistance = getIslandDistanceNormalized(x, z);
-  const shoreline = MathUtils.smoothstep(islandDistance, 0.72, 0.96);
-  const shelf = MathUtils.smoothstep(islandDistance, 0.94, 1.08);
-  const abyss = MathUtils.smoothstep(islandDistance, 1.04, 1.22);
+  const shoreline = smoothstep(islandDistance, 0.72, 0.96);
+  const shelf = smoothstep(islandDistance, 0.94, 1.08);
+  const abyss = smoothstep(islandDistance, 1.04, 1.22);
 
   const droppedHeight = height - shoreline * 2.5 - shelf * 4.3 - abyss * 6.4;
   return Math.max(droppedHeight, OCEAN_LEVEL - 2.6);
@@ -134,7 +134,7 @@ function computeWaterSurfaceHeight(body: WaterBodyDefinition): number {
   }
 
   const meanPerimeterHeight = sum / samples;
-  const targetHeight = MathUtils.lerp(min + 0.09, meanPerimeterHeight + 0.14, 0.66);
+  const targetHeight = lerp(min + 0.09, meanPerimeterHeight + 0.14, 0.66);
   const cappedHeight = Math.min(targetHeight, max + 0.2);
   return Math.max(cappedHeight, OCEAN_LEVEL + 0.46);
 }
@@ -180,7 +180,7 @@ function pointToSegmentDistance(
     return Math.hypot(pointX - startX, pointZ - startZ);
   }
 
-  const t = MathUtils.clamp((wx * vx + wz * vz) / segmentLengthSquared, 0, 1);
+  const t = clamp((wx * vx + wz * vz) / segmentLengthSquared, 0, 1);
   const projectionX = startX + t * vx;
   const projectionZ = startZ + t * vz;
   return Math.hypot(pointX - projectionX, pointZ - projectionZ);
@@ -228,19 +228,19 @@ function carveForLake(
   const d = normalizedLakeDistance(body, x, z);
 
   if (d <= 1) {
-    const edgeT = MathUtils.smoothstep(d, 0, 1);
-    const depth = MathUtils.lerp(1.08, 0.26, edgeT);
+    const edgeT = smoothstep(d, 0, 1);
+    const depth = lerp(1.08, 0.26, edgeT);
     const floorY = waterSurfaceY - depth;
     return Math.min(height, floorY);
   }
 
   if (d <= 1 + SHORE_RANGE) {
     const shoreT = 1 - (d - 1) / SHORE_RANGE;
-    const shoreEase = MathUtils.smootherstep(shoreT, 0, 1);
+    const shoreEase = smootherstep(shoreT, 0, 1);
     const shoreRaise = Math.sin(shoreT * Math.PI) * 0.11 + shoreEase * 0.05;
     const shoreTarget = waterSurfaceY + shoreRaise;
-    const shorelineBlend = MathUtils.clamp(shoreEase * 0.72, 0, 1);
-    return MathUtils.lerp(height, shoreTarget, shorelineBlend);
+    const shorelineBlend = clamp(shoreEase * 0.72, 0, 1);
+    return lerp(height, shoreTarget, shorelineBlend);
   }
 
   return height;
@@ -256,12 +256,12 @@ function applyCentralPlazaHeight(x: number, z: number, naturalHeight: number): n
   }
 
   if (radialDistance <= plazaOuterRadius) {
-    const blend = MathUtils.smootherstep(
+    const blend = smootherstep(
       (radialDistance - plazaTopRadius) / Math.max(plazaOuterRadius - plazaTopRadius, 0.001),
       0,
       1,
     );
-    return MathUtils.lerp(CENTRAL_PLAZA_TOP_HEIGHT, naturalHeight, blend);
+    return lerp(CENTRAL_PLAZA_TOP_HEIGHT, naturalHeight, blend);
   }
 
   return naturalHeight;

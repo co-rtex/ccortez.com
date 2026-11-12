@@ -1,4 +1,4 @@
-import { MathUtils } from 'three';
+import { clamp, lerp } from './scalarMath';
 
 import {
   PUBLISHED_WORKBENCH_CLEAR_ZONES,
@@ -128,7 +128,7 @@ function pointToSegmentDistance(
     return Math.hypot(pointX - startX, pointZ - startZ);
   }
 
-  const t = MathUtils.clamp((wx * vx + wz * vz) / segmentLengthSquared, 0, 1);
+  const t = clamp((wx * vx + wz * vz) / segmentLengthSquared, 0, 1);
   const projectionX = startX + t * vx;
   const projectionZ = startZ + t * vz;
   return Math.hypot(pointX - projectionX, pointZ - projectionZ);
@@ -175,8 +175,8 @@ function generateScatterPoints({
   const maxZ = WORLD_BOUNDS.maxZ - margin;
 
   for (let attempts = 0; attempts < 24000 && points.length < count; attempts += 1) {
-    const x = MathUtils.lerp(minX, maxX, rand());
-    const z = MathUtils.lerp(minZ, maxZ, rand());
+    const x = lerp(minX, maxX, rand());
+    const z = lerp(minZ, maxZ, rand());
 
     if (avoid(x, z)) {
       continue;

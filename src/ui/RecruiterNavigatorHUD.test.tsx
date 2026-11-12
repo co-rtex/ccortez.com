@@ -166,6 +166,11 @@ describe('RecruiterNavigatorHUD', () => {
     expect(markup).toContain('Open Start Here (Start Here)');
     expect(markup).toContain('Open Experience Stop (Experience)');
     expect(markup).toContain('Open Project Stop (Project)');
+    // Shortlist buttons are named by their visible text (WCAG 2.5.3); only text-less map dots carry aria-labels.
+    expect(markup.split('aria-label="Open Experience Stop (Experience)"')).toHaveLength(2);
+    expect(markup.split('aria-label="Open Start Here (Start Here)"')).toHaveLength(2);
+    expect(markup).toContain('href="https://ccortez.com"');
+    expect(markup).toContain('Read the text portfolio and resume');
   });
 
   it('renders active and nearby marker states in the schematic map', () => {

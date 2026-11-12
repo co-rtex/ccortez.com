@@ -1,0 +1,28 @@
+{
+  "id": "enginex",
+  "slug": "enginex",
+  "title": "EngineX",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Deterministic Matching Engine",
+    "organization": "Personal Project",
+    "dateRange": "Oct 2026 - Present",
+    "summary": "A C++20 price-time-priority matching engine with a crash-safe write-ahead journal and a sequenced TCP order-entry and market-data service.",
+    "impactBullets": [
+      "Built a single-sequencer matching engine with O(1) cancels, partial fills, idempotent request IDs, and SHA-256 state hashing; local matching-core benchmarks reach 8.2M commands/s at 417 ns p99.9.",
+      "Added a CRC32C-framed write-ahead journal; in durable mode an order is acknowledged only after fdatasync, with deterministic replay, torn-tail repair, and corruption refusal.",
+      "Built a multithreaded TCP server with bounded queues, group commit for durable mode, and gap-free snapshot resync (85.7K req/s in memory with 8 local clients).",
+      "Tested with 151 GoogleTest cases, 100-seed property tests against a reference model, fork/SIGKILL crash tests, and ASan/TSan CI."
+    ],
+    "techStack": [
+      "C++20",
+      "CMake",
+      "GoogleTest",
+      "POSIX sockets",
+      "GitHub Actions"
+    ]
+  }
+}

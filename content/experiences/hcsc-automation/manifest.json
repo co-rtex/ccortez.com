@@ -1,0 +1,29 @@
+{
+  "id": "hcsc-automation",
+  "slug": "hcsc-automation",
+  "title": "HCSC Automation Team",
+  "type": "experience",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Software Developer Intern",
+    "organization": "HCSC / Blue Cross Blue Shield",
+    "dateRange": "Jun 2026 - Aug 2026",
+    "location": "Chicago, IL",
+    "summary": "Built a C#/.NET service on the Automation Team that reconciles SQL Server check records against a payment-status REST API and flags mismatches.",
+    "impactBullets": [
+      "Cut manual check-record verification from 5–10 minutes to under one minute for 8–15 internal UAT users.",
+      "Added validation, timeouts, retries, cancellation, and fallback messaging so failing upstream calls degrade clearly.",
+      "Used parameterized SQL queries and a composite index, and wrote 20–30 unit and integration tests that caught edge cases before production.",
+      "Added logging that reduced diagnosis time by 50–70%."
+    ],
+    "techStack": [
+      "C#",
+      ".NET",
+      "Entity Framework",
+      "SQL Server",
+      "REST APIs"
+    ]
+  }
+}

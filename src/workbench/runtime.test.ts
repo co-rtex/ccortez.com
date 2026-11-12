@@ -40,7 +40,10 @@ describe('workbench runtime', () => {
       record.issues.filter((issue) => issue.code === 'missing-link'),
     );
 
-    expect(publishedRecords).toHaveLength(14);
+    expect(publishedRecords).toHaveLength(19);
+    for (const id of ['lidar-phenotyping-research', 'hcsc-automation', 'enginex', 'taskforge', 'quantlab']) {
+      expect(publishedRecords.some((record) => record.definition.id === id), id).toBe(true);
+    }
     expect(publishedRecords.some((record) => record.definition.id === START_HERE_WORKBENCH_ID)).toBe(true);
     expect(missingLinks).toEqual([]);
     expect(

@@ -1,0 +1,11 @@
+## QuantLab
+
+Backtests are easy to write and easy to get quietly wrong: a signal peeks at tomorrow's price, the universe only holds companies that survived, or nobody can regenerate last month's result. QuantLab treats each of those failures as an engineering requirement with a test.
+
+HTTP routes never run simulations. They validate the request, record a job in PostgreSQL, and enqueue only its id on Redis. RQ workers run the domain library, read immutable dataset versions, and write results back. PostgreSQL stays the source of truth for job state, so a lost message or a dead worker is recovered instead of silently dropped.
+
+The library computes volatility, beta, Sharpe ratio, drawdown, value at risk, and expected shortfall, and every result carries a manifest so it can be reproduced exactly. An independent reference engine and mutation tests check that the backtester is actually right.
+
+QuantLab is research infrastructure, not a trading bot: the bundled data is synthetic and nothing here is investment advice.
+
+More at [ccortez.com/work/quantlab](https://ccortez.com/work/quantlab/). Source: [github.com/co-rtex/QuantLab](https://github.com/co-rtex/QuantLab).

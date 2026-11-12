@@ -1,0 +1,11 @@
+## LiDAR Phenotyping Research
+
+This research role sits between field hardware and plant science. A phenotyping platform drives LiDAR over crop plots while recording encoder and IMU streams, and researchers need plant traits per plot and per genotype, not raw point clouds.
+
+I build the Python and Bash pipelines that fuse those streams into 3D point clouds and extract traits. They have processed more than 1,950 scans, about 1 TB, across 50+ projects, and a run now takes 20–35 minutes instead of 60–90.
+
+Most of my work is about trust. I built the validation and delivery layer: checks on the plot-to-genotype map, QC artifacts, byte-identical map snapshots so a rerun months later uses exactly the same assignments, and auto-generated genotype-ranking plots for UW and external researchers.
+
+I also built a FastAPI configuration app so researchers can change algorithm parameters without hand-editing YAML. It introspects the schema, previews validation, and enforces locked fields, and it is covered by more than 360 pytest tests. Automated quality checks flag anomalous scans, and I measured them against manual review with precision and recall.
+
+The longer engineering write-up lives at [ccortez.com/work/lidar-phenotyping](https://ccortez.com/work/lidar-phenotyping/).

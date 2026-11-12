@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { bootstrapExperienceRegistry } from '../content/loader';
 import { getAllExperiences } from '../content/registry';
-import { OverworldScene } from '../scenes/OverworldScene';
 import { useGameStore } from '../state/gameStore';
 import { WorkbenchEditorOverlay } from '../ui/WorkbenchEditorOverlay';
 import { WorkbenchPanel } from '../ui/WorkbenchPanel';
 import { WorkbenchPrompt } from '../ui/WorkbenchPrompt';
 import { CollisionFeedbackOverlay } from '../ui/CollisionFeedbackOverlay';
 import { RecruiterNavigatorHUD } from '../ui/RecruiterNavigatorHUD';
+import { SceneErrorBoundary } from '../ui/SceneErrorBoundary';
+import { SceneFallback } from '../ui/SceneFallback';
+import { SiteBar } from '../ui/SiteBar';
 import {
   createDraftWorkbenchDefinition,
   duplicateWorkbenchDefinition,
@@ -19,6 +21,13 @@ import {
   type WorkbenchEditorTransformMode,
 } from '../workbench/editor';
 import { buildWorkbenchRuntime, serializeWorkbenchLayout } from '../workbench/runtime';
+import { PROFESSIONAL_SITE_URL } from './siteLinks';
+import { detectWebGLSupport } from './webgl';
+
+// The 3D scene (and three.js with it) loads separately, so the recruiter guide is usable sooner.
+const OverworldScene = lazy(() =>
+  import('../scenes/OverworldScene').then((module) => ({ default: module.OverworldScene })),
+);
 
 import type { ExperienceRecord } from '../types/experience';
 import type { WorkbenchDefinition } from '../types/workbench';
@@ -64,6 +73,7 @@ export default function App() {
   });
 
   const [mobileLiteMode, setMobileLiteMode] = useState<boolean>(detectMobileLiteMode);
+  const [webglSupported] = useState<boolean>(() => typeof window === 'undefined' || detectWebGLSupport());
   const [workbenchDefinitions, setWorkbenchDefinitions] = useState<WorkbenchDefinition[]>(WORKBENCH_LAYOUT);
   const [workbenchEditorEnabled, setWorkbenchEditorEnabled] = useState<boolean>(detectWorkbenchEditorMode);
   const [editorTransformMode, setEditorTransformMode] = useState<WorkbenchEditorTransformMode>('move');
@@ -406,15 +416,29 @@ export default function App() {
 
   return (
     <main className={appClassName}>
-      <OverworldScene
-        workbenches={visibleWorkbenchRecords}
-        editorEnabled={workbenchEditorEnabled}
-        editorTransformMode={editorTransformMode}
-        selectedWorkbenchId={activeSelectedWorkbenchId}
-        onWorkbenchOpen={(workbenchId) => openWorkbenchPanel(workbenchId)}
-        onWorkbenchSelect={selectWorkbench}
-        onWorkbenchUpdate={updateWorkbench}
-      />
+      {webglSupported ? (
+        <SceneErrorBoundary fallback={<SceneFallback reason="crashed" />}>
+          <Suspense
+            fallback={
+              <p className="scene-loading" role="status">
+                Building the island…
+              </p>
+            }
+          >
+            <OverworldScene
+              workbenches={visibleWorkbenchRecords}
+              editorEnabled={workbenchEditorEnabled}
+              editorTransformMode={editorTransformMode}
+              selectedWorkbenchId={activeSelectedWorkbenchId}
+              onWorkbenchOpen={(workbenchId) => openWorkbenchPanel(workbenchId)}
+              onWorkbenchSelect={selectWorkbench}
+              onWorkbenchUpdate={updateWorkbench}
+            />
+          </Suspense>
+        </SceneErrorBoundary>
+      ) : (
+        <SceneFallback reason="no-webgl" />
+      )}
       <CollisionFeedbackOverlay />
 
       <div className="hud-layer">
@@ -437,12 +461,14 @@ export default function App() {
           />
           {mobileLiteMode ? (
             <div className="mobile-lite-banner">
-              Mobile-lite mode: tap landmarks for details. The recruiter guide collapses into a quick jump list.
+              Mobile-lite mode: tap landmarks for details. The recruiter guide collapses into a quick jump list.{' '}
+              <a href={PROFESSIONAL_SITE_URL}>Read the text portfolio instead</a>
             </div>
           ) : null}
         </div>
       </div>
 
+      {!workbenchEditorEnabled ? <SiteBar /> : null}
       <WorkbenchPanel workbenches={visibleWorkbenchRecords} />
       {workbenchEditorEnabled ? (
         <WorkbenchEditorOverlay

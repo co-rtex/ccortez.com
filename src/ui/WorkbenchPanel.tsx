@@ -6,7 +6,7 @@ import { WORKBENCH_INSPECT_HINT, shouldShowWorkbenchInspectHint } from './workbe
 import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import type { ExperienceRecruiterCard } from '../types/experience';
-import { formatRecruiterCategoryLabel, resolveRecruiterNavigatorCategory } from './recruiterNavigator';
+import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMeta';
 
 interface WorkbenchPanelProps {
   workbenches: WorkbenchRuntimeRecord[];
@@ -21,61 +21,6 @@ function formatLabel(value: string): string {
 
 function buildRecruiterMetaLine(parts: Array<string | undefined>): string {
   return parts.filter((part) => part && part.trim().length > 0).join(' • ');
-}
-
-export function resolvePanelEyebrow(workbench: WorkbenchRuntimeRecord | undefined): string {
-  if (!workbench) {
-    return 'Recruiter Guide';
-  }
-
-  const category = resolveRecruiterNavigatorCategory(workbench);
-  if (category === 'start') {
-    return 'Start Here';
-  }
-
-  return category === 'secondary' ? 'More About Me' : 'Recruiter Brief';
-}
-
-export function buildWorkbenchMetaChips(workbench: WorkbenchRuntimeRecord): Array<{
-  label: string;
-  tone: 'start' | 'experience' | 'project' | 'secondary' | 'featured' | 'default';
-}> {
-  const category = resolveRecruiterNavigatorCategory(workbench);
-  const chips: Array<{
-    label: string;
-    tone: 'start' | 'experience' | 'project' | 'secondary' | 'featured' | 'default';
-  }> = [];
-
-  if (category === 'secondary') {
-    chips.push({
-      label: 'More About Me',
-      tone: 'secondary',
-    });
-  } else if (category === 'start') {
-    chips.push({
-      label: 'Start Here',
-      tone: 'start',
-    });
-  } else {
-    chips.push({
-      label: `Type: ${formatRecruiterCategoryLabel(category)}`,
-      tone: category,
-    });
-  }
-
-  chips.push({
-    label: `District: ${workbench.districtDefinition.label}`,
-    tone: 'default',
-  });
-
-  if (workbench.definition.priorityTier === 'anchor') {
-    chips.push({
-      label: 'Featured',
-      tone: 'featured',
-    });
-  }
-
-  return chips;
 }
 
 interface LinkedWorkbenchContentProps {

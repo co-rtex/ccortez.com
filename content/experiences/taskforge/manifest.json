@@ -1,0 +1,27 @@
+{
+  "id": "taskforge",
+  "slug": "taskforge",
+  "title": "TaskForge",
+  "type": "project",
+  "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "./scene.tsx",
+  "status": "published",
+  "recruiterCard": {
+    "roleLabel": "Durable Distributed Job Platform",
+    "organization": "Personal Project",
+    "dateRange": "Feb 2026 - Present",
+    "summary": "A job platform that implements durable at-least-once execution directly on PostgreSQL: transactional outbox, worker leases, fencing, retries, and crash recovery.",
+    "impactBullets": [
+      "Engineered crash-safe, at-least-once job processing with a PostgreSQL state machine, transactional outbox, idempotent submission, leases, heartbeats, and stale-attempt fencing.",
+      "Added retries with bounded exponential backoff, cancellation over heartbeats, timeouts, and a replayable dead-letter queue.",
+      "Wrote 1,000+ Go tests; a recorded local benchmark completed 10,000 of 10,000 jobs while 24 workers were SIGKILLed.",
+      "The tuned profile reached 209 ms p95 dispatch and 11 s worst recovery; shipped defaults measured 964 ms and 50 s (records in the repo)."
+    ],
+    "techStack": [
+      "Go",
+      "PostgreSQL",
+      "Docker",
+      "OpenTelemetry"
+    ]
+  }
+}

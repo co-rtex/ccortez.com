@@ -109,6 +109,9 @@ function getMapBounds(workbenches: WorkbenchRuntimeRecord[]): {
   };
 }
 
+/** Shown under the Start Here entry instead of its internal district name. */
+export const START_HERE_LOCATION_LABEL = 'Center plaza: a one-minute introduction';
+
 export function resolveRecruiterNavigatorCategory(
   workbench: WorkbenchRuntimeRecord,
 ): RecruiterNavigatorCategory {
@@ -171,6 +174,15 @@ function resolveMarkerState(
   return 'default';
 }
 
+function omitSortKeys(
+  entry: RecruiterShortlistEntry & { order: number; priorityOrder: number },
+): RecruiterShortlistEntry {
+  const shortlistEntry: Partial<typeof entry> = { ...entry };
+  delete shortlistEntry.order;
+  delete shortlistEntry.priorityOrder;
+  return shortlistEntry as RecruiterShortlistEntry;
+}
+
 function sortShortlistEntries(
   left: RecruiterShortlistEntry & { order: number; priorityOrder: number },
   right: RecruiterShortlistEntry & { order: number; priorityOrder: number },
@@ -229,7 +241,7 @@ export function deriveRecruiterNavigatorData(
       startEntry = {
         id: marker.id,
         title: marker.title,
-        districtLabel: marker.districtLabel,
+        districtLabel: START_HERE_LOCATION_LABEL,
         state,
       };
     }
@@ -258,7 +270,7 @@ export function deriveRecruiterNavigatorData(
       entries: shortlistSource
         .filter((entry) => entry.category === 'experience')
         .sort(sortShortlistEntries)
-        .map(({ order: _order, priorityOrder: _priorityOrder, ...entry }) => entry),
+        .map(omitSortKeys),
     },
     {
       id: 'project',
@@ -266,7 +278,7 @@ export function deriveRecruiterNavigatorData(
       entries: shortlistSource
         .filter((entry) => entry.category === 'project')
         .sort(sortShortlistEntries)
-        .map(({ order: _order, priorityOrder: _priorityOrder, ...entry }) => entry),
+        .map(omitSortKeys),
     },
   ];
 

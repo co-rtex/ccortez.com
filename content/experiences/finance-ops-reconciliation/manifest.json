@@ -10,9 +10,9 @@
     "roleLabel": "Reconciliation Automation Pipeline",
     "organization": "Personal Project",
     "dateRange": "2026",
-    "summary": "Built a finance-operations reconciliation workflow that aligns multi-source data, enforces schemas, and produces auditable outputs with much lower manual review time.",
+    "summary": "Built an auditable reconciliation workflow, demonstrated on synthetic data, that aligns multi-source records, enforces schemas, and reports exceptions.",
     "impactBullets": [
-      "Built reconciliation pipelines across multi-source datasets, cutting manual review time by 80%.",
+      "Built reconciliation pipelines across multi-source datasets that match records and surface exceptions for review.",
       "Generated audit-trail reports with schema enforcement, validation checks, and traceability logging.",
       "Structured the workflow to make exceptions visible while keeping the core process repeatable and reliable."
     ],

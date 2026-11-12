@@ -6,6 +6,7 @@ import {
   type RecruiterMapMarker,
   type RecruiterStartEntry,
 } from './recruiterNavigator';
+import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
 
 import type { WorldAnchor } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -58,7 +59,6 @@ function renderShortlistSection(
               type="button"
               className={`recruiter-navigator__item recruiter-navigator__item--${entry.category} recruiter-navigator__item--${entry.state}`}
               onClick={() => onWorkbenchOpen(entry.id)}
-              aria-label={`Open ${entry.title} (${entry.categoryLabel})`}
             >
               <span className="recruiter-navigator__item-title">{entry.title}</span>
               <span className="recruiter-navigator__item-meta">
@@ -114,6 +114,10 @@ function RecruiterNavigatorContent({
         Start in the middle plaza for a quick introduction, then use the map or shortlist to jump
         into career highlights. Personal and campus context stays visible, but secondary.
       </p>
+      <p className="recruiter-navigator__alt-link">
+        Short on time?{' '}
+        <a href={PROFESSIONAL_SITE_URL}>Read the text portfolio and resume</a>
+      </p>
 
       {startEntry ? (
         <section className="recruiter-navigator__section recruiter-navigator__section--start">
@@ -126,7 +130,6 @@ function RecruiterNavigatorContent({
             type="button"
             className={`recruiter-navigator__item recruiter-navigator__item--start recruiter-navigator__item--${startEntry.state}`}
             onClick={() => onWorkbenchOpen(startEntry.id)}
-            aria-label={`Open ${startEntry.title} (Start Here)`}
           >
             <span className="recruiter-navigator__item-title">{startEntry.title}</span>
             <span className="recruiter-navigator__item-meta">{startEntry.districtLabel}</span>

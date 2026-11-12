@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Syne:wght@500;700;800&display=swap');
-
 :root {
   --bg-sky: #d5e9dc;
   --hud-card: rgba(20, 33, 38, 0.8);
@@ -81,7 +79,7 @@ body {
 
 .recruiter-navigator {
   pointer-events: auto;
-  width: min(380px, 34vw);
+  width: min(380px, 40vw);
   max-height: calc(100vh - 2.4rem);
   display: grid;
   gap: 0.9rem;
@@ -121,7 +119,7 @@ body {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 800;
   color: #f1c37f;
 }
@@ -173,9 +171,34 @@ body {
   line-height: 1.55;
 }
 
+.recruiter-navigator__alt-link {
+  margin: 0;
+  color: #f6e0bf;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.recruiter-navigator__alt-link a {
+  color: #ffd38a;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.recruiter-navigator__alt-link a:hover {
+  color: #fff1d2;
+}
+
+.recruiter-navigator__alt-link a:focus-visible {
+  outline: 2px solid #ffd38a;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 .recruiter-navigator__map {
   position: relative;
-  min-height: 170px;
+  /* Tall enough that the 24px marker hit areas never overlap at the ends of the ring. */
+  min-height: 196px;
   overflow: hidden;
   border-radius: 16px;
   border: 1px solid rgba(244, 226, 191, 0.16);
@@ -223,8 +246,11 @@ body {
 
 .recruiter-map-marker {
   position: absolute;
-  width: 16px;
-  height: 16px;
+  /* 24px hit area (WCAG 2.5.8) around a 16px dot. */
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
   transform: translate(-50%, -50%);
   border: none;
   background: transparent;
@@ -238,8 +264,9 @@ body {
 
 .recruiter-map-marker__core {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
   border-radius: 999px;
   border: 2px solid rgba(18, 27, 31, 0.92);
   box-shadow: 0 0 0 3px rgba(255, 248, 233, 0.08);
@@ -386,7 +413,7 @@ body {
 
 .recruiter-navigator__item-meta,
 .recruiter-navigator__empty {
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   color: #f6e0bf;
 }
 
@@ -630,7 +657,7 @@ body {
   margin: 0 0 0.2rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--panel-muted);
 }
@@ -1134,5 +1161,250 @@ body {
   100% {
     opacity: 0;
     border-color: transparent;
+  }
+}
+
+/* ---- Site bar: how-to-play + route to the text portfolio (always visible outside the editor) ---- */
+.site-bar {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  z-index: 15;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  transition: right 280ms ease;
+}
+
+.app-shell:has(.experience-panel--open) .site-bar {
+  right: calc(min(430px, 92vw) + 1.2rem);
+}
+
+.site-bar__button,
+.site-bar__link {
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.7rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 224, 188, 0.4);
+  background: rgba(18, 32, 38, 0.88);
+  color: #f7eee1;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.site-bar__link {
+  background: #ffd38a;
+  border-color: #ffd38a;
+  color: #2a1c0c;
+}
+
+.site-bar__button:hover {
+  background: rgba(30, 50, 58, 0.95);
+}
+
+.site-bar__link:hover {
+  background: #ffe2ad;
+}
+
+.site-bar__button:focus-visible,
+.site-bar__link:focus-visible,
+.how-to-play__close:focus-visible,
+.scene-fallback a:focus-visible,
+.scene-fallback button:focus-visible,
+.mobile-lite-banner a:focus-visible {
+  outline: 3px solid #ffd38a;
+  outline-offset: 3px;
+}
+
+.how-to-play {
+  width: min(520px, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid rgba(243, 224, 188, 0.4);
+  border-radius: 20px;
+  background: linear-gradient(165deg, rgba(18, 32, 38, 0.97), rgba(14, 23, 29, 0.95));
+  color: #f7eee1;
+  box-shadow: var(--shadow);
+}
+
+.how-to-play::backdrop {
+  background: rgba(10, 18, 22, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.how-to-play__body {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.how-to-play__title {
+  margin: 0;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.35rem;
+}
+
+.how-to-play__intro {
+  margin: 0;
+  color: #f6e0bf;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.how-to-play__intro a {
+  color: #ffd38a;
+  font-weight: 700;
+}
+
+.how-to-play__controls {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.how-to-play__row {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.how-to-play__row dt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.how-to-play__row dd {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.how-to-play kbd {
+  min-width: 1.9rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 7px;
+  border: 1px solid rgba(243, 224, 188, 0.45);
+  border-bottom-width: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.how-to-play__actions {
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.how-to-play__close {
+  font: inherit;
+  font-weight: 700;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  background: #ffd38a;
+  color: #2a1c0c;
+  cursor: pointer;
+}
+
+/* ---- Loading and fallback states for the 3D scene ---- */
+.scene-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #22424a;
+}
+
+.scene-fallback {
+  position: absolute;
+  top: 50%;
+  /* Centre in the space to the right of the recruiter guide (380px wide plus HUD padding). */
+  left: calc((420px + 100vw) / 2);
+  /* Below the HUD (which passes clicks through) so an expanded guide on phones covers it. */
+  z-index: 9;
+  transform: translate(-50%, -50%);
+  width: min(480px, calc(100vw - 460px));
+  padding: 1.6rem;
+  border-radius: 20px;
+  background: rgba(255, 250, 240, 0.94);
+  border: 1px solid rgba(84, 104, 111, 0.3);
+  box-shadow: var(--shadow);
+}
+
+.scene-fallback__title {
+  margin: 0 0 0.6rem;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.4rem;
+}
+
+.scene-fallback__body {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.scene-fallback__actions {
+  margin: 1.1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.scene-fallback__primary,
+.scene-fallback__secondary {
+  font: inherit;
+  font-weight: 700;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.scene-fallback__primary {
+  background: #16323a;
+  color: #fff6e6;
+}
+
+.scene-fallback__secondary {
+  border: 1px solid #16323a;
+  background: transparent;
+  color: #16323a;
+}
+
+.mobile-lite-banner a {
+  pointer-events: auto;
+  color: #462a16;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+@media (max-width: 900px) {
+  /* Phones and narrow windows: the guide and the banner carry the portfolio link instead. */
+  .site-bar {
+    display: none;
+  }
+
+  .scene-fallback {
+    left: 50%;
+    top: 42%;
+    width: calc(100vw - 1.6rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-bar {
+    transition: none;
   }
 }

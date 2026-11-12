@@ -2,12 +2,51 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ccortez.com</title>
+    <meta name="theme-color" content="#7cc6e8" />
+    <title>Christian Cortez — 3D Portfolio Island</title>
+    <meta
+      name="description"
+      content="Explore Christian Cortez's software engineering portfolio as a small 3D island: walk up to a workbench to read about each internship, research role, and project."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Christian Cortez — 3D Portfolio Island" />
+    <meta
+      property="og:description"
+      content="A playful, explorable version of Christian Cortez's software engineering portfolio, built with React Three Fiber."
+    />
+    <style>
+      /* Shown until React mounts; replaced by the app. Kept tiny and dependency-free. */
+      .boot-screen {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+        color: #16323a;
+        background: linear-gradient(180deg, #d8ecdf 0%, #9ec1b6 100%);
+      }
+      .boot-screen h1 { margin: 0 0 0.4rem; font-size: 1.5rem; }
+      .boot-screen p { margin: 0.3rem 0; }
+      .boot-screen a { color: #16323a; font-weight: 700; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-screen">
+        <div>
+          <h1>Loading Christian Cortez's portfolio island…</h1>
+          <p>The 3D world takes a few seconds on the first visit.</p>
+          <p>Prefer reading? <a href="https://ccortez.com">Open the text portfolio and resume</a>.</p>
+        </div>
+      </div>
+    </div>
+    <noscript>
+      This 3D portfolio needs JavaScript and WebGL. The text version of Christian Cortez's portfolio is at
+      <a href="https://ccortez.com">ccortez.com</a>.
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

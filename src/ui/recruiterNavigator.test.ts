@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  START_HERE_LOCATION_LABEL,
   deriveRecruiterNavigatorData,
   resolveRecruiterNavigatorCategory,
 } from './recruiterNavigator';
@@ -211,6 +212,8 @@ describe('recruiter navigator data', () => {
       'standard-project',
     ]);
     expect(data.startEntry?.id).toBe(START_HERE_WORKBENCH_ID);
+    // The start bench sits on the plaza; its internal district name means nothing to a visitor.
+    expect(data.startEntry?.districtLabel).toBe(START_HERE_LOCATION_LABEL);
     expect(data.markers.find((marker) => marker.id === 'broken-project')?.state).toBe('disabled');
   });
 
