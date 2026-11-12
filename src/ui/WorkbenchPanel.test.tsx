@@ -1,7 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { LinkedWorkbenchContent, buildWorkbenchMetaChips, resolvePanelEyebrow } from './WorkbenchPanel';
+import { LinkedWorkbenchContent } from './WorkbenchPanel';
+import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMeta';
 import { WORKBENCH_INSPECT_HINT, shouldShowWorkbenchInspectHint } from './workbenchPanelHints';
 import { useGameStore } from '../state/gameStore';
 

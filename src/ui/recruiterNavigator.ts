@@ -171,6 +171,15 @@ function resolveMarkerState(
   return 'default';
 }
 
+function omitSortKeys(
+  entry: RecruiterShortlistEntry & { order: number; priorityOrder: number },
+): RecruiterShortlistEntry {
+  const shortlistEntry: Partial<typeof entry> = { ...entry };
+  delete shortlistEntry.order;
+  delete shortlistEntry.priorityOrder;
+  return shortlistEntry as RecruiterShortlistEntry;
+}
+
 function sortShortlistEntries(
   left: RecruiterShortlistEntry & { order: number; priorityOrder: number },
   right: RecruiterShortlistEntry & { order: number; priorityOrder: number },
@@ -258,7 +267,7 @@ export function deriveRecruiterNavigatorData(
       entries: shortlistSource
         .filter((entry) => entry.category === 'experience')
         .sort(sortShortlistEntries)
-        .map(({ order: _order, priorityOrder: _priorityOrder, ...entry }) => entry),
+        .map(omitSortKeys),
     },
     {
       id: 'project',
@@ -266,7 +275,7 @@ export function deriveRecruiterNavigatorData(
       entries: shortlistSource
         .filter((entry) => entry.category === 'project')
         .sort(sortShortlistEntries)
-        .map(({ order: _order, priorityOrder: _priorityOrder, ...entry }) => entry),
+        .map(omitSortKeys),
     },
   ];
 
