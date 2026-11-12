@@ -15,7 +15,7 @@
       "Engineered crash-safe, at-least-once job processing with a PostgreSQL state machine, transactional outbox, idempotent submission, leases, heartbeats, and stale-attempt fencing.",
       "Added retries with bounded exponential backoff, cancellation over heartbeats, timeouts, and a replayable dead-letter queue.",
       "Wrote 1,000+ Go tests; a local 12-worker benchmark completed 10,000 of 10,000 jobs through 24 injected worker kills.",
-      "Tuned settings reached 209 ms p95 dispatch and 11 s recovery in that local benchmark."
+      "Tuned settings reached 209 ms p95 dispatch and 11 s recovery in that local benchmark (results not yet published in the repo)."
     ],
     "techStack": [
       "Go",
