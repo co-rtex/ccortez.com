@@ -1160,3 +1160,248 @@ body {
     border-color: transparent;
   }
 }
+
+/* ---- Site bar: how-to-play + route to the text portfolio (always visible outside the editor) ---- */
+.site-bar {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  z-index: 15;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  transition: right 280ms ease;
+}
+
+.app-shell:has(.experience-panel--open) .site-bar {
+  right: calc(min(430px, 92vw) + 1.2rem);
+}
+
+.site-bar__button,
+.site-bar__link {
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.7rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 224, 188, 0.4);
+  background: rgba(18, 32, 38, 0.88);
+  color: #f7eee1;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.site-bar__link {
+  background: #ffd38a;
+  border-color: #ffd38a;
+  color: #2a1c0c;
+}
+
+.site-bar__button:hover {
+  background: rgba(30, 50, 58, 0.95);
+}
+
+.site-bar__link:hover {
+  background: #ffe2ad;
+}
+
+.site-bar__button:focus-visible,
+.site-bar__link:focus-visible,
+.how-to-play__close:focus-visible,
+.scene-fallback a:focus-visible,
+.scene-fallback button:focus-visible,
+.mobile-lite-banner a:focus-visible {
+  outline: 3px solid #ffd38a;
+  outline-offset: 3px;
+}
+
+.how-to-play {
+  width: min(520px, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid rgba(243, 224, 188, 0.4);
+  border-radius: 20px;
+  background: linear-gradient(165deg, rgba(18, 32, 38, 0.97), rgba(14, 23, 29, 0.95));
+  color: #f7eee1;
+  box-shadow: var(--shadow);
+}
+
+.how-to-play::backdrop {
+  background: rgba(10, 18, 22, 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.how-to-play__body {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.how-to-play__title {
+  margin: 0;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.35rem;
+}
+
+.how-to-play__intro {
+  margin: 0;
+  color: #f6e0bf;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.how-to-play__intro a {
+  color: #ffd38a;
+  font-weight: 700;
+}
+
+.how-to-play__controls {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.how-to-play__row {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.how-to-play__row dt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.how-to-play__row dd {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.how-to-play kbd {
+  min-width: 1.9rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 7px;
+  border: 1px solid rgba(243, 224, 188, 0.45);
+  border-bottom-width: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.how-to-play__actions {
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.how-to-play__close {
+  font: inherit;
+  font-weight: 700;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  background: #ffd38a;
+  color: #2a1c0c;
+  cursor: pointer;
+}
+
+/* ---- Loading and fallback states for the 3D scene ---- */
+.scene-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #22424a;
+}
+
+.scene-fallback {
+  position: absolute;
+  top: 50%;
+  /* Centre in the space to the right of the recruiter guide (380px wide plus HUD padding). */
+  left: calc((420px + 100vw) / 2);
+  /* Below the HUD (which passes clicks through) so an expanded guide on phones covers it. */
+  z-index: 9;
+  transform: translate(-50%, -50%);
+  width: min(480px, calc(100vw - 460px));
+  padding: 1.6rem;
+  border-radius: 20px;
+  background: rgba(255, 250, 240, 0.94);
+  border: 1px solid rgba(84, 104, 111, 0.3);
+  box-shadow: var(--shadow);
+}
+
+.scene-fallback__title {
+  margin: 0 0 0.6rem;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.4rem;
+}
+
+.scene-fallback__body {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.scene-fallback__actions {
+  margin: 1.1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.scene-fallback__primary,
+.scene-fallback__secondary {
+  font: inherit;
+  font-weight: 700;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.scene-fallback__primary {
+  background: #16323a;
+  color: #fff6e6;
+}
+
+.scene-fallback__secondary {
+  border: 1px solid #16323a;
+  background: transparent;
+  color: #16323a;
+}
+
+.mobile-lite-banner a {
+  pointer-events: auto;
+  color: #462a16;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+@media (max-width: 900px) {
+  /* Phones and narrow windows: the guide and the banner carry the portfolio link instead. */
+  .site-bar {
+    display: none;
+  }
+
+  .scene-fallback {
+    left: 50%;
+    top: 42%;
+    width: calc(100vw - 1.6rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-bar {
+    transition: none;
+  }
+}

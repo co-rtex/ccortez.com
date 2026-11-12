@@ -16,9 +16,33 @@
       property="og:description"
       content="A playful, explorable version of Christian Cortez's software engineering portfolio, built with React Three Fiber."
     />
+    <style>
+      /* Shown until React mounts; replaced by the app. Kept tiny and dependency-free. */
+      .boot-screen {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        font-family: 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+        color: #16323a;
+        background: linear-gradient(180deg, #d8ecdf 0%, #9ec1b6 100%);
+      }
+      .boot-screen h1 { margin: 0 0 0.4rem; font-size: 1.5rem; }
+      .boot-screen p { margin: 0.3rem 0; }
+      .boot-screen a { color: #16323a; font-weight: 700; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-screen">
+        <div>
+          <h1>Loading Christian Cortez's portfolio island…</h1>
+          <p>The 3D world takes a few seconds on the first visit.</p>
+          <p>Prefer reading? <a href="https://ccortez.com">Open the text portfolio and resume</a>.</p>
+        </div>
+      </div>
+    </div>
     <noscript>
       This 3D portfolio needs JavaScript and WebGL. The text version of Christian Cortez's portfolio is at
       <a href="https://ccortez.com">ccortez.com</a>.
