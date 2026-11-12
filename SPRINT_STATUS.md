@@ -19,6 +19,7 @@
   - Corrected: Phoenix-Aid (Software Engineering Intern, Oct 2025–Mar 2026), SSEC (Technical Computing Engineer,
     Nov 2025–May 2026).
   - Removed unverifiable percentages: finance-ops (80%), FridgeFinder (sub-200 ms), HLR (30%), Mathnasium (40%).
+- 3D label fonts self-hosted (Manrope woff); no more runtime requests to cdn.jsdelivr.net.
 - Recruiter guide links to the text portfolio and resume (`src/app/siteLinks.ts`), on desktop and mobile-lite.
 - `docs/RELEASE_CUTOVER.md`: ordered DNS/Pages/Vercel steps with rollback.
 
