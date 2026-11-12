@@ -59,7 +59,6 @@ function renderShortlistSection(
               type="button"
               className={`recruiter-navigator__item recruiter-navigator__item--${entry.category} recruiter-navigator__item--${entry.state}`}
               onClick={() => onWorkbenchOpen(entry.id)}
-              aria-label={`Open ${entry.title} (${entry.categoryLabel})`}
             >
               <span className="recruiter-navigator__item-title">{entry.title}</span>
               <span className="recruiter-navigator__item-meta">
@@ -131,7 +130,6 @@ function RecruiterNavigatorContent({
             type="button"
             className={`recruiter-navigator__item recruiter-navigator__item--start recruiter-navigator__item--${startEntry.state}`}
             onClick={() => onWorkbenchOpen(startEntry.id)}
-            aria-label={`Open ${startEntry.title} (Start Here)`}
           >
             <span className="recruiter-navigator__item-title">{startEntry.title}</span>
             <span className="recruiter-navigator__item-meta">{startEntry.districtLabel}</span>
