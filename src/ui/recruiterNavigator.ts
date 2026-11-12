@@ -109,6 +109,9 @@ function getMapBounds(workbenches: WorkbenchRuntimeRecord[]): {
   };
 }
 
+/** Shown under the Start Here entry instead of its internal district name. */
+export const START_HERE_LOCATION_LABEL = 'Center plaza: a one-minute introduction';
+
 export function resolveRecruiterNavigatorCategory(
   workbench: WorkbenchRuntimeRecord,
 ): RecruiterNavigatorCategory {
@@ -238,7 +241,7 @@ export function deriveRecruiterNavigatorData(
       startEntry = {
         id: marker.id,
         title: marker.title,
-        districtLabel: marker.districtLabel,
+        districtLabel: START_HERE_LOCATION_LABEL,
         state,
       };
     }
