@@ -69,6 +69,13 @@ export function OverworldScene({
         gl.toneMappingExposure = 0.92;
         gl.shadowMap.enabled = !hasPerfFlag('noshadow');
         gl.shadowMap.type = hasPerfFlag('shadowbasic') ? BasicShadowMap : PCFShadowMap;
+        // Name the canvas itself (not its container, whose Html children include real links) so a screen
+        // reader announces what the picture is and points to the text route through the same content.
+        gl.domElement.setAttribute('role', 'img');
+        gl.domElement.setAttribute(
+          'aria-label',
+          "Christian Cortez's portfolio island: a 3D world with a workbench for each project and role. The recruiter guide lists every workbench as text.",
+        );
       }}
     >
       {hasPerfFlag('fixeddpr') || hasPerfFlag('dpr1') ? null : (
