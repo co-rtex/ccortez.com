@@ -20,6 +20,7 @@ import { InstancedVegetation } from './vegetation/InstancedVegetation';
 import { IslandTrails } from './plaza/IslandTrails';
 import { LakeWater } from './water/LakeWater';
 import { Lighthouse } from './landmarks/Lighthouse';
+import { LakeDocks } from './landmarks/LakeDocks';
 import {
   OCEAN_LEVEL,
   getIslandDistanceNormalized,
@@ -562,6 +563,7 @@ export function WorldEnvironment() {
       <CentralPlaza />
       <IslandTrails />
       <Lighthouse />
+      <LakeDocks />
 
       <InstancedVegetation />
 
