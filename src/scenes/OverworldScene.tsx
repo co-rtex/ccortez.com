@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { CameraRig } from '../world/CameraRig';
 import { DevShotCamera } from '../world/DevShotCamera';
 import { SceneTelemetry } from '../world/SceneTelemetry';
+import { StartHereBeacon } from '../world/landmarks/StartHereBeacon';
 import { LoadedExperienceScenes } from '../world/LoadedExperienceScenes';
 import { PlayerController } from '../world/PlayerController';
 import { RestSpotDirector } from '../world/RestSpotDirector';
@@ -72,6 +73,7 @@ export function OverworldScene({
       <WorkbenchDirector workbenches={workbenches} />
       <RestSpotDirector />
       {!editorEnabled ? <RecruiterArcMarkers /> : null}
+      {!editorEnabled ? <StartHereBeacon /> : null}
 
       {workbenches.map((workbench) => (
         <WorkbenchLandmark
