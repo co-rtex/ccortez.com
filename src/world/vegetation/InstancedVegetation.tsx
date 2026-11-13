@@ -62,6 +62,7 @@ function InstancedPart({
         flatShading
         emissive={emissive ? '#ffffff' : '#000000'}
         emissiveIntensity={emissive ?? 0}
+        alphaToCoverage={ditherOccluders}
         onBeforeCompile={ditherOccluders ? applyOcclusionDither : undefined}
         customProgramCacheKey={ditherOccluders ? () => 'foliage-occlusion-dither' : undefined}
       />

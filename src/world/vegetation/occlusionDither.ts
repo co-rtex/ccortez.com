@@ -46,17 +46,16 @@ export function applyOcclusionDither(shader: WebGLProgramParametersWithUniforms)
     .replace(
       '#include <clipping_planes_fragment>',
       `#include <clipping_planes_fragment>
+  float occluderFade;
   {
     vec3 seg = (uPlayer + vec3(0.0, 0.9, 0.0)) - cameraPosition;
     float t = clamp(dot(vOccluderWorld - cameraPosition, seg) / max(dot(seg, seg), 0.0001), 0.0, 1.0);
     float d = length(vOccluderWorld - (cameraPosition + seg * t));
-    float strength = (1.0 - smoothstep(1.6, 3.0, d)) * step(0.04, t) * (1.0 - step(0.88, t));
-    // Ordered 4x4 Bayer threshold: an even stipple instead of grainy noise.
-    ivec2 cell = ivec2(mod(gl_FragCoord.xy, 4.0));
-    int index = cell.x + cell.y * 4;
-    float bayer[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
-    float threshold = (bayer[index] + 0.5) / 16.0;
-    if (strength * 0.85 > threshold) discard;
+    occluderFade = (1.0 - smoothstep(1.6, 3.0, d)) * step(0.04, t) * (1.0 - step(0.88, t));
+    if (occluderFade > 0.97) discard;
   }`,
-    );
+    )
+    // With alpha-to-coverage on a multisampled canvas, alpha becomes sub-pixel coverage: a smooth fade rather
+    // than a visible screen-door pattern.
+    .replace('#include <dithering_fragment>', '#include <dithering_fragment>\n  gl_FragColor.a = 1.0 - occluderFade * 0.85;');
 }
