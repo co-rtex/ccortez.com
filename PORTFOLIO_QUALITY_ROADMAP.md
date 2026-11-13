@@ -87,6 +87,11 @@ Nothing merges to either `main` without Christian's approval.
 | `94c78d4` | Reduced motion honoured in the 3D world: the inspect camera and scenic seats cut instead of flying, the Start Here beacon, hero props, pennants and fountain armillary hold still | GPU off-screen run: label drift after opening a bench 0 px with `reduce`, large without; 159 tests |
 | `a2d0027` | The world canvas is named for screen readers (`role="img"`, points to the recruiter guide); set on the `<canvas>`, not the container, so in-world Html links stay reachable | axe WCAG 2.2 AA: 0 violations |
 | `02b5cb0` | Recruiter guide tracks this visit's progress: "N of M opened", "Opened" on each list item, a centre dot and ", opened" on map markers | Production build: opening one bench gives "1 of 19 opened"; axe on the guide: 0 violations; 162 tests |
+| `6e9ad15`, `dba89bf` | Start Here moved to the south side of the fountain, facing the spawn point (north of it, the basin and armillary hid it); amber halo replaces the light column that washed the board out; badge just above the board; no pennant. Phone guide: pill and banner step aside when it opens, no repeated title, caret on the toggle | `.shots/v6/now-*` vs `after8-*`, `after2-phone-guide` |
+| `274e0d8` | Plaza lawns: broad two-tone patches, sun-dried drifts, smooth clump mottling (faded with distance), mowing rings. Bench dioramas 1.3 → 1.5× | `ring-west` vs `ring-west-scale15`; 60 fps held |
+| `786fd48` | Meadows: sun-dried patches, deeper green under groves, fine mottling (baked into vertex colours, no runtime cost). Monitor housings mid slate, so their backs are not black from outside the ring | `edge-before` vs `edge-after1`, `meadow-after1` |
+| `428306b` | Island outline blended across the atan2 seam: the 17% radius jump drew a sharp spit due west | `island-top` vs `island-top-after`; continuity test |
+| `565aee1` | Bench data ribbons: slim accent line with two travelling packets (still under reduced motion) instead of a pale ghost tube | `inspect-hcsc` vs `inspect-hcsc-after`; 60 fps held |
 
 Checkpoint A (before/after, drag to compare; refreshed at `36d334c`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
@@ -100,9 +105,9 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 
 ## Known issues / next candidates (ranked)
 
-1. Bench dioramas are small relative to their 4.2 m platforms.
+1. Bench dioramas: scaled 1.5× (`274e0d8`); the pale base disks are still broad. Next: per-scene props.
 2. Real-phone GPU check still pending (phones use the shorter ~18 m scene range).
-3. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
+3. Terrain: grass variation done (`274e0d8`, `786fd48`); the plaza rim reads as a thin tan band from outside.
 4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
    StrictMode (dev-only; production renders).
@@ -203,8 +208,8 @@ Free disk was 15–17 GiB, so screenshot batches and new tooling were paused. No
 Resolved without installs: both resume PDF pages were rendered with macOS PDFKit (JXA) and inspected. Page 1 had
 about a fifth of the page empty because the Phoenix-Aid entry was kept whole; roles may now continue between bullets
 in print (professional `eec913f`), so page 1 fills and the PDF stays two pages.
-Visual check of the new guide progress styling (marker centre dot, progress pill) waits for screenshot work to resume
-above 20 GiB free; its text and accessibility are verified.
+Guide progress styling checked visually (`.shots/v6/now-guide-progress.png`): the pill wraps to its own row at
+336 px and the opened markers show their centre dot.
 
 ## Open decisions for Christian
 
