@@ -460,11 +460,14 @@ export default function App() {
         ) : null}
 
         <div className="hud-layer__footer">
-          <WorkbenchPrompt
-            workbenches={visibleWorkbenchRecords}
-            editorEnabled={workbenchEditorEnabled}
-            mobileLiteMode={mobileLiteMode}
-          />
+          {/* Without WebGL there is no world to walk in, so the controls hint would mislead. */}
+          {webglSupported ? (
+            <WorkbenchPrompt
+              workbenches={visibleWorkbenchRecords}
+              editorEnabled={workbenchEditorEnabled}
+              mobileLiteMode={mobileLiteMode}
+            />
+          ) : null}
           {mobileLiteMode ? (
             <div className="mobile-lite-banner">
               Mobile-lite mode: tap landmarks for details. The recruiter guide collapses into a quick jump list.{' '}

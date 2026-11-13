@@ -111,8 +111,7 @@ function RecruiterNavigatorContent({
       </header>
 
       <p className="recruiter-navigator__intro">
-        Start in the middle plaza for a quick introduction, then use the map or shortlist to jump
-        into career highlights. Personal and campus context stays visible, but secondary.
+        Walk to any bench, or pick one here to jump straight to it.
       </p>
       <p className="recruiter-navigator__alt-link">
         Short on time?{' '}

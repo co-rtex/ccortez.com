@@ -428,6 +428,8 @@ export function WorkbenchLandmark({
 
   const titleBadgeRef = useRef<HTMLDivElement>(null);
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
+  // Above the beacon on wide screens; at bench height on narrow ones, where the top edge holds the guide header.
+  const startBadgeY = typeof window !== 'undefined' && window.innerWidth < 900 ? 3.3 : 5.9;
   useFrame(({ clock }) => {
     const badge = titleBadgeRef.current;
     if (badge) {
@@ -563,7 +565,7 @@ export function WorkbenchLandmark({
       ) : null}
 
       {shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled) ? (
-        <Html center position={[0, rendersKit ? 2.95 : isStartHere ? 5.9 : 3.3, 0]}>
+        <Html center position={[0, rendersKit ? 2.95 : isStartHere ? startBadgeY : 3.3, 0]}>
           <div ref={titleBadgeRef} className="landmark-tooltip landmark-tooltip--title" style={{ opacity: 0 }}>
             {workbench.definition.title}
           </div>

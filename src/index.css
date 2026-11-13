@@ -79,7 +79,7 @@ body {
 
 .recruiter-navigator {
   pointer-events: auto;
-  width: min(380px, 40vw);
+  width: min(336px, 34vw);
   max-height: calc(100vh - 2.4rem);
   display: grid;
   gap: 0.9rem;
@@ -1332,12 +1332,12 @@ body {
 .scene-fallback {
   position: absolute;
   top: 50%;
-  /* Centre in the space to the right of the recruiter guide (380px wide plus HUD padding). */
-  left: calc((420px + 100vw) / 2);
+  /* Centre in the space to the right of the recruiter guide (336px wide plus HUD padding). */
+  left: calc((376px + 100vw) / 2);
   /* Below the HUD (which passes clicks through) so an expanded guide on phones covers it. */
   z-index: 9;
   transform: translate(-50%, -50%);
-  width: min(480px, calc(100vw - 460px));
+  width: min(480px, calc(100vw - 416px));
   padding: 1.6rem;
   border-radius: 20px;
   background: rgba(255, 250, 240, 0.94);
