@@ -147,11 +147,19 @@ this branch's history because purging it needs a force-push.
 | no vegetation | 12.9 / 31.7 | 17.0 / 34.7 |
 | DPR 1 | 8.0 / 10.9 | 12.6 / 14.9 |
 
-Shadow-map size (2048), the shadow filter (basic vs PCF) and removing prop shadow casters did not help, so the
-cost is the per-frame shadow pass over the many bench-scene meshes rather than sampling or map resolution;
-vegetation (instanced) is cheap. Later runs were noisy because a second build/test job shared the machine;
-re-measure on an idle machine before changing defaults. Candidates: shadow pass every other frame (static sun),
-merging bench-scene props, capping DPR at 1.5. With vsync on, the M3 holds 60 fps in all measured views.
+Re-measured on an idle machine: shadows remain the dominant cost; a smaller map, a cheaper filter and removing
+prop shadow casters did not help, while updating the shadow map every other frame did. Adopted (`perf(shadows)`):
+30 Hz shadow updates (static sun) and an adaptive pixel ratio (1.6 → 1 only when a GPU cannot keep up).
+
+| Uncapped, idle machine | Spawn median / p95 ms | Overview median / p95 ms |
+| --- | --- | --- |
+| per-frame shadows (`?perf=shadowfull`) | 12.6–14.2 / 32.5–33.5 | 18.3–19.1 / 25.3–35.4 |
+| 30 Hz shadows (default) | 10.1–10.4 / 13.3–15.7 | 15.3–15.9 / 20.6–33.3 |
+| no shadows (reference) | 5.1 / 8.7 | 6.5 / 7.4 |
+
+Remaining: the overview p95 still spikes when the whole bench ring is on screen (~1,160 draw calls); merging each
+bench scene's static props into a few meshes is the next lever. With vsync on, the M3 holds 60 fps everywhere
+measured. All figures are from one Apple M3 in Chrome; no phone GPU has been measured.
 
 ## Open decisions for Christian
 
