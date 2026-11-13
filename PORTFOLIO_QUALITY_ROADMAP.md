@@ -78,6 +78,7 @@ Nothing merges to either `main` without Christian's approval.
 | `0c43cc8` | "Workbench" used consistently for stations; How to play mentions signposts | |
 | `04de5af` | 30 Hz shadow updates + adaptive pixel ratio (see Performance) | uncapped spawn p95 33 → 13–16 ms |
 | `158e4c1` | Code-review fixes: adaptive DPR falls back to 1x after flip-flops; guide never auto-folds with focus inside and returns focus to its Show button after Hide; panel fold resets when a panel closes | 156 tests; Lighthouse a11y/BP/SEO 100 desktop + mobile |
+| `158e4c1` (verified) | Scripted keyboard check: Hide → focus lands on "Show recruiter guide"; Enter reopens; walking with focus inside the guide does not fold it | Playwright, no screenshots |
 | `72f3857` | Canopy-fade shader and its test mirror share constants | |
 | `db25804` | "Rerun reproducibly" instead of "rerun byte for byte" (claims ledger L8), as on the professional site (`58342a9`) | |
 | `c3dbb8f` | Start Here badge just above its board, off the lighthouse | `.shots/follow-spawn` (cropped) |
@@ -193,8 +194,6 @@ measured. All figures are from one Apple M3 in Chrome; no phone GPU has been mea
 ## Pending full browser verification (storage-limited session, 2026-11-13)
 
 Free disk was 15–17 GiB, so screenshot batches and new tooling were paused. Not yet verified visually:
-- Keyboard flow of the recruiter guide after the focus fixes (`158e4c1`): Hide → focus on Show; walking with focus
-  inside the guide does not fold it.
 - Adaptive DPR fallback on a GPU that cannot hold the frame rate (needs a slower device).
 - Resume PDF page 1 spare space (no PDF renderer installed; installing poppler was avoided).
 - Real phone GPU performance and touch interaction.
