@@ -1,8 +1,37 @@
 # Sprint status — 3D game (target: game.ccortez.com)
 
-**Branch:** `portfolio/dual-site-sprint`, pushed; PR https://github.com/co-rtex/ccortez.com/pull/1 (not merged).
+**Branch:** `portfolio/dual-site-sprint`. PR https://github.com/co-rtex/ccortez.com/pull/1 **merged** into `main`
+as `6b0c825` on 2026-11-12 (approved by Christian; runbook step 1).
 **Staging:** https://ccortez-game-preview.vercel.app (same build, `vercel.app` only).
-**Current milestone:** game polish complete and verified; release waits on approval (`docs/RELEASE_CUTOVER.md`).
+**Current milestone:** RELEASED. The game is live at https://game.ccortez.com and https://ccortez.com serves the
+professional portfolio (cutover approved and completed 2026-11-12).
+
+## Cutover evidence (2026-11-12)
+- DNS (Squarespace, authoritative `ns-cloud-a1.googledomains.com`): apex A `216.198.79.1` + `64.29.17.1` (Vercel);
+  `www` CNAME `ccd20a33c6e119dd.vercel-dns-017.com.`; `game` CNAME `co-rtex.github.io.`; Google Workspace MX and
+  TXT records unchanged. Google, Cloudflare and Quad9 resolvers returned the Vercel addresses before the Pages move.
+- Vercel: both domains attached and verified (`www` → 308 to apex); certificate `cert_rjpXdMgmHiXF6tg6KpbOMGwx`
+  for `ccortez.com` + `www.ccortez.com`, 90 days, auto-renew.
+- GitHub Pages: custom domain `game.ccortez.com`, certificate approved, HTTPS enforced; PR #2 (`99bc447`) merged
+  to keep `public/CNAME` in sync; deploy succeeded.
+- `scripts/verify-release.sh` against the real domains: all checks pass (pages, PDF, OG image, sitemap, robots, 404,
+  cross-links, http→https and www→apex redirects).
+- Professional e2e suite with `BASE_URL=https://ccortez.com`: 38/38. Game scripted checks on
+  `https://game.ccortez.com`: no console errors, movement, dialog, panel, no-WebGL fallback, mobile.
+- Clicked cross-links live: ccortez.com "Play the 3D version" → game.ccortez.com; game "Portfolio & resume" →
+  ccortez.com; resume PDF downloads.
+- TTLs: the new apex A and `www` records are at Squarespace's default 4 hours (the TTL choice in the form did not
+  persist), so a rollback would take up to 4 hours to propagate everywhere; `game` is 30 minutes.
+
+## Release step 1 evidence (2026-11-12)
+- Pages workflow run 43322631567 on `6b0c825`: build success, deploy success; `ccortez.com` last-modified
+  22:45:49 GMT, title "Christian Cortez — 3D Portfolio Island".
+- `PRO=<vercel> GAME=https://ccortez.com scripts/verify-release.sh`: all checks pass.
+- Scripted Chromium checks on production: no console errors, movement, How to play dialog, panel layout,
+  no-WebGL fallback, mobile link, no overflow.
+- Lighthouse on production: accessibility, best practices and SEO 100 on desktop and mobile.
+- Until the cutover, the game's "Portfolio & resume" links point at `ccortez.com`, which still serves the game.
+- Rollback for this step: revert merge commit `6b0c825` on `main` (`git revert -m 1 6b0c825`).
 
 ## Repository reconciliation (2026-11-13)
 - Remote branch was only the two planning commits because local work had not been pushed (push was not yet
@@ -38,15 +67,13 @@
   canvas 5.2 s. Lighthouse performance stays low (software WebGL in headless Chrome inflates blocking time).
 
 ## Decisions for Christian
-1. Approve the cutover (`docs/RELEASE_CUTOVER.md`), starting with merging PR #1.
-2. Which account manages the `googledomains.com` DNS zone (Squarespace Domains or Google Cloud DNS)?
+1. Optional: lower the apex/`www` TTL in Squarespace to 30 minutes for faster future changes.
+2. Optional: delete the staging Vercel project `ccortez-game-preview`.
 3. Restore any removed game metrics that are accurate (finance-ops 80%, FridgeFinder sub-200 ms, HLR 30%,
    Mathnasium 40%); DNR, HLR and Mathnasium remain because they are not in the source-of-truth file.
-4. Subdomain name: this sprint uses `game.ccortez.com`; the older plan branch said `play.ccortez.com`.
 
 ## Blockers
-- DNS, Pages domain and merging to `main` need explicit approval.
+- None.
 
 ## Next step
-After approval: run the cutover steps in order, then `scripts/verify-release.sh` and the professional e2e suite
-against the real domains.
+Post-release monitoring only. Re-run `scripts/verify-release.sh` after any future deploy.

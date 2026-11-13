@@ -1,5 +1,8 @@
 # Release and domain cutover runbook
 
+> **Completed 2026-11-12.** `ccortez.com` → Vercel (professional site), `game.ccortez.com` → GitHub Pages (game).
+> Evidence is in `SPRINT_STATUS.md`. The rollback section below still applies.
+
 Goal: `ccortez.com` serves the professional portfolio (Vercel); `game.ccortez.com` serves this 3D game
 (GitHub Pages). **Steps 1 and later change production and need Christian's explicit approval.** Everything
 in "Already done" was safe and reversible.
@@ -31,21 +34,24 @@ Keep the file in sync anyway for anyone reading the repository.
 
 Do the steps in order. Steps 1–4 do not change what visitors see.
 
-1. **Release the game update at the current address.** Mark PR #1 ready, confirm CI is green, and merge it into
+1. **Done 2026-11-12 (merge `6b0c825`, verified live).** **Release the game update at the current address.** Mark PR #1 ready, confirm CI is green, and merge it into
    `main`. The Pages workflow redeploys; `ccortez.com` keeps serving the game, now updated. Check it in a browser.
 2. **Lower the TTL** of the apex `A` records and `www` to 300 s in the DNS console, then wait at least the old TTL
    (4 hours) so caches pick up the short TTL.
 3. **Create the game record:** `game` CNAME `co-rtex.github.io.` (TTL 300). Confirm with `dig +short CNAME game.ccortez.com`.
-4. **Attach domains in Vercel** (project `portfolio-professional` → Settings → Domains): add `ccortez.com` and
-   `www.ccortez.com`, with `www` redirecting to the apex. Vercel will show "Invalid configuration" and the exact
-   DNS records it wants; note them. Nothing changes for visitors yet.
-5. **Switch (do 5a and 5b back to back):**
-   - 5a. Move Pages to the subdomain: Settings → Pages → Custom domain → `game.ccortez.com` → Save
-     (or `gh api -X PUT repos/co-rtex/ccortez.com/pages -f cname=game.ccortez.com`). Commit
-     `public/CNAME` = `game.ccortez.com` to `main`.
-   - 5b. In DNS, replace the four GitHub `A` records for the apex with the record(s) Vercel showed in step 4
-     (commonly `A 76.76.21.21`), and point `www` at the CNAME Vercel showed (commonly `cname.vercel-dns.com`).
-     Use Vercel's values, not these examples, if they differ.
+4. **Done 2026-11-12. Attach domains in Vercel.** `ccortez.com` (primary) and `www.ccortez.com` (308 redirect to the
+   apex) are attached to project `portfolio-professional`, both verified. Vercel's recommended records:
+   - apex: `A 216.198.79.1` and `A 64.29.17.1` (Vercel's rank-1 values; the older `76.76.21.21` also works)
+   - `www`: `CNAME ccd20a33c6e119dd.vercel-dns-017.com.` (rank 1; `cname.vercel-dns.com.` also works)
+5. **Switch, DNS first:**
+   - 5a. In the Squarespace Domains DNS settings for `ccortez.com`: delete the four GitHub `A` records
+     (185.199.108–111.153) and add the two Vercel `A` records above; change `www` from `co-rtex.github.io.` to
+     the Vercel CNAME above.
+   - 5b. Once `dig +short A ccortez.com` shows only Vercel's addresses (and ideally after the old TTL has passed),
+     move Pages to the subdomain: `gh api -X PUT repos/co-rtex/ccortez.com/pages -f cname=game.ccortez.com`, and
+     commit `public/CNAME` = `game.ccortez.com` to `main` through a PR.
+   Doing DNS first means visitors whose resolvers still cache GitHub's addresses keep getting the game from
+   GitHub until 5b, rather than a GitHub 404.
 6. **Wait for certificates.** Vercel issues certificates for the apex and `www` automatically once DNS resolves to it.
    GitHub issues one for `game.ccortez.com`; then tick "Enforce HTTPS" on the Pages settings page
    (`gh api -X PUT repos/co-rtex/ccortez.com/pages -F https_enforced=true`).
@@ -55,15 +61,16 @@ Do the steps in order. Steps 1–4 do not change what visitors see.
    - By hand, on a phone and a laptop: home page, resume PDF, a case study, "Play the 3D version", and in the game
      "Portfolio & resume".
 
-Between 5a and 5b the apex may briefly return GitHub's 404 for visitors whose DNS still points at GitHub. With a
-300 s TTL that window is a few minutes.
+After 5b, a visitor whose resolver still caches GitHub's apex addresses gets GitHub's 404 until that cache
+expires. Waiting out the TTL before 5b keeps that window close to zero.
 
 ## Rollback
 
 - **Apex and www:** restore the four GitHub Pages `A` records (185.199.108.153, 185.199.109.153,
   185.199.110.153, 185.199.111.153) and `www` CNAME `co-rtex.github.io.`; set the Pages custom domain back to
-  `ccortez.com`; revert the `public/CNAME` commit. The Vercel project can stay; it only serves domains that point
-  at it.
+  `ccortez.com` (`gh api -X PUT repos/co-rtex/ccortez.com/pages -f cname=ccortez.com`); revert the `public/CNAME`
+  commit. The Vercel domains can stay attached; they only serve traffic that DNS sends to Vercel. To detach them:
+  `vercel api /v9/projects/portfolio-professional/domains/www.ccortez.com -X DELETE` (and the same for the apex).
 - **Game update only (step 1):** revert the merge commit on `main`; the Pages workflow redeploys the previous build.
 - Keep the short TTL until the new setup has been stable for a day, then raise it again.
 
