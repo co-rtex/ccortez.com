@@ -1765,3 +1765,11 @@ body {
     width: min(430px, 55vw);
   }
 }
+
+/* Short landscape screens: the in-scene bench labels keep their place but take less of the view. */
+@media (max-height: 500px) {
+  .taskforge-label {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.6rem;
+  }
+}

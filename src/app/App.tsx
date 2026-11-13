@@ -510,7 +510,8 @@ export default function App() {
               mobileLiteMode={mobileLiteMode}
             />
           ) : null}
-          {mobileLiteMode && !mobileBannerDismissed ? (
+          {/* Hidden while a panel is open: on a phone it would sit over the bench the panel is about. */}
+          {mobileLiteMode && !mobileBannerDismissed && !panelWorkbenchId ? (
             <div className="mobile-lite-banner">
               Mobile-lite mode: tap landmarks for details. The recruiter guide collapses into a quick jump list.{' '}
               <a href={PROFESSIONAL_SITE_URL}>Read the text portfolio instead</a>
