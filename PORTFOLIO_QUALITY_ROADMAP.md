@@ -168,8 +168,9 @@ Done (each commit verified with lint, types, unit tests, build and GPU screensho
 
 ## Known issues / next candidates (ranked)
 
-1. Bench dioramas: the four flagships are live models. Next: the 14 other benches still share the desk kit;
-   the guide minimap does not mark flagships; on phones the guide toggle can overlap a bench badge.
+1. Bench dioramas: the four flagships are live models (minimap rings them; the phone badge overlap is fixed).
+   Next: the 14 other benches still share the desk kit; the first candidates are the remaining anchor benches
+   (HCSC, SSEC, Phoenix-Aid, FridgeFinder, Quant Signal Workstation, LLM Research Agent).
 2. Real-phone GPU check still pending (phones use the shorter ~18 m scene range).
 3. Terrain: grass variation done; plaza rim is now a seat wall. The reviewer noted meadow hue blotches clash a
    little with the saturated plaza lawn.
