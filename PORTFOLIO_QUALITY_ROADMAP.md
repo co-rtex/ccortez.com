@@ -84,6 +84,9 @@ Nothing merges to either `main` without Christian's approval.
 | `c3dbb8f` | Start Here badge just above its board, off the lighthouse | `.shots/follow-spawn` (cropped) |
 | `1d4f817` | Dock lanterns stand on posts (cap no longer reads as a floating rock) | `.shots/dock5-lake` |
 | `9c68604` | Fourth-review fixes: even per-puff canopy fade, guide folds after the first walk, no District chip, no rotate hint on phones, fingerposts face the plaza, lighthouse window disc removed and sign at the door, matching phone pills, banner auto-hides | `.shots/signs2-lake`, `follow-grove`; 156 tests |
+| `94c78d4` | Reduced motion honoured in the 3D world: the inspect camera and scenic seats cut instead of flying, the Start Here beacon, hero props, pennants and fountain armillary hold still | GPU off-screen run: label drift after opening a bench 0 px with `reduce`, large without; 159 tests |
+| `a2d0027` | The world canvas is named for screen readers (`role="img"`, points to the recruiter guide); set on the `<canvas>`, not the container, so in-world Html links stay reachable | axe WCAG 2.2 AA: 0 violations |
+| `02b5cb0` | Recruiter guide tracks this visit's progress: "N of M opened", "Opened" on each list item, a centre dot and ", opened" on map markers | Production build: opening one bench gives "1 of 19 opened"; axe on the guide: 0 violations; 162 tests |
 
 Checkpoint A (before/after, drag to compare; refreshed at `36d334c`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
@@ -195,8 +198,13 @@ measured. All figures are from one Apple M3 in Chrome; no phone GPU has been mea
 
 Free disk was 15–17 GiB, so screenshot batches and new tooling were paused. Not yet verified visually:
 - Adaptive DPR fallback on a GPU that cannot hold the frame rate (needs a slower device).
-- Resume PDF page 1 spare space (no PDF renderer installed; installing poppler was avoided).
 - Real phone GPU performance and touch interaction.
+
+Resolved without installs: both resume PDF pages were rendered with macOS PDFKit (JXA) and inspected. Page 1 had
+about a fifth of the page empty because the Phoenix-Aid entry was kept whole; roles may now continue between bullets
+in print (professional `eec913f`), so page 1 fills and the PDF stays two pages.
+Visual check of the new guide progress styling (marker centre dot, progress pill) waits for screenshot work to resume
+above 20 GiB free; its text and accessibility are verified.
 
 ## Open decisions for Christian
 
