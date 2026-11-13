@@ -14,7 +14,7 @@ import {
 import type { ShaderMaterial } from 'three';
 
 import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
-import { BOULDER_POINTS, COASTAL_ROCK_POINTS, TREE_POINTS } from './biome';
+import { BOULDER_POINTS, COASTAL_ROCK_POINTS, TREE_POINTS, getGroveDensity } from './biome';
 import { CentralPlaza } from './plaza/CentralPlaza';
 import { InstancedVegetation } from './vegetation/InstancedVegetation';
 import { hasPerfFlag } from './perfFlags';
@@ -34,6 +34,7 @@ import {
   isPointWaterBlocked,
 } from './terrain';
 import { SCENIC_REST_SPOTS } from './restSpots';
+import { valueNoise2D } from './groundNoise';
 import {
   SCENIC_FORWARD_XZ,
   SCENIC_SUN_LIGHT_DISTANCE,
@@ -46,6 +47,24 @@ import { planeXYToWorldXZ } from './renderSpace';
 import { TERRAIN_MESH_SEGMENTS, TERRAIN_MESH_SIZE } from './terrainMesh';
 
 import type { ScenicRestSpotDefinition } from './restSpots';
+
+/**
+ * Grass colour (HSL) for a terrain vertex: the old height/moisture base, plus sun-dried meadow patches,
+ * deeper and cooler green under groves, and fine mottling so open ground is not one flat tone.
+ */
+function getGrassHSL(x: number, z: number, height: number, islandDistance: number, moisture: number): [number, number, number] {
+  const grove = getGroveDensity(x, z);
+  const dry = MathUtils.smoothstep(valueNoise2D(x * 0.045 + 40, z * 0.045 - 12), 0.55, 0.85);
+  const fine = valueNoise2D(x * 0.42, z * 0.42) - 0.5;
+  const hue = 0.26 - height * 0.007 + islandDistance * 0.015 - dry * 0.045 + grove * 0.018;
+  const saturation = 0.56 + moisture * 0.18 - dry * 0.06;
+  const lightness = MathUtils.clamp(
+    0.24 + moisture * 0.25 + height * 0.05 + dry * 0.06 - grove * 0.05 + fine * 0.05,
+    0.18,
+    0.7,
+  );
+  return [hue, saturation, lightness];
+}
 
 function buildTerrainGeometry(): PlaneGeometry {
   const geometry = new PlaneGeometry(
@@ -83,13 +102,10 @@ function buildTerrainGeometry(): PlaneGeometry {
     } else if (height < OCEAN_LEVEL + 1.15) {
       // Short blend from sand into grass so the beach edge is soft.
       const t = (height - (OCEAN_LEVEL + 0.85)) / 0.3;
-      const grassHue = 0.26 - height * 0.007 + islandDistance * 0.015;
-      color.setHSL(MathUtils.lerp(0.11, grassHue, t), MathUtils.lerp(0.5, 0.56 + moisture * 0.18, t), MathUtils.lerp(0.74, MathUtils.clamp(0.24 + moisture * 0.25 + height * 0.05, 0.18, 0.7), t));
+      const [grassHue, grassSaturation, grassLightness] = getGrassHSL(worldX, worldZ, height, islandDistance, moisture);
+      color.setHSL(MathUtils.lerp(0.11, grassHue, t), MathUtils.lerp(0.5, grassSaturation, t), MathUtils.lerp(0.74, grassLightness, t));
     } else {
-      const hue = 0.26 - height * 0.007 + islandDistance * 0.015;
-      const saturation = 0.56 + moisture * 0.18;
-      const lightness = MathUtils.clamp(0.24 + moisture * 0.25 + height * 0.05, 0.18, 0.7);
-      color.setHSL(hue, saturation, lightness);
+      color.setHSL(...getGrassHSL(worldX, worldZ, height, islandDistance, moisture));
     }
 
     colors[index * 3] = color.r;

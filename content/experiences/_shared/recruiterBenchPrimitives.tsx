@@ -639,7 +639,8 @@ export function DisplayPanel({
     <group ref={groupRef} position={position} rotation={rotation} scale={scale}>
       <mesh castShadow>
         <boxGeometry args={[1, 0.6, 0.08]} />
-        <meshStandardMaterial color="#4a5260" roughness={0.4} metalness={0.25} />
+        {/* Mid slate, not near-black: seen from behind (outside the ring) the backs were dark holes. */}
+        <meshStandardMaterial color="#6f7886" roughness={0.5} metalness={0.1} />
       </mesh>
       {/* The screen sits just proud of the bezel (front face at z 0.04) and its content just proud of the screen. */}
       <mesh position={[0, 0, 0.043]}>
