@@ -171,13 +171,20 @@ function addFlowerPatch(point: ScatterPoint, out: VegetationInstances): void {
   const y = getTerrainHeight(point.x, point.z);
   const color = pick(PETALS, rand());
   const accent = pick(PETALS, rand());
-  const count = 5 + Math.floor(rand() * 5);
+  // A low leafy cushion grounds the blooms so they read as a planted patch rather than loose dice.
+  out.puffs.push({
+    position: [point.x, y + 0.08, point.z],
+    scale: [0.55 + rand() * 0.2, 0.2, 0.5 + rand() * 0.2],
+    rotation: [0, rand() * Math.PI, 0],
+    color: pick(BUSH_GREENS, rand()),
+  });
+  const count = 10 + Math.floor(rand() * 7);
   for (let index = 0; index < count; index += 1) {
     const angle = rand() * Math.PI * 2;
-    const r = Math.sqrt(rand()) * 0.75;
-    const s = 0.09 + rand() * 0.06;
+    const r = Math.sqrt(rand()) * 0.55;
+    const s = 0.055 + rand() * 0.04;
     out.blooms.push({
-      position: [point.x + Math.cos(angle) * r, y + 0.12 + rand() * 0.12, point.z + Math.sin(angle) * r],
+      position: [point.x + Math.cos(angle) * r, y + 0.2 + rand() * 0.1, point.z + Math.sin(angle) * r],
       scale: [s, s, s],
       rotation: [0, 0, 0],
       color: rand() > 0.3 ? color : accent,

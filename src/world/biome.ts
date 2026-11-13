@@ -294,7 +294,7 @@ const rawBoulderPoints: ScatterPoint[] = generateScatterPoints({
   avoid: (x, z) =>
     !isGroundedPlacement(x, z, 0.5) ||
     isNearLake(x, z, 0.35) ||
-    distanceToRoad(x, z) < 1.35 ||
+    distanceToRoad(x, z) < 2.3 ||
     isInNeighborhood(x, z) ||
     isInsideWorkbenchClearZone(x, z) ||
     getIslandDistanceNormalized(x, z) > 0.91,

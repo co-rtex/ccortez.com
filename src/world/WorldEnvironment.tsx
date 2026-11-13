@@ -1,4 +1,4 @@
-import { Line, Sparkles } from '@react-three/drei';
+import { Sparkles } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import {
@@ -8,10 +8,7 @@ import {
   Color,
   Group,
   MathUtils,
-  MeshBasicMaterial,
   PlaneGeometry,
-  Shape,
-  ShapeGeometry,
   Vector3,
 } from 'three';
 import type { ShaderMaterial } from 'three';
@@ -21,9 +18,9 @@ import { BOULDER_POINTS, COASTAL_ROCK_POINTS, TREE_POINTS } from './biome';
 import { CentralPlaza } from './plaza/CentralPlaza';
 import { InstancedVegetation } from './vegetation/InstancedVegetation';
 import { IslandTrails } from './plaza/IslandTrails';
+import { LakeWater } from './water/LakeWater';
 import {
   OCEAN_LEVEL,
-  LAKE_SHORELINE_SAMPLE_DETAIL,
   getIslandDistanceNormalized,
   getLakeBoundaryPolyline,
   getNearestLakeShoreSignedDistance,
@@ -40,9 +37,8 @@ import {
 import { AmbientBirds } from './AmbientBirds';
 import { AmbientCritters } from './AmbientCritters';
 import { LakeFaunaManager } from './LakeFaunaManager';
-import { planeXYToWorldXZ, worldXZToPlaneXY } from './renderSpace';
+import { planeXYToWorldXZ } from './renderSpace';
 
-import type { WaterBodyDefinition } from './constants';
 import type { ScenicRestSpotDefinition } from './restSpots';
 
 function buildTerrainGeometry(): PlaneGeometry {
@@ -267,155 +263,6 @@ void main() {
   #include <colorspace_fragment>
 }
 `;
-
-const WATER_RENDER_STYLE = {
-  seamColor: '#7fc9c4',
-  seamOpacity: 0.5,
-  bedColor: '#1f5d73',
-  bedOpacity: 0.9,
-  surfaceDeepColor: '#2a86a6',
-  surfaceEdgeCoolColor: '#55c4c6',
-  surfaceWarmTintColor: '#e0a7a0',
-  surfaceOpacity: 0.86,
-  highlightColor: '#dff6ff',
-  highlightOpacity: 0.12,
-  edgeColor: '#e8fbf6',
-} as const;
-
-function buildShape(points: Array<{ x: number; z: number }>): Shape {
-  const [firstPoint, ...rest] = points;
-  const shape = new Shape();
-  const firstPlanePoint = firstPoint ? worldXZToPlaneXY(firstPoint) : { x: 0, y: 0 };
-
-  shape.moveTo(firstPlanePoint.x, firstPlanePoint.y);
-  for (const point of rest) {
-    const planePoint = worldXZToPlaneXY(point);
-    shape.lineTo(planePoint.x, planePoint.y);
-  }
-  shape.closePath();
-
-  return shape;
-}
-
-function buildLakeSurfaceGeometry(points: Array<{ x: number; z: number }>, body: WaterBodyDefinition): ShapeGeometry {
-  const geometry = new ShapeGeometry(buildShape(points));
-  const positions = geometry.attributes.position;
-  const colors = new Float32Array(positions.count * 3);
-  const deepColor = new Color(WATER_RENDER_STYLE.surfaceDeepColor);
-  const edgeCoolColor = new Color(WATER_RENDER_STYLE.surfaceEdgeCoolColor);
-  const warmTintColor = new Color(WATER_RENDER_STYLE.surfaceWarmTintColor);
-  const color = new Color();
-
-  for (let index = 0; index < positions.count; index += 1) {
-    const worldX = positions.getX(index);
-    const worldZ = -positions.getY(index);
-    const localX = worldX - body.centerX;
-    const localZ = worldZ - body.centerZ;
-    const radialLength = Math.hypot(localX, localZ) || 1;
-    const radialX = localX / radialLength;
-    const radialZ = localZ / radialLength;
-    const sunFacing = Math.max(0, radialX * SCENIC_FORWARD_XZ.x + radialZ * SCENIC_FORWARD_XZ.z);
-    const normalizedDistance = Math.hypot(localX / (body.radiusX * 1.06), localZ / (body.radiusZ * 1.06));
-    const shoreBlend = MathUtils.smoothstep(normalizedDistance, 0.56, 1.02);
-    const warmBlend = Math.pow(sunFacing, 1.8) * (0.08 + shoreBlend * 0.26);
-
-    color.copy(deepColor);
-    color.lerp(edgeCoolColor, shoreBlend * 0.58);
-    color.lerp(warmTintColor, warmBlend);
-
-    colors[index * 3] = color.r;
-    colors[index * 3 + 1] = color.g;
-    colors[index * 3 + 2] = color.b;
-  }
-
-  geometry.setAttribute('color', new BufferAttribute(colors, 3));
-  return geometry;
-}
-
-function StylizedWater({ body }: { body: WaterBodyDefinition }) {
-  const materialRef = useRef<MeshBasicMaterial>(null);
-  const highlightMaterialRef = useRef<MeshBasicMaterial>(null);
-
-  const lakeBoundary = useMemo(
-    () => getLakeBoundaryPolyline(body, LAKE_SHORELINE_SAMPLE_DETAIL),
-    [body],
-  );
-  const seamBoundary = useMemo(
-    () => getLakeBoundaryPolyline(body, LAKE_SHORELINE_SAMPLE_DETAIL, 1.018),
-    [body],
-  );
-  const bedGeometry = useMemo(() => new ShapeGeometry(buildShape(lakeBoundary)), [lakeBoundary]);
-  const surfaceGeometry = useMemo(() => buildLakeSurfaceGeometry(lakeBoundary, body), [lakeBoundary, body]);
-  const seamGeometry = useMemo(() => new ShapeGeometry(buildShape(seamBoundary)), [seamBoundary]);
-  const highlightGeometry = useMemo(() => new ShapeGeometry(buildShape(getLakeBoundaryPolyline(body, 52, 0.9))), [body]);
-  const edgePoints = useMemo(
-    () => lakeBoundary.map((point) => [point.x, 0, point.z] as [number, number, number]),
-    [lakeBoundary],
-  );
-
-  const waterY = getWaterSurfaceHeight(body);
-
-  useFrame(({ clock }) => {
-    const material = materialRef.current;
-    const highlightMaterial = highlightMaterialRef.current;
-    if (!material || !highlightMaterial) {
-      return;
-    }
-
-    const shimmer = Math.sin(clock.elapsedTime * 1.2 + body.seed);
-    material.opacity = WATER_RENDER_STYLE.surfaceOpacity + shimmer * 0.018;
-    highlightMaterial.opacity =
-      WATER_RENDER_STYLE.highlightOpacity + Math.sin(clock.elapsedTime * 1.7 + body.seed * 0.37) * 0.04;
-  });
-
-  return (
-    <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} geometry={seamGeometry} position={[0, waterY - 0.02, 0]}>
-        <meshBasicMaterial
-          color={WATER_RENDER_STYLE.seamColor}
-          transparent
-          opacity={WATER_RENDER_STYLE.seamOpacity}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} geometry={bedGeometry} position={[0, waterY - 0.44, 0]}>
-        <meshBasicMaterial
-          color={WATER_RENDER_STYLE.bedColor}
-          transparent
-          opacity={WATER_RENDER_STYLE.bedOpacity}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <mesh rotation={[-Math.PI / 2, 0, 0]} geometry={surfaceGeometry} position={[0, waterY + 0.018, 0]}>
-        <meshBasicMaterial
-          ref={materialRef}
-          vertexColors
-          transparent
-          opacity={WATER_RENDER_STYLE.surfaceOpacity}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <mesh rotation={[-Math.PI / 2, 0, 0]} geometry={highlightGeometry} position={[0, waterY + 0.03, 0]}>
-        <meshBasicMaterial
-          ref={highlightMaterialRef}
-          color={WATER_RENDER_STYLE.highlightColor}
-          transparent
-          opacity={WATER_RENDER_STYLE.highlightOpacity}
-          toneMapped={false}
-        />
-      </mesh>
-
-      <Line
-        points={edgePoints.map((point) => [point[0], waterY + 0.032, point[2]])}
-        color={WATER_RENDER_STYLE.edgeColor}
-        lineWidth={1.2}
-      />
-    </>
-  );
-}
 
 function ScenicRestSpotBench({ spot }: { spot: ScenicRestSpotDefinition }) {
   const y = getTerrainHeight(spot.seat.x, spot.seat.z);
@@ -721,7 +568,7 @@ export function WorldEnvironment() {
       ))}
 
       {WORLD_WATER_BODIES.map((body) => (
-        <StylizedWater key={body.id} body={body} />
+        <LakeWater key={body.id} body={body} />
       ))}
       <LakeFaunaManager />
 

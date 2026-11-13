@@ -6,22 +6,22 @@ import type { IslandTrail } from '../islandPaths';
 import { getTerrainHeight } from '../terrain';
 
 /**
- * Trails draped over the terrain. Each trail is a ribbon five vertices wide that follows the ground, with a
+ * Trails draped over the terrain. Each trail is a ribbon seven vertices wide that follows the ground, with a
  * packed-earth centre and feathered edges that fade into the grass.
  */
 
-const ACROSS = [-1, -0.62, 0, 0.62, 1];
-const ALPHA = [0, 0.92, 1, 0.92, 0];
+const ACROSS = [-1, -0.72, -0.4, 0, 0.4, 0.72, 1];
+const ALPHA = [0, 0.5, 0.92, 1, 0.92, 0.5, 0];
 const LIFT = 0.05;
-const centerColor = new Color('#e2c596');
-const edgeColor = new Color('#c9a774');
+const centerColor = new Color('#ecd7ab');
+const edgeColor = new Color('#d5bb8d');
 
 function hash(x: number): number {
   const s = Math.sin(x * 12.9898) * 43758.5453;
   return s - Math.floor(s);
 }
 
-function buildTrailGeometry(trail: IslandTrail): BufferGeometry {
+export function buildTrailGeometry(trail: IslandTrail): BufferGeometry {
   const points = trail.points.filter(([x, z]) => Math.hypot(x, z) > PLAZA_RADII.edge + 0.35);
   const rows = points.length;
   const columns = ACROSS.length;
@@ -63,7 +63,8 @@ function buildTrailGeometry(trail: IslandTrail): BufferGeometry {
       const b = a + 1;
       const c = a + columns;
       const d = c + 1;
-      indices.push(a, c, b, b, c, d);
+      // Counter-clockwise seen from above, so the faces (and normals) point up.
+      indices.push(a, b, c, b, d, c);
     }
   }
 

@@ -153,10 +153,10 @@ export function CentralPlaza() {
 
   return (
     <group>
-      {/* Retaining wall: a warm stone drum that the terrain blends into. */}
+      {/* Grassy berm from the plaza edge down to the surrounding terrain. */}
       <mesh receiveShadow position={[0, centerY - CENTRAL_PLAZA_FOUNDATION_DEPTH * 0.5, 0]}>
         <cylinderGeometry args={[PLAZA_RADII.edge + 0.25, outerRadius + 1.2, CENTRAL_PLAZA_FOUNDATION_DEPTH, 96, 1, true]} />
-        <meshStandardMaterial color="#cdb38a" roughness={0.9} />
+        <meshStandardMaterial color="#86b85a" roughness={1} flatShading />
       </mesh>
 
       <mesh receiveShadow position={[0, centerY + 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -170,8 +170,8 @@ export function CentralPlaza() {
       </mesh>
 
       {/* Low kerb along the outer edge. */}
-      <mesh castShadow receiveShadow position={[0, centerY + 0.08, 0]}>
-        <cylinderGeometry args={[PLAZA_RADII.edge + 0.25, PLAZA_RADII.edge + 0.3, 0.16, 128, 1, true]} />
+      <mesh castShadow receiveShadow position={[0, centerY + 0.05, 0]}>
+        <cylinderGeometry args={[PLAZA_RADII.edge + 0.25, PLAZA_RADII.edge + 0.32, 0.34, 128, 1, true]} />
         <meshStandardMaterial color="#c4a77c" roughness={0.88} />
       </mesh>
 
