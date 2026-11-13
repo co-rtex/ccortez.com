@@ -9,7 +9,7 @@
   "recruiterCard": {
     "roleLabel": "Software Engineering Intern, Backend & AI",
     "organization": "Phoenix-Aid / AccuraTrials",
-    "dateRange": "Oct 2025 - Mar 2026",
+    "dateRange": "Oct 2025 - May 2026",
     "location": "Madison, WI",
     "summary": "Built backend APIs and an asynchronous LLM extraction pipeline for an AWS-hosted clinical-trial data platform.",
     "impactBullets": [
