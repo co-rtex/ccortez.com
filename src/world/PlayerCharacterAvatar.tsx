@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Component, Suspense, useEffect, useMemo, useRef } from 'react';
 import type { MutableRefObject, ReactNode } from 'react';
 import { LoopRepeat, Mesh } from 'three';
-import type { AnimationAction, Group } from 'three';
+import type { AnimationAction, Group, Material } from 'three';
 
 import { readAvatarInspectFixture } from './avatarInspect';
 import { PLAYER_AVATAR_APPEARANCE, type PlayerLocomotionState } from './playerAvatar';
@@ -83,6 +83,7 @@ function PlayerAvatarModel({ locomotionRef, visible }: PlayerAvatarProps) {
       object.castShadow = true;
       object.receiveShadow = true;
       object.frustumCulled = false;
+      applyAvatarLightFloor(object.material);
     });
   }, [modelScene]);
 
@@ -176,6 +177,28 @@ function PlayerAvatarFallback({ locomotionRef, visible }: PlayerAvatarProps) {
       </mesh>
     </group>
   );
+}
+
+/**
+ * A small lighting floor for the avatar only: a fraction of each surface's own colour is added as emission, so in
+ * shade (under trees, on the far side of the fountain) the polo, khakis and skin keep their hues instead of sinking
+ * toward black and losing the likeness. The rest of the scene is lit as before.
+ */
+const AVATAR_LIGHT_FLOOR = 0.12;
+
+function applyAvatarLightFloor(material: Material | Material[]): void {
+  for (const entry of Array.isArray(material) ? material : [material]) {
+    if (entry.userData.avatarLightFloor) continue;
+    entry.userData.avatarLightFloor = true;
+    entry.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <emissivemap_fragment>',
+        `#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * ${AVATAR_LIGHT_FLOOR.toFixed(2)};`,
+      );
+    };
+    entry.customProgramCacheKey = () => 'avatar-light-floor-v1';
+    entry.needsUpdate = true;
+  }
 }
 
 function holdAvatarAction(action: AnimationAction, time: number): void {

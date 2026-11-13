@@ -263,6 +263,8 @@ function buildHead(head) {
     parts.add(ellipsoid(0.0185, 0.0128, 0.0045, 14, 8), COLORS.eyeWhite, { position: [x, c + y, z - 0.002] });
     parts.add(ellipsoid(0.0115, 0.0118, 0.003, 12, 8), COLORS.iris, { position: [x, c + y - 0.0004, z + 0.0006] });
     parts.add(ellipsoid(0.0195, 0.0028, 0.0038, 12, 6), COLORS.lash, { position: [x, c + y + 0.0118, z + 0.0002] });
+    // Lower lid lifted into a crescent by the smile.
+    parts.add(ellipsoid(0.017, 0.0034, 0.004, 12, 6), COLORS.skinShade, { position: [x, c + y - 0.0098, z - 0.0006] });
     // Brows: flat and relaxed, the inner ends lifted a touch (a scowl tilts them the other way).
     const [bx, by, bz] = onFace(side * 0.044, 0.045, 0.0015);
     parts.add(ellipsoid(0.02, 0.0032, 0.0035, 12, 6), COLORS.brow, { position: [bx, c + by, bz], rotation: [0, -side * 0.14, -side * 0.09] });
@@ -276,9 +278,9 @@ function buildHead(head) {
   // A friendly grin: a wide, shallow crescent with a band of upper teeth and corners turned up.
   const [, my, mz] = onFace(0, -0.06, 0);
   const grin = new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2); // lower half: a bowl
-  grin.scale(0.036, 0.0095, 0.004);
-  parts.add(grin, COLORS.mouth, { position: [0, c + my + 0.005, mz - 0.0012] });
-  parts.add(ellipsoid(0.031, 0.0042, 0.0042, 16, 6), COLORS.teeth, { position: [0, c + my + 0.0026, mz - 0.0004] });
+  grin.scale(0.037, 0.0135, 0.0042);
+  parts.add(grin, COLORS.mouth, { position: [0, c + my + 0.006, mz - 0.0012] });
+  parts.add(ellipsoid(0.032, 0.0058, 0.0044, 16, 6), COLORS.teeth, { position: [0, c + my + 0.003, mz - 0.0004] });
   for (const side of [1, -1]) {
     // Corners lifting into the cheeks.
     parts.add(ellipsoid(0.007, 0.0022, 0.003, 8, 4), COLORS.skinShade, {
@@ -551,7 +553,8 @@ function buildLeg(hips, side) {
         [0.084, 0.06],
         [0.09, 0.0],
         [0.088, -0.12],
-        [0.084, -0.24],
+        [0.083, -0.26],
+        [0.082, -0.3],
         [0.082, -0.38],
         [0.0, -0.381],
       ],
@@ -573,8 +576,8 @@ function buildLeg(hips, side) {
       [
         [0.0, 0.001],
         [0.082, 0.0],
-        [0.081, -0.06],
-        [0.078, -0.2],
+        [0.082, -0.08],
+        [0.079, -0.2],
         [0.078, -0.3],
         [0.081, -0.345],
         [0.083, -0.362],
@@ -708,14 +711,19 @@ const ARM_OUT = 0.085;
 /** One leg through a gait cycle: thigh swing (forward positive), knee bend and foot pitch (toe up positive). */
 function legCycle(p, { stance, swing, kneeStance, kneeSwing, toeOff }) {
   // Thigh: forward at heel strike (p = 0), back at toe-off (p = stance), forward again by the end of swing.
+  // Through swing the thigh eases out (reaches forward early), and the knee straightens late, so the foot travels
+  // forward clear of the ground and only comes down at heel strike instead of landing early and scraping forward.
   let thigh;
   if (p < stance) thigh = swing * Math.cos((p / stance) * Math.PI);
-  else thigh = -swing * Math.cos(((p - stance) / (1 - stance)) * Math.PI);
+  else {
+    const s = (p - stance) / (1 - stance);
+    thigh = -swing * Math.cos((1 - (1 - s) ** 2) * Math.PI);
+  }
   // Knee: a small loading bend early in stance, a big bend mid-swing to clear the ground.
   const knee =
     p < stance
       ? kneeStance * Math.sin((p / stance) * Math.PI) * 0.9 + 0.04
-      : 0.04 + kneeSwing * Math.sin(((p - stance) / (1 - stance)) * Math.PI) ** 1.4;
+      : 0.04 + kneeSwing * Math.sin(((p - stance) / (1 - stance)) ** 0.8 * Math.PI) ** 1.2;
   // Foot pitch (toe up positive) relative to the calf. `flat` cancels the thigh and knee so the sole stays level
   // through stance; the heel lifts at toe-off, the toe is up at heel strike, and swing eases from pointed to level.
   const flat = knee - thigh;
@@ -737,7 +745,8 @@ function gaitPose(phase, gait) {
   return {
     hips: [0, -gait.hipYaw * swingL, gait.hipRoll * Math.sin(phase * TAU * 2 + Math.PI / 2) * 0.5],
     hipsX: 0,
-    torso: [gait.lean, gait.hipYaw * 1.6 * swingL, 0],
+    // The chest counter-rotates against the hips (~7° relative in the walk), so the upper body is not stiff.
+    torso: [gait.lean, gait.hipYaw * 2.0 * swingL, 0],
     head: [-gait.lean * 0.45 + 0.015 * Math.cos(phase * TAU * 2), -gait.hipYaw * 0.6 * swingL, 0],
     // Arms swing opposite their own side's leg; elbows bend more on the forward swing.
     armL: [gait.arm * swingL - gait.armBase, 0, ARM_OUT + 0.02],
@@ -759,12 +768,12 @@ const WALK = {
   stance: 0.6,
   swing: 0.42,
   kneeStance: 0.07,
-  kneeSwing: 0.72,
+  kneeSwing: 0.9,
   toeOff: 0.32,
   lean: 0.05,
-  hipYaw: 0.06,
+  hipYaw: 0.07,
   hipRoll: 0.03,
-  arm: 0.26,
+  arm: 0.32,
   armBase: -0.02,
   elbow: 0.2,
   elbowSwing: 0.14,
@@ -774,7 +783,7 @@ const WALK = {
 
 const RUN = {
   stance: 0.38,
-  swing: 0.62,
+  swing: 0.5,
   kneeStance: 0.16,
   kneeSwing: 1.4,
   toeOff: 0.5,
@@ -785,7 +794,7 @@ const RUN = {
   armBase: 0.02,
   elbow: 1.0,
   elbowSwing: 0.12,
-  bounce: 0.06,
+  bounce: 0.03,
   stanceWidth: 0.04,
 };
 
