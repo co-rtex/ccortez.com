@@ -8,7 +8,7 @@ files keep release records; this file holds priorities, art direction, active wo
 | Site | Repo / local dir | Production | Working branch |
 | --- | --- | --- | --- |
 | 3D game | `co-rtex/ccortez.com` · `~/Desktop/Projects/ccortez-dual-sprint` | https://game.ccortez.com (Pages from `main`, `5176c5b`) | `game/art-direction-pass` (pushed) |
-| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `b815935`) |
+| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `c711b57`) |
 
 `~/Desktop/Projects/ccortez.com` is the protected original checkout (read-only; 96 dirty paths at `825fe37`).
 Nothing merges to either `main` without Christian's approval.
@@ -97,6 +97,16 @@ Lighthouse home perf 96–97 (a11y/BP/SEO 100), TaskForge 98/100/100/100. Re-ver
 Preview: https://portfolio-professional-2drvwkwhp-co-rtexs-projects.vercel.app (Vercel preview, behind Vercel
 login). `4a02ed2`: `og.png` regenerated in the new look by `npm run og:image` (scripts/export-og-image.mjs); `npm run
 check` and e2e 44/44 re-run here after the change. Open: home LCP ~2.7 s on simulated slow 4G (display font).
+
+
+Pass 2 (`ea6a917`, `1eb292f`, `9e53570`, `8a6cdb0`; reviewed here): numbered figure callouts with a caption key
+using each diagram's own names (legible on cards and phones), hero no longer repeats the name, numbered sections,
+dated Experience timeline, numbered project index, ruled Tools/Education rows, mono tech stacks, informative
+idle simulator log (run settings), inlined stylesheet (home LCP 1.6 → 1.0 s throttled), contents highlight on
+case studies. Agent-reported: `npm run check` clean, vitest 26/26, e2e 47 passed + 1 desktop-only skip,
+Lighthouse mobile 100/100/100/100 on home and TaskForge. Preview:
+https://portfolio-professional-21zb2sfr5-co-rtexs-projects.vercel.app (Vercel login). Trade-off: inlined CSS
+grows home HTML 178 → 348 KB raw (~57 KB compressed). `docs/CLAIMS_LEDGER.md` (`c711b57`) holds the audit.
 
 ## Claims audit (2026-11-13)
 
