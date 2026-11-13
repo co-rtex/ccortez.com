@@ -1,7 +1,10 @@
+import { useFrame } from '@react-three/fiber';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { Color, ConeGeometry, CylinderGeometry, DodecahedronGeometry, IcosahedronGeometry, Object3D } from 'three';
 import type { BufferGeometry, InstancedMesh } from 'three';
 
+import { useGameStore } from '../../state/gameStore';
+import { OCCLUSION_UNIFORMS, applyOcclusionDither } from './occlusionDither';
 import { buildVegetationInstances } from './vegetation';
 import type { Instance } from './vegetation';
 
@@ -17,6 +20,7 @@ function InstancedPart({
   castShadow = true,
   receiveShadow = false,
   emissive,
+  ditherOccluders = false,
 }: {
   instances: Instance[];
   geometry: BufferGeometry;
@@ -24,6 +28,7 @@ function InstancedPart({
   castShadow?: boolean;
   receiveShadow?: boolean;
   emissive?: number;
+  ditherOccluders?: boolean;
 }) {
   const ref = useRef<InstancedMesh>(null);
 
@@ -57,12 +62,18 @@ function InstancedPart({
         flatShading
         emissive={emissive ? '#ffffff' : '#000000'}
         emissiveIntensity={emissive ?? 0}
+        onBeforeCompile={ditherOccluders ? applyOcclusionDither : undefined}
+        customProgramCacheKey={ditherOccluders ? () => 'foliage-occlusion-dither' : undefined}
       />
     </instancedMesh>
   );
 }
 
 export function InstancedVegetation() {
+  useFrame(() => {
+    const { playerPosition } = useGameStore.getState();
+    OCCLUSION_UNIFORMS.uPlayer.value.set(playerPosition.x, playerPosition.y, playerPosition.z);
+  });
   const instances = useMemo(() => buildVegetationInstances(), []);
   const geometries = useMemo(
     () => ({
@@ -78,8 +89,8 @@ export function InstancedVegetation() {
   return (
     <group>
       <InstancedPart instances={instances.trunks} geometry={geometries.trunk} roughness={0.9} />
-      <InstancedPart instances={instances.puffs} geometry={geometries.puff} roughness={0.8} receiveShadow />
-      <InstancedPart instances={instances.cones} geometry={geometries.cone} roughness={0.82} receiveShadow />
+      <InstancedPart instances={instances.puffs} geometry={geometries.puff} roughness={0.8} receiveShadow ditherOccluders />
+      <InstancedPart instances={instances.cones} geometry={geometries.cone} roughness={0.82} receiveShadow ditherOccluders />
       <InstancedPart instances={instances.blooms} geometry={geometries.bloom} roughness={0.6} castShadow={false} emissive={0.08} />
       <InstancedPart instances={instances.rocks} geometry={geometries.rock} roughness={0.92} receiveShadow />
     </group>
