@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { addInput, createSim, isSettled, step, type Sim } from "./jobSim";
+import { DEFAULT_CONFIG, addInput, createSim, isSettled, step, type Sim } from "./jobSim";
 import { recoveryTrace } from "./recoveryTrace";
 
 function runTo(sim: Sim, tick: number): Sim {
@@ -52,5 +52,18 @@ describe("recovery trace", () => {
     let sim = addInput(createSim(2027), { type: "kill", workerId: 1 });
     sim = step(sim);
     expect(recoveryTrace(sim)).toBeNull();
+  });
+
+  it("names the job the crashed worker held, and dead-letters it when the lost lease was its last attempt", () => {
+    const config = { ...DEFAULT_CONFIG, maxAttempts: 1 };
+    let sim = createSim(2027, config);
+    while (sim.workers[1]!.jobId === null) sim = step(sim);
+    const held = sim.workers[1]!.jobId;
+    sim = step(addInput(sim, { type: "kill", workerId: 2 }));
+    while (!isSettled(sim)) sim = step(sim);
+    const trace = recoveryTrace(sim)!;
+    expect(trace.jobId).toBe(held);
+    expect(trace.outcome).toBe("dead_lettered");
+    expect(trace.steps.map((s) => s.title)).toEqual([`w2 crashed holding job ${held}`, "Out of attempts, dead-lettered"]);
   });
 });

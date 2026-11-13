@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, addInput, createSim, isSettled, runToEnd, step } from "./jobSim";
+import { DEFAULT_CONFIG, addInput, createSim, formatHash, isSettled, runToEnd, step } from "./jobSim";
 
 describe("job simulation", () => {
   it("is deterministic for the same seed and inputs", () => {
@@ -84,5 +84,14 @@ describe("job simulation", () => {
     const crashes = replay.events.filter((e) => e.kind === "crash").map((e) => e.text);
     expect(crashes).toHaveLength(1);
     expect(crashes[0]).toMatch(/^worker 2 crashed/);
+  });
+
+  it("keeps its history hashes (golden values), so tagging events never changes a replay", () => {
+    expect(formatHash(runToEnd(2027).hash)).toBe("f2553cd0");
+    const crashes = [
+      { tick: 3, type: "kill" as const, workerId: 2 },
+      { tick: 9, type: "kill" as const, workerId: 1 },
+    ];
+    expect(formatHash(runToEnd(2027, DEFAULT_CONFIG, crashes).hash)).toBe("f035f824");
   });
 });

@@ -68,7 +68,7 @@ export function recoveryTrace(sim: Sim): RecoveryTrace | null {
           title: `w${event.workerId} claimed it with fence ${event.fence}`,
           detail: reclaimed
             ? `Another attempt, under a newer fence again.`
-            : `Each attempt gets a newer fence. If w${workerId} came back and reported its old attempt, fence ${staleFence} would mark that report as stale.`,
+            : `Each attempt gets a newer fence. In TaskForge a late report from w${workerId}'s attempt, still carrying fence ${staleFence}, is refused as stale; this model only shows the numbers.`,
         });
         reclaimed = true;
         break;
@@ -77,7 +77,7 @@ export function recoveryTrace(sim: Sim): RecoveryTrace | null {
           key,
           tick: event.tick,
           title: "That attempt failed",
-          detail: `${capitalise(event.text)}. Failures back off and retry; crashes do not count as failures, only as lost leases.`,
+          detail: `${capitalise(event.text)}. A failed attempt backs off before it retries; a lost lease is requeued at once. Either way the attempt is used up.`,
         });
         break;
       case "success":
