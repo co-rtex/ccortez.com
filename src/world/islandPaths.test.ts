@@ -65,3 +65,14 @@ describe('island paths', () => {
     }
   });
 });
+
+describe('lighthouse', () => {
+  it('stands on dry land at the end of the north trail', async () => {
+    const { LIGHTHOUSE, ISLAND_TRAILS: trails } = await import('./islandPaths');
+    const { OCEAN_LEVEL, getTerrainHeight } = await import('./terrain');
+    expect(getTerrainHeight(LIGHTHOUSE.x, LIGHTHOUSE.z)).toBeGreaterThan(OCEAN_LEVEL + 0.4);
+    const north = trails.find((trail) => trail.id === 'north-gate')!;
+    const [endX, endZ] = north.points[north.points.length - 1]!;
+    expect(Math.hypot(LIGHTHOUSE.x - endX, LIGHTHOUSE.z - endZ)).toBeLessThan(4);
+  });
+});

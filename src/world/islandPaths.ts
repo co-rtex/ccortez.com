@@ -206,3 +206,17 @@ export const PLAZA_FLOWER_BED_COLLIDERS: Array<{ x: number; z: number; radius: n
       radius: 0.85,
     })),
 );
+
+/** Lighthouse at the end of the north trail: the island's second landmark and a reason to walk out. */
+export const LIGHTHOUSE = (() => {
+  const northTrail = ISLAND_TRAILS.find((trail) => trail.id === 'north-gate')!;
+  const [endX, endZ] = northTrail.points[northTrail.points.length - 1]!;
+  const length = Math.hypot(endX, endZ) || 1;
+  // A little past the trail end, toward the coast, so the trail arrives at its door.
+  return { x: endX + (endX / length) * 2.6, z: endZ + (endZ / length) * 2.6, radius: 1.5 };
+})();
+
+/** Areas vegetation and rocks keep clear of. */
+export const LANDMARK_CLEAR_ZONES: Array<{ x: number; z: number; radius: number }> = [
+  { x: LIGHTHOUSE.x, z: LIGHTHOUSE.z, radius: 5 },
+];

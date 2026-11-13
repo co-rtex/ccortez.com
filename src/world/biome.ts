@@ -14,6 +14,8 @@ import {
 } from './terrain';
 import { CENTRAL_PLAZA_FOUNTAIN_RADIUS } from './hub';
 import {
+  LANDMARK_CLEAR_ZONES,
+  LIGHTHOUSE,
   PATH_NETWORK_XZ,
   PLAZA_FLOWER_BED_COLLIDERS,
   PLAZA_LAMP_COLLIDER_RADIUS,
@@ -208,6 +210,10 @@ function generateScatterPoints({
   return points;
 }
 
+function isNearLandmark(pointX: number, pointZ: number): boolean {
+  return LANDMARK_CLEAR_ZONES.some((zone) => Math.hypot(pointX - zone.x, pointZ - zone.z) < zone.radius);
+}
+
 function isInNeighborhood(pointX: number, pointZ: number): boolean {
   return Math.hypot(pointX, pointZ) < PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 1.8;
 }
@@ -257,6 +263,7 @@ export const TREE_POINTS: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.38) ||
     distanceToRoad(x, z) < 1.75 ||
     isInNeighborhood(x, z) ||
+    isNearLandmark(x, z) ||
     isInsideWorkbenchClearZone(x, z) ||
     getIslandDistanceNormalized(x, z) > 0.9 ||
     isOutsideGrove(x, z),
@@ -271,6 +278,7 @@ export const BUSH_POINTS: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.28) ||
     distanceToRoad(x, z) < 1.2 ||
     isInNeighborhood(x, z) ||
+    isNearLandmark(x, z) ||
     isInsideWorkbenchClearZone(x, z, WORKBENCH_GROUND_COVER_CLEAR_RADIUS) ||
     getIslandDistanceNormalized(x, z) > 0.94,
 });
@@ -282,6 +290,7 @@ export const FLOWER_POINTS: ScatterPoint[] = generateScatterPoints({
   avoid: (x, z) =>
     !isGroundedPlacement(x, z, 0.22) ||
     isNearLake(x, z, 0.2) ||
+    isNearLandmark(x, z) ||
     Math.hypot(x, z) < PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 2.4 ||
     isInsideWorkbenchClearZone(x, z, WORKBENCH_GROUND_COVER_CLEAR_RADIUS) ||
     getIslandDistanceNormalized(x, z) > 0.95,
@@ -296,6 +305,7 @@ const rawBoulderPoints: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.35) ||
     distanceToRoad(x, z) < 2.3 ||
     isInNeighborhood(x, z) ||
+    isNearLandmark(x, z) ||
     isInsideWorkbenchClearZone(x, z) ||
     getIslandDistanceNormalized(x, z) > 0.91,
 });
@@ -321,7 +331,7 @@ const rawCoastalRockPoints: ScatterPoint[] = generateScatterPoints({
       return true;
     }
 
-    return isNearLake(x, z, 0.5) || distanceToRoad(x, z) < 1.2 || isInNeighborhood(x, z);
+    return isNearLake(x, z, 0.5) || distanceToRoad(x, z) < 1.2 || isInNeighborhood(x, z) || isNearLandmark(x, z);
   },
 });
 
@@ -355,6 +365,7 @@ function createTreeAndRockCollisionObstacles(): CircleObstacle[] {
     },
     ...PLAZA_LAMP_POSITIONS.map(([x, z]) => ({ centerX: x, centerZ: z, radius: PLAZA_LAMP_COLLIDER_RADIUS })),
     ...PLAZA_FLOWER_BED_COLLIDERS.map(({ x, z, radius }) => ({ centerX: x, centerZ: z, radius })),
+    { centerX: LIGHTHOUSE.x, centerZ: LIGHTHOUSE.z, radius: LIGHTHOUSE.radius },
     ...treeObstacles,
     ...boulderObstacles,
   ];
