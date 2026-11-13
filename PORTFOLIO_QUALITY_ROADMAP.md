@@ -60,6 +60,13 @@ Nothing merges to either `main` without Christian's approval.
 | `590d17c` | Guide panel 336 px with a one-line intro; no controls hint without WebGL; Start Here badge clear of the phone header | `.shots/hud-1366-first`, `follow-mobile` |
 | `16ae247` | `public/robots.txt` (Lighthouse SEO) | Lighthouse a11y 100, best practices 100 (desktop + mobile) |
 
+| `76dfc5d` | Bench props scaled ×1.3; Start Here gets a welcome island-map board (it had no scene) | `.shots/interact-panel` |
+| `729dfe4` | Ocean depth map → lagoon shallows and surf line; wider dry/wet sand beach | `.shots/coast2-*`; M3 60 fps |
+| `4e19f99` | Warm golden-hour haze band along the horizon (sky + ocean horizon) | `.shots/haze-*` |
+| dust (`git log --grep dust`) | Footstep dust puffs while walking/running (24-puff instanced pool) | `.shots/dust` |
+| `2cd836f` | No black bench props: lifted dark bases, metalness capped in scenes, cool fill light opposite the sun, SSEC racks/platform lightened | `.shots/ssec4-lake` |
+| `4d8eecd` | Four game benches aligned with their repositories (finance-ops, FootyMind, Quant Signal Workstation, IntelliSort) per the claims audit | 151 tests |
+
 Checkpoint A (before/after, drag to compare; refreshed at `16ae247`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
@@ -90,6 +97,20 @@ Lighthouse home perf 96–97 (a11y/BP/SEO 100), TaskForge 98/100/100/100. Re-ver
 Preview: https://portfolio-professional-2drvwkwhp-co-rtexs-projects.vercel.app (Vercel preview, behind Vercel
 login). `4a02ed2`: `og.png` regenerated in the new look by `npm run og:image` (scripts/export-og-image.mjs); `npm run
 check` and e2e 44/44 re-run here after the change. Open: home LCP ~2.7 s on simulated slow 4G (display font).
+
+## Claims audit (2026-11-13)
+
+A read-only audit compared every claim on both sites with the repositories and the source-of-truth file (ledger
+kept outside the public repos). Applied: the four game-bench corrections above. Needs Christian's decision:
+- QuantLab "18 API endpoints" (both sites): the public repo (`c2a597b`) has 58 FastAPI routes.
+- EngineX "151 GoogleTest cases" (both sites): stale; v1.0.0 (`1529090`) has 280 GoogleTest tests / 534 ctest cases.
+- QuantLab "4–8 workers, 30 s–10 min jobs": in the source of truth, but the repo defaults to 2 workers and measured 1/2/4.
+- Project dates: TaskForge "Feb 2026" (repo starts 2026-08-29), QuantLab "May 2026" (repo from 2026-10-30); FootyMind
+  and IntelliSort show 2026 in the game (repos Nov 2025).
+- TradeGrid "20+ student developers": GitHub shows 11 contributors.
+- FridgeFinder game stack (FastAPI/OpenAI/PostgreSQL/Docker): only a frontend-only repo was found.
+- Game-only benches with no source anywhere: Mathnasium, HLR, Wisconsin DNR ("Present" looks stale), Elgin Help Hub,
+  LLM Research Agent, Prediction Signal Ingestion.
 
 ## Open decisions for Christian
 
