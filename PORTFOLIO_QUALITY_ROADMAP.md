@@ -63,7 +63,7 @@ Nothing merges to either `main` without Christian's approval.
 | `76dfc5d` | Bench props scaled ×1.3; Start Here gets a welcome island-map board (it had no scene) | `.shots/interact-panel` |
 | `729dfe4` | Ocean depth map → lagoon shallows and surf line; wider dry/wet sand beach | `.shots/coast2-*`; M3 60 fps |
 | `4e19f99` | Warm golden-hour haze band along the horizon (sky + ocean horizon) | `.shots/haze-*` |
-| dust (`git log --grep dust`) | Footstep dust puffs while walking/running (24-puff instanced pool) | `.shots/dust` |
+| `9f2ad7a` | Footstep dust puffs while walking/running (24-puff instanced pool) | `.shots/dust` |
 | `2cd836f` | No black bench props: lifted dark bases, metalness capped in scenes, cool fill light opposite the sun, SSEC racks/platform lightened | `.shots/ssec4-lake` |
 | `4d8eecd` | Four game benches aligned with their repositories (finance-ops, FootyMind, Quant Signal Workstation, IntelliSort) per the claims audit | 151 tests |
 
