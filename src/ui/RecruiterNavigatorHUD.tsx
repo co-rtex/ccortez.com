@@ -71,7 +71,7 @@ function renderShortlistSection(
             >
               <span className="recruiter-navigator__item-title">{entry.title}</span>
               <span className="recruiter-navigator__item-meta">
-                {entry.featured ? 'Featured • ' : ''}
+                {entry.featured ? 'Case study • ' : ''}
                 {entry.districtLabel}
                 {openedIds.has(entry.id) ? ' • Opened' : ''}
               </span>

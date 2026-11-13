@@ -173,7 +173,10 @@ describe('LinkedWorkbenchContent', () => {
     const flattened = chipLabels.join(' | ');
 
     expect(resolvePanelEyebrow(record)).toBe('Recruiter Brief');
-    expect(chipLabels).toEqual(['Type: Project', 'Featured']);
+    // An anchor-tier bench without a case study gets no flagship chip.
+    expect(chipLabels).toEqual(['Type: Project']);
+    const flagship = { ...record, definition: { ...record.definition, id: 'taskforge' } };
+    expect(buildWorkbenchMetaChips(flagship).map((chip) => chip.label)).toEqual(['Type: Project', 'Case study']);
     expect(flattened).not.toContain('Visibility:');
     expect(flattened).not.toContain('Presentation:');
     expect(flattened).not.toContain('Anchor:');

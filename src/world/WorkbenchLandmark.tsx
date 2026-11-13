@@ -1,5 +1,5 @@
 import { Html } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import { Color, DoubleSide, Shape } from 'three';
@@ -10,8 +10,10 @@ import { BENCH_PLINTH } from './benchPlinth';
 import { prefersReducedMotion } from './reducedMotion';
 import { START_HERE_WORKBENCH_ID } from './hub';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+import { isFlagshipWorkbench } from '../workbench/flagships';
 import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
 import {
+  FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH,
   getTitleBadgeOpacity,
   shouldShowPersistentWorkbenchTitleBadge,
   shouldShowWorkbenchProximityPrompt,
@@ -459,6 +461,9 @@ export function WorkbenchLandmark({
   const panelOpen = useGameStore((state) => state.panelWorkbenchId !== null);
   const showsPrompt = shouldShowWorkbenchProximityPrompt(workbench, isNearby) && !panelOpen;
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
+  // Long-range flagship badges only where they fit: on a narrow screen the far ones sit at the edges, half cut off.
+  const wideViewport = useThree((state) => state.size.width >= FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH);
+  const isFlagship = isFlagshipWorkbench(workbench.definition.id);
   // Start Here stands right in front of the spawn point, so its badge sits just above the welcome board
   // (higher, it floated up against the fountain's armillary).
   const startBadgeY = 3.5;
@@ -471,7 +476,7 @@ export function WorkbenchLandmark({
         playerPosition.z - workbench.placement.anchor.z,
       );
       // Start Here is the first destination, so its badge stays visible from anywhere on the plaza.
-      const opacity = (isStartHere ? 1 : getTitleBadgeOpacity(distance)).toFixed(2);
+      const opacity = (isStartHere ? 1 : getTitleBadgeOpacity(distance, isFlagship && wideViewport)).toFixed(2);
       if (badge.style.opacity !== opacity) badge.style.opacity = opacity;
     }
 
@@ -599,7 +604,11 @@ export function WorkbenchLandmark({
 
       {showsTitleBadge ? (
         <Html center position={[0, rendersKit ? 2.95 : isStartHere ? startBadgeY : 3.3, 0]}>
-          <div ref={titleBadgeRef} className="landmark-tooltip landmark-tooltip--title" style={{ opacity: 0 }}>
+          <div
+            ref={titleBadgeRef}
+            className={`landmark-tooltip landmark-tooltip--title${isFlagship ? ' landmark-tooltip--flagship' : ''}`}
+            style={{ opacity: 0 }}
+          >
             {workbench.definition.title}
             {/* Close by, the badge itself says how to open it: one label, not a prompt stacked on the badge. */}
             {showsPrompt ? <span className="landmark-tooltip__action">{isCoarsePointer() ? 'Tap to open' : 'Press E'}</span> : null}

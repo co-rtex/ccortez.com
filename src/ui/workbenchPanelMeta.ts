@@ -1,4 +1,5 @@
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+import { isFlagshipWorkbench } from '../workbench/flagships';
 import { formatRecruiterCategoryLabel, resolveRecruiterNavigatorCategory } from './recruiterNavigator';
 
 // Pure helpers for the workbench panel header, kept out of the component module for fast refresh.
@@ -42,9 +43,9 @@ export function buildWorkbenchMetaChips(workbench: WorkbenchRuntimeRecord): Arra
     });
   }
 
-  if (workbench.definition.priorityTier === 'anchor') {
+  if (isFlagshipWorkbench(workbench.definition.id)) {
     chips.push({
-      label: 'Featured',
+      label: 'Case study',
       tone: 'featured',
     });
   }

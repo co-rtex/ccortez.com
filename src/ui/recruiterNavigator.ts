@@ -1,4 +1,5 @@
 import type { WorldAnchor } from '../types/experience';
+import { isFlagshipWorkbench } from '../workbench/flagships';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import { START_HERE_WORKBENCH_ID } from '../world/hub';
 
@@ -220,7 +221,8 @@ export function deriveRecruiterNavigatorData(
   const markers = publishedWorkbenches.map((workbench, order) => {
     const category = resolveRecruiterNavigatorCategory(workbench);
     const state = resolveMarkerState(workbench, activeWorkbenchId, nearbyWorkbenchId);
-    const featured = workbench.definition.priorityTier === 'anchor';
+    // Featured means a flagship (a bench with a case study), not every anchor-tier bench.
+    const featured = isFlagshipWorkbench(workbench.definition.id);
 
     counts[category] += 1;
 
@@ -256,7 +258,8 @@ export function deriveRecruiterNavigatorData(
         featured,
         state,
         order,
-        priorityOrder: PRIORITY_TIER_ORDER[workbench.definition.priorityTier],
+        // Flagships lead their section, then the usual tier order.
+        priorityOrder: featured ? -1 : PRIORITY_TIER_ORDER[workbench.definition.priorityTier],
       });
     }
 

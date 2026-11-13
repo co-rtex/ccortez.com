@@ -66,6 +66,32 @@ describe('published workbench plaza layout', () => {
     expect(transitions).toBe(2);
   });
 
+  it('puts the highest-priority benches of both districts beside the north gate the spawn camera faces', () => {
+    // The gate is at -z. Work experience is measured going west from it, projects going east (the project arc
+    // is longer than half the ring, so it runs past the south point).
+    const angleFromGate = (id: string): number => {
+      const definition = WORKBENCH_LAYOUT.find((candidate) => candidate.id === id)!;
+      if (definition.placement.mode !== 'freeform') throw new Error('expected freeform placement');
+      const eastward = definition.district === 'projects' ? 1 : -1;
+      const angle = Math.atan2(eastward * definition.placement.x, -definition.placement.z);
+      return (angle + Math.PI * 2) % (Math.PI * 2);
+    };
+    const ids = PUBLISHED_WORKBENCH_PLAZA_METRICS.perimeterWorkbenchIds;
+    const district = (id: string) => WORKBENCH_LAYOUT.find((definition) => definition.id === id)!.district;
+    for (const arc of ['work-experience', 'projects'] as const) {
+      const inPriorityOrder = ids.filter((id) => district(id) === arc);
+      const byDistance = [...inPriorityOrder].sort((left, right) => angleFromGate(left) - angleFromGate(right));
+      expect(byDistance).toEqual(inPriorityOrder);
+    }
+    // Work experience runs west of the gate, projects east, and TaskForge leads the projects.
+    const first = (arc: string) => WORKBENCH_LAYOUT.find((definition) => definition.id === ids.find((id) => district(id) === arc))!;
+    const work = first('work-experience').placement;
+    const project = first('projects');
+    expect(work.mode === 'freeform' && work.x < 0).toBe(true);
+    expect(project.id).toBe('taskforge');
+    expect(project.placement.mode === 'freeform' && project.placement.x > 0 && project.placement.z < 0).toBe(true);
+  });
+
   it('derives published clear zones directly from the ring layout', () => {
     const published = WORKBENCH_LAYOUT.filter((definition) => definition.visibility === 'published');
 

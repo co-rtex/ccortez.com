@@ -882,6 +882,13 @@ body {
   white-space: normal;
 }
 
+/* Flagship benches (those with a case study): a warm rule on the badge, so the names that read from across the
+   plaza are recognisably the same set the guide tags "Case study". */
+.landmark-tooltip--flagship {
+  border-color: rgba(240, 190, 96, 0.95);
+  box-shadow: 0 0 0 1px rgba(240, 190, 96, 0.35);
+}
+
 .landmark-tooltip--editor {
   border-color: rgba(250, 203, 128, 0.82);
 }

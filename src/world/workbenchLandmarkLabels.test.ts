@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  FLAGSHIP_TITLE_BADGE_RANGE,
+  getTitleBadgeOpacity,
   shouldShowPersistentWorkbenchTitleBadge,
   shouldShowWorkbenchProximityPrompt,
 } from './workbenchLandmarkLabels';
@@ -90,5 +92,13 @@ describe('title badge distance fade', () => {
     expect(getTitleBadgeOpacity(5)).toBe(1);
     expect(getTitleBadgeOpacity(19)).toBe(1);
     expect(getTitleBadgeOpacity(21)).toBe(0);
+  });
+});
+
+describe('flagship title badges', () => {
+  it('read from across the plaza, where other badges stay hidden', () => {
+    expect(getTitleBadgeOpacity(35)).toBe(0);
+    expect(getTitleBadgeOpacity(35, true)).toBe(1);
+    expect(getTitleBadgeOpacity(FLAGSHIP_TITLE_BADGE_RANGE + 1, true)).toBe(0);
   });
 });
