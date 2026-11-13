@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "generate:player-avatar": "node scripts/generate-player-avatar.mjs",
     "new:experience": "node scripts/new-experience.mjs",
-    "new:workbench": "node scripts/new-workbench.mjs"
+    "new:workbench": "node scripts/new-workbench.mjs",
+    "check:shared-sim": "node scripts/check-shared-sim.mjs"
   },
   "dependencies": {
     "@fontsource/manrope": "^5.3.0",
