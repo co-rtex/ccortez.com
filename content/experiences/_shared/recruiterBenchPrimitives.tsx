@@ -14,6 +14,7 @@ import { CatmullRomCurve3, Color, TubeGeometry, Vector3 } from 'three';
 
 import type { ExperienceSceneProps } from '../../../src/types/experience';
 import { hasPerfFlag } from '../../../src/world/perfFlags';
+import { prefersReducedMotion } from '../../../src/world/reducedMotion';
 import {
   RECRUITER_SCENE_PLATFORM_GLOW_RADIUS,
   RECRUITER_SCENE_PLATFORM_HEIGHT,
@@ -814,6 +815,11 @@ export function OrbitCraft({
   );
 }
 
+/**
+ * A data path between two parts of a bench: a slim line in the accent colour with two glowing packets running
+ * along it. (A pale see-through tube alone read as a rendering glitch.) Under reduced motion the packets hold
+ * still at fixed points on the line.
+ */
 export function SignalRibbon({
   points,
   palette,
@@ -828,10 +834,11 @@ export function SignalRibbon({
   isFocused: boolean;
 }) {
   const materialRef = useRef<MeshStandardMaterial>(null);
-  const geometry = useMemo(() => {
+  const packetRefs = useRef<Array<Mesh | null>>([]);
+  const { curve, geometry } = useMemo(() => {
     const filteredPoints = points.filter(Boolean) as Vector3[];
-    const curve = new CatmullRomCurve3(filteredPoints);
-    return new TubeGeometry(curve, 28, 0.028, 8, false);
+    const path = new CatmullRomCurve3(filteredPoints);
+    return { curve: path, geometry: new TubeGeometry(path, 28, 0.022, 8, false) };
   }, [points]);
   const reveal = useWorkbenchReveal();
 
@@ -844,24 +851,41 @@ export function SignalRibbon({
       reveal.getCurrentStageMotionAmount(),
     );
     if (materialRef.current) {
-      materialRef.current.emissiveIntensity = 0.12 + activity.ambient * 0.24 + activity.focused * 0.65;
-      materialRef.current.opacity = 0.2 + activity.nearby * 0.12 + activity.focused * 0.18;
+      materialRef.current.emissiveIntensity = 0.18 + activity.ambient * 0.24 + activity.focused * 0.55;
     }
+    const travel = prefersReducedMotion() ? 0.3 : clock.elapsedTime * 0.32 + phase;
+    packetRefs.current.forEach((packet, index) => {
+      if (!packet) return;
+      curve.getPointAt((((travel + index * 0.5) % 1) + 1) % 1, packet.position);
+    });
   });
 
   return (
-    <mesh geometry={geometry}>
-      <meshStandardMaterial
-        ref={materialRef}
-        color={palette.glow}
-        emissive={palette.glow}
-        emissiveIntensity={0.3}
-        transparent
-        opacity={0.28}
-        roughness={0.14}
-        metalness={0.16}
-      />
-    </mesh>
+    <group>
+      <mesh geometry={geometry}>
+        <meshStandardMaterial
+          ref={materialRef}
+          color={palette.accent}
+          emissive={palette.accent}
+          emissiveIntensity={0.3}
+          transparent
+          opacity={0.72}
+          roughness={0.4}
+          metalness={0.05}
+        />
+      </mesh>
+      {[0, 1].map((index) => (
+        <mesh
+          key={index}
+          ref={(mesh) => {
+            packetRefs.current[index] = mesh;
+          }}
+        >
+          <sphereGeometry args={[0.055, 12, 10]} />
+          <meshStandardMaterial color={palette.glow} emissive={palette.glow} emissiveIntensity={1.1} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
