@@ -165,8 +165,9 @@ Done (each commit verified with lint, types, unit tests, build and GPU screensho
   hard to tell apart (LiDAR blues, QuantLab mauve/grey, EngineX orange/yellow) now differ; TaskForge "succeeded"
   label over the done pallet; QuantLab worker screen and printed manifest; EngineX flow chevrons; readable
   in-scene labels on phones; panel headings in order with no repeated title under Story (`a956f75`, `695d83a`,
-  `6ae4bd1`, `588ee4f`, `86a6aa6`). Not acted on: the spawn camera framing (lighthouse at centre, the ring a thin
-  band) and flagpoles crossing dioramas; both are wider art-direction changes for a later pass.
+  `6ae4bd1`, `588ee4f`, `86a6aa6`); a bench's pennant hides while its own panel is open, so its pole no longer
+  crosses the diorama (`bc41fdb`). Not acted on: the spawn camera framing (lighthouse at centre, the ring a thin
+  band), a wider art-direction change for a later pass.
 - Last items: flagship panels have "Try the live model", which jumps to the demo (below the fold on phones)
   (`b4cdbfa`); `npm run check:shared-sim` compares the bench models with the professional site's copies (all four
   match) (`ab05d4b`); the fallback clock's decision is a pure, tested function (`3dbc46d`). Tests: 242 passing.
