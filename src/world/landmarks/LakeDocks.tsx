@@ -45,7 +45,7 @@ export function LakeDocks() {
       const endAlong = dock.length - 0.2;
       lanterns.push({
         x: dock.start.x + dock.direction.x * endAlong + sideX * (DECK_WIDTH / 2 - 0.06),
-        y: dock.deckY + 0.42,
+        y: dock.deckY + 0.36,
         z: dock.start.z + dock.direction.z * endAlong + sideZ * (DECK_WIDTH / 2 - 0.06),
       });
     });
@@ -95,13 +95,18 @@ export function LakeDocks() {
       </instancedMesh>
       {layout.lanterns.map((lantern, index) => (
         <group key={index} position={[lantern.x, lantern.y, lantern.z]}>
+          {/* A short post so the lantern stands on the deck instead of floating. */}
+          <mesh castShadow position={[0, -0.24, 0]}>
+            <cylinderGeometry args={[0.035, 0.045, 0.3, 6]} />
+            <meshStandardMaterial color="#4e5b44" roughness={0.6} />
+          </mesh>
           <mesh>
             <boxGeometry args={[0.16, 0.2, 0.16]} />
             <meshStandardMaterial color="#ffe0a3" emissive="#ffc46b" emissiveIntensity={1.2} toneMapped={false} />
           </mesh>
           <mesh position={[0, 0.14, 0]}>
             <coneGeometry args={[0.14, 0.1, 4]} />
-            <meshStandardMaterial color="#4e5b44" roughness={0.6} />
+            <meshStandardMaterial color="#d27a52" roughness={0.7} />
           </mesh>
         </group>
       ))}
