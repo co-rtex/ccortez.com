@@ -92,6 +92,14 @@ Nothing merges to either `main` without Christian's approval.
 | `786fd48` | Meadows: sun-dried patches, deeper green under groves, fine mottling (baked into vertex colours, no runtime cost). Monitor housings mid slate, so their backs are not black from outside the ring | `edge-before` vs `edge-after1`, `meadow-after1` |
 | `428306b` | Island outline blended across the atan2 seam: the 17% radius jump drew a sharp spit due west | `island-top` vs `island-top-after`; continuity test |
 | `565aee1` | Bench data ribbons: slim accent line with two travelling packets (still under reduced motion) instead of a pale ghost tube | `inspect-hcsc` vs `inspect-hcsc-after`; 60 fps held |
+| `d5cdfc3`, `44cb10d` | Plaza and ring redesign: benches on faceted stone plinths (world-owned; light coping, category-tinted field, accent inlay, front step) instead of 8.4 m flat pale disks; hedge crescents behind each bench (one merged planter mesh + one instanced hedge mesh for all 18, open where paths pass); the kerb becomes a coursed-stone seat wall with coping and gate piers at the six path openings, solid except there. Independent art review applied (hedges sunk and lower, Start Here halo removed, plinths 8% smaller, stronger category tint, matched pier stone, warm-grey monitor housings) | `.shots/v7/base-*` vs `p5-*`, `edge-zoom` vs `edge-zoom-p5`; wall and plinth tests |
+| `44cb10d` | Shadow budget: props under 0.22 m never cast; larger props cast only within 20 m of the player (off past 23 m) | Overview, M3 uncapped DPR 2: p95 34.1 -> 17.5 ms, same median; spawn unchanged |
+| `448aace` | First minute: a nearby bench's title badge carries "Press E" / "Tap to open" (a second prompt was stacked on it); badges size to their text. Opening a panel focuses its heading; closing returns focus to the opener or its re-rendered guide entry; the closed panel is inert | Scripted walkthrough (`fm-*`); focus checks; axe 0 violations |
+
+Tried and reverted: merging static bench props (sibling-level, vertex colours). It cut gameplay-view draw calls
+4-13% (590 -> 514 west, 605 -> 580 south) but an interleaved A/B showed no frame-time gain on the M3 under load,
+and most remaining calls are glowing or animated props that cannot merge. Next lever if needed: shared materials /
+instancing for the repeated glowing props.
 
 Checkpoint A (before/after, drag to compare; refreshed at `36d334c`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
@@ -105,9 +113,10 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 
 ## Known issues / next candidates (ranked)
 
-1. Bench dioramas: scaled 1.5× (`274e0d8`); the pale base disks are still broad. Next: per-scene props.
+1. Bench dioramas: scaled 1.5× and on plinths (`d5cdfc3`). Next: per-scene props.
 2. Real-phone GPU check still pending (phones use the shorter ~18 m scene range).
-3. Terrain: grass variation done (`274e0d8`, `786fd48`); the plaza rim reads as a thin tan band from outside.
+3. Terrain: grass variation done; plaza rim is now a seat wall. The reviewer noted meadow hue blotches clash a
+   little with the saturated plaza lawn.
 4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
    StrictMode (dev-only; production renders).
