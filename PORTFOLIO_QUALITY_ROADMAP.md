@@ -49,6 +49,10 @@ Nothing merges to either `main` without Christian's approval.
 | `8cb2e8d` | South trail leads to Moss Heart Pond; trails drape over the rendered terrain triangles (`getTerrainMeshHeight`) and the plaza berm, which had hidden their first metres | `.shots/south3-lake`; 144 tests |
 | `be5142e` | Pulsing beacon over the Start Here bench, fading once its panel is opened | `.shots/follow-spawn` |
 
+| `912b09d` | Bench scenes shown from across the plaza (~41 m desktop, ~18 m mobile-lite) with 2 m hysteresis; second independent review's top finding | M3: 60 fps, 600–1,100 draw calls |
+| `9a2c4e0` | Shorter amber beacon (no longer stacks with the lighthouse lamp); lighthouse beam halo removed; trail reaches the door | `.shots/follow-spawn`, `lh2-lake` |
+| `4cb1872` | Foliage between camera and player dithers out (Bayer stipple) | `.shots/follow-grove`; 148 tests; M3 60 fps |
+
 Checkpoint A (before/after, drag to compare): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
@@ -61,7 +65,10 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 
 ## Known issues / next candidates (ranked)
 
-1. Revealed bench scenes are small on their 4.2 m platforms; desks keep dark palette colours.
+1. Ring labels are ~5 px text from spawn (drei Html with distanceFactor); consider screen-size labels for the
+   nearest benches only (second review, item 3).
+2. HUD weight: guide panel + bottom toast repeat "start at the centre bench"; hide the toast after first move
+   (second review, item 4). Mobile: two stacked banners (~22% height) could merge.
 3. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
 4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
