@@ -430,8 +430,9 @@ export function WorkbenchLandmark({
   const titleBadgeRef = useRef<HTMLDivElement>(null);
   const panelOpen = useGameStore((state) => state.panelWorkbenchId !== null);
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
-  // Above the beacon on wide screens; at bench height on narrow ones, where the top edge holds the guide header.
-  const startBadgeY = typeof window !== 'undefined' && window.innerWidth < 900 ? 3.3 : 4.6;
+  // Start Here stands right in front of the spawn point, so its badge sits just above the welcome board
+  // (higher, it floated up against the fountain's armillary).
+  const startBadgeY = 3.5;
   useFrame(({ clock }) => {
     const badge = titleBadgeRef.current;
     if (badge) {
@@ -514,7 +515,8 @@ export function WorkbenchLandmark({
             <meshBasicMaterial transparent opacity={0} depthWrite={false} />
           </mesh>
           <BenchDais accent={indicatorColor} />
-          <BenchPennant accent={indicatorColor} seed={workbench.definition.id.length} />
+          {/* Start Here is in plain view with its own badge; a pennant would only add a pole beside the fountain. */}
+          {isStartHere ? null : <BenchPennant accent={indicatorColor} seed={workbench.definition.id.length} />}
         </>
       )}
 
