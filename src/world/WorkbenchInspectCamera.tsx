@@ -13,6 +13,7 @@ import {
   WORKBENCH_INSPECT_MIN_POLAR_ANGLE,
   WORKBENCH_INSPECT_TRANSITION_SECONDS,
   getWorkbenchInspectCameraPosition,
+  getWorkbenchInspectDistanceScale,
   getWorkbenchInspectTarget,
 } from './workbenchInspect';
 
@@ -34,6 +35,7 @@ export function WorkbenchInspectCamera({
   const cameraMode = useGameStore((state) => state.cameraMode);
   const inspectedWorkbenchId = useGameStore((state) => state.inspectedWorkbenchId);
   const { camera } = useThree();
+  const distanceScale = useThree((state) => getWorkbenchInspectDistanceScale(state.size.width, state.size.height));
   const controlsRef = useRef<OrbitControlsHandle | null>(null);
   const startPositionRef = useRef(new Vector3());
   const startTargetRef = useRef(new Vector3());
@@ -67,7 +69,11 @@ export function WorkbenchInspectCamera({
     startTargetRef.current.copy(currentTarget);
     endTargetRef.current.copy(getWorkbenchInspectTarget(activeWorkbench.placement.anchor));
     endPositionRef.current.copy(
-      getWorkbenchInspectCameraPosition(activeWorkbench.placement.anchor, activeWorkbench.placement.rotationY),
+      getWorkbenchInspectCameraPosition(
+        activeWorkbench.placement.anchor,
+        activeWorkbench.placement.rotationY,
+        distanceScale,
+      ),
     );
     transitionTargetRef.current.copy(currentTarget);
     transitionProgressRef.current = 0;
@@ -75,7 +81,7 @@ export function WorkbenchInspectCamera({
     if (controls) {
       controls.enabled = false;
     }
-  }, [activeWorkbench, camera]);
+  }, [activeWorkbench, camera, distanceScale]);
 
   useFrame((_, delta) => {
     if (!activeWorkbench) {
@@ -127,7 +133,7 @@ export function WorkbenchInspectCamera({
       enabled={false}
       target={getWorkbenchInspectTarget(activeWorkbench.placement.anchor)}
       minDistance={WORKBENCH_INSPECT_MIN_DISTANCE}
-      maxDistance={WORKBENCH_INSPECT_MAX_DISTANCE}
+      maxDistance={WORKBENCH_INSPECT_MAX_DISTANCE * distanceScale}
       minPolarAngle={WORKBENCH_INSPECT_MIN_POLAR_ANGLE}
       maxPolarAngle={WORKBENCH_INSPECT_MAX_POLAR_ANGLE}
     />

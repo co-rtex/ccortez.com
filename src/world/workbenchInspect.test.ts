@@ -9,6 +9,7 @@ import {
   WORKBENCH_INSPECT_MIN_POLAR_ANGLE,
   WORKBENCH_INSPECT_MIN_ELEVATION_DEG,
   getWorkbenchInspectCameraPosition,
+  getWorkbenchInspectDistanceScale,
   getWorkbenchInspectTarget,
 } from './workbenchInspect';
 
@@ -40,6 +41,17 @@ describe('workbench inspect camera helpers', () => {
     // Facing -z, so the camera is on the -z side (toward the plaza), not behind the bench.
     expect(cameraPosition.z).toBeLessThan(target.z);
     expect(cameraPosition.distanceTo(target)).toBeCloseTo(getWorkbenchInspectCameraPosition(anchor).distanceTo(target), 6);
+  });
+
+  it('starts further back on portrait screens', () => {
+    expect(getWorkbenchInspectDistanceScale(1440, 900)).toBe(1);
+    expect(getWorkbenchInspectDistanceScale(390, 844)).toBe(1.5);
+    const anchor = { x: 0, y: 0, z: 0 };
+    const target = getWorkbenchInspectTarget(anchor);
+    expect(getWorkbenchInspectCameraPosition(anchor, 0, 1.5).distanceTo(target)).toBeCloseTo(
+      getWorkbenchInspectCameraPosition(anchor).distanceTo(target) * 1.5,
+      6,
+    );
   });
 
   it('exposes the requested orbit pitch limits', () => {

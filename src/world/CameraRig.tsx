@@ -27,15 +27,52 @@ interface CameraRigProps {
   benchAnchors: ReadonlyMap<string, { x: number; z: number }>;
 }
 
+/**
+ * While a details panel is open, shift the rendered view so the bench sits in the middle of the part of the canvas
+ * the panel leaves visible: left of a side panel, above a phone's bottom sheet. The panel's on-screen rectangle is
+ * read each frame, so the shift follows its slide; it eases back to none when the panel closes.
+ */
+const VIEW_OFFSET_BLEND_SPEED = 7;
+
+function getPanelViewOffsetTarget(canvas: DOMRect): { x: number; y: number } {
+  const panel = document.querySelector('.experience-panel--open');
+  if (!panel) return { x: 0, y: 0 };
+  const rect = panel.getBoundingClientRect();
+  const coveredWidth = Math.max(0, canvas.right - rect.left);
+  const coveredHeight = Math.max(0, canvas.bottom - rect.top);
+  // A panel covering (nearly) the whole canvas leaves nothing to centre in.
+  if (coveredWidth >= canvas.width * 0.95 && coveredHeight >= canvas.height * 0.95) return { x: 0, y: 0 };
+  if (rect.height >= canvas.height * 0.9) return { x: Math.min(coveredWidth, canvas.width * 0.6) / 2, y: 0 };
+  return { x: 0, y: Math.min(coveredHeight, canvas.height * 0.7) / 2 };
+}
+
 export function CameraRig({ benchAnchors }: CameraRigProps): null {
+  const viewOffsetRef = useRef({ x: 0, y: 0, applied: false });
   const targetPosition = useMemo(() => new Vector3(), []);
   const lookTarget = useMemo(() => new Vector3(), []);
   const benchLook = useMemo(() => new Vector3(), []);
   const framingRef = useRef(0);
 
-  useFrame(({ camera }, delta) => {
+  useFrame(({ camera, gl, size }, delta) => {
     const state = useGameStore.getState();
     let blendSpeed = DEFAULT_CAMERA_BLEND_SPEED;
+
+    const viewOffset = viewOffsetRef.current;
+    const offsetTarget =
+      state.cameraMode === 'workbench-inspect'
+        ? getPanelViewOffsetTarget(gl.domElement.getBoundingClientRect())
+        : { x: 0, y: 0 };
+    const offsetBlend = prefersReducedMotion() ? 1 : 1 - Math.exp(-VIEW_OFFSET_BLEND_SPEED * delta);
+    viewOffset.x += (offsetTarget.x - viewOffset.x) * offsetBlend;
+    viewOffset.y += (offsetTarget.y - viewOffset.y) * offsetBlend;
+    const perspective = camera as PerspectiveCamera;
+    if (Math.abs(viewOffset.x) > 0.5 || Math.abs(viewOffset.y) > 0.5) {
+      perspective.setViewOffset(size.width, size.height, viewOffset.x, viewOffset.y, size.width, size.height);
+      viewOffset.applied = true;
+    } else if (viewOffset.applied) {
+      perspective.clearViewOffset();
+      viewOffset.applied = false;
+    }
 
     if (state.cameraMode === 'workbench-inspect') {
       return;

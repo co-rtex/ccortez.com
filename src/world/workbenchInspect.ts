@@ -27,6 +27,16 @@ export function getWorkbenchInspectTarget(anchor: WorldAnchor): Vector3 {
  * The offset turns with the bench: a fixed world offset put the camera behind every bench on the south side of
  * the ring (they face north), so a visitor opening a flagship project saw the backs of its monitors.
  */
-export function getWorkbenchInspectCameraPosition(anchor: WorldAnchor, rotationY = 0): Vector3 {
-  return getWorkbenchInspectTarget(anchor).add(defaultInspectOffset.clone().applyAxisAngle(UP, rotationY));
+export function getWorkbenchInspectCameraPosition(anchor: WorldAnchor, rotationY = 0, distanceScale = 1): Vector3 {
+  return getWorkbenchInspectTarget(anchor).add(
+    defaultInspectOffset.clone().multiplyScalar(distanceScale).applyAxisAngle(UP, rotationY),
+  );
+}
+
+/**
+ * A portrait screen sees a narrow slice of the world (about 24 degrees across on a phone), and on a phone the
+ * details panel covers the lower part too, so the inspect camera starts further back there to fit the bench.
+ */
+export function getWorkbenchInspectDistanceScale(width: number, height: number): number {
+  return height > 0 && width / height < 0.8 ? 1.5 : 1;
 }
