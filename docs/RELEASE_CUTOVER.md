@@ -1,5 +1,8 @@
 # Release and domain cutover runbook
 
+> **Completed 2026-11-12.** `ccortez.com` → Vercel (professional site), `game.ccortez.com` → GitHub Pages (game).
+> Evidence is in `SPRINT_STATUS.md`. The rollback section below still applies.
+
 Goal: `ccortez.com` serves the professional portfolio (Vercel); `game.ccortez.com` serves this 3D game
 (GitHub Pages). **Steps 1 and later change production and need Christian's explicit approval.** Everything
 in "Already done" was safe and reversible.
