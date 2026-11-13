@@ -188,11 +188,11 @@ function renderDisplayContent(
         <>
           <mesh position={[-0.16, 0.08, 0.012]}>
             <boxGeometry args={[0.26, 0.22, 0.01]} />
-            <meshStandardMaterial color="#233344" emissive="#233344" emissiveIntensity={0.25} />
+            <meshStandardMaterial color="#3d7290" emissive="#3d7290" emissiveIntensity={0.45} />
           </mesh>
           <mesh position={[0.18, 0.08, 0.012]}>
             <boxGeometry args={[0.34, 0.22, 0.01]} />
-            <meshStandardMaterial color="#243b33" emissive="#243b33" emissiveIntensity={0.25} />
+            <meshStandardMaterial color="#3f8068" emissive="#3f8068" emissiveIntensity={0.45} />
           </mesh>
           {[
             [-0.2, -0.18, '#ef8468'],
@@ -261,13 +261,13 @@ function renderDisplayContent(
         <>
           <mesh position={[0, 0, 0.012]}>
             <boxGeometry args={[0.54, 0.32, 0.01]} />
-            <meshStandardMaterial color="#223846" emissive="#223846" emissiveIntensity={0.15} />
+            <meshStandardMaterial color="#3a6f8c" emissive="#3a6f8c" emissiveIntensity={0.4} />
           </mesh>
           {variant === 'soccer' ? (
             <>
               <mesh position={[0, 0, 0.013]}>
                 <boxGeometry args={[0.5, 0.28, 0.01]} />
-                <meshStandardMaterial color="#1e5f46" emissive="#1e5f46" emissiveIntensity={0.25} />
+                <meshStandardMaterial color="#2f8f69" emissive="#2f8f69" emissiveIntensity={0.45} />
               </mesh>
               <mesh position={[0, 0, 0.014]}>
                 <ringGeometry args={[0.08, 0.092, 18]} />
@@ -583,7 +583,7 @@ export function DisplayPanel({
   isFocused,
   rotation = [0, 0, 0] as [number, number, number],
   scale = 1,
-  screenColor = '#162432',
+  screenColor = '#2f6f8f',
 }: {
   position: [number, number, number];
   palette: ScenePalette;
@@ -607,7 +607,7 @@ export function DisplayPanel({
         position[1] + Math.sin(clock.elapsedTime * 0.8 + phase * 10) * 0.02 * motionAmount;
     }
     if (screenMaterialRef.current) {
-      screenMaterialRef.current.emissiveIntensity = 0.24 + activity.ambient * 0.34 + activity.focused * 0.55;
+      screenMaterialRef.current.emissiveIntensity = 0.55 + activity.ambient * 0.3 + activity.focused * 0.45;
     }
   });
 
@@ -615,10 +615,11 @@ export function DisplayPanel({
     <group ref={groupRef} position={position} rotation={rotation} scale={scale}>
       <mesh castShadow>
         <boxGeometry args={[1, 0.6, 0.08]} />
-        <meshStandardMaterial color="#2b3138" roughness={0.32} metalness={0.42} />
+        <meshStandardMaterial color="#4a5260" roughness={0.4} metalness={0.25} />
       </mesh>
-      <mesh position={[0, 0, 0.025]}>
-        <boxGeometry args={[0.88, 0.48, 0.02]} />
+      {/* The screen sits just proud of the bezel (front face at z 0.04) and its content just proud of the screen. */}
+      <mesh position={[0, 0, 0.043]}>
+        <boxGeometry args={[0.88, 0.48, 0.006]} />
         <meshStandardMaterial
           ref={screenMaterialRef}
           color={screenColor}
@@ -627,7 +628,7 @@ export function DisplayPanel({
           roughness={0.18}
         />
       </mesh>
-      {renderDisplayContent(variant, palette)}
+      <group position={[0, 0, 0.036]}>{renderDisplayContent(variant, palette)}</group>
       <mesh castShadow position={[0, -0.28, -0.01]}>
         <boxGeometry args={[0.1, 0.28, 0.06]} />
         <meshStandardMaterial color="#7d8995" roughness={0.34} metalness={0.36} />
