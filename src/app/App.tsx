@@ -73,6 +73,13 @@ export default function App() {
   });
 
   const [mobileLiteMode, setMobileLiteMode] = useState<boolean>(detectMobileLiteMode);
+  // The mobile-lite explanation gets out of the way after a few seconds; the portfolio pill stays.
+  const [mobileBannerDismissed, setMobileBannerDismissed] = useState(false);
+  useEffect(() => {
+    if (!mobileLiteMode) return;
+    const timer = window.setTimeout(() => setMobileBannerDismissed(true), 10_000);
+    return () => window.clearTimeout(timer);
+  }, [mobileLiteMode]);
   const [webglSupported] = useState<boolean>(() => typeof window === 'undefined' || detectWebGLSupport());
   const [workbenchDefinitions, setWorkbenchDefinitions] = useState<WorkbenchDefinition[]>(WORKBENCH_LAYOUT);
   const [workbenchEditorEnabled, setWorkbenchEditorEnabled] = useState<boolean>(detectWorkbenchEditorMode);
@@ -468,7 +475,7 @@ export default function App() {
               mobileLiteMode={mobileLiteMode}
             />
           ) : null}
-          {mobileLiteMode ? (
+          {mobileLiteMode && !mobileBannerDismissed ? (
             <div className="mobile-lite-banner">
               Mobile-lite mode: tap landmarks for details. The recruiter guide collapses into a quick jump list.{' '}
               <a href={PROFESSIONAL_SITE_URL}>Read the text portfolio instead</a>

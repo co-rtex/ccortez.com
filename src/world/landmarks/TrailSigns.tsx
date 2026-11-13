@@ -11,14 +11,12 @@ import { TRAIL_SIGNS } from './trailSignLayout';
 const BOARD_LENGTH = 1.9;
 const BOARD_HEIGHT = 0.42;
 
+/** A small upward arrowhead above the board: "this way, ahead". */
 function arrowShape(): Shape {
   const shape = new Shape();
-  const half = BOARD_HEIGHT / 2;
-  shape.moveTo(-BOARD_LENGTH / 2, -half);
-  shape.lineTo(BOARD_LENGTH / 2 - 0.25, -half);
-  shape.lineTo(BOARD_LENGTH / 2, 0);
-  shape.lineTo(BOARD_LENGTH / 2 - 0.25, half);
-  shape.lineTo(-BOARD_LENGTH / 2, half);
+  shape.moveTo(-0.16, -0.1);
+  shape.lineTo(0.16, -0.1);
+  shape.lineTo(0, 0.12);
   shape.closePath();
   return shape;
 }
@@ -31,27 +29,32 @@ export function TrailSigns() {
         <group
           key={sign.trailId}
           position={[sign.x, getTerrainHeight(sign.x, sign.z), sign.z]}
-          rotation={[0, sign.rotationY - Math.PI / 2, 0]}
+          // Face back toward the plaza, where visitors approach; the arrowhead on top points down the trail.
+          rotation={[0, sign.rotationY + Math.PI, 0]}
         >
-          <mesh castShadow position={[-BOARD_LENGTH / 2 + 0.15, 0.85, 0]}>
+          <mesh castShadow position={[0, 0.85, -0.06]}>
             <cylinderGeometry args={[0.06, 0.075, 1.7, 8]} />
             <meshStandardMaterial color="#7a5236" roughness={0.9} />
           </mesh>
           <mesh castShadow position={[0, 1.42, 0]}>
-            <extrudeGeometry args={[shape, { depth: 0.06, bevelEnabled: false }]} />
+            <boxGeometry args={[BOARD_LENGTH - 0.3, BOARD_HEIGHT, 0.06]} />
             <meshStandardMaterial color="#c99a68" roughness={0.85} />
+          </mesh>
+          <mesh castShadow position={[0, 1.42 + BOARD_HEIGHT / 2 + 0.12, 0]}>
+            <extrudeGeometry args={[shape, { depth: 0.06, bevelEnabled: false }]} />
+            <meshStandardMaterial color="#d27a52" roughness={0.8} />
           </mesh>
           {[0, Math.PI].map((turn) => (
             <Text
               key={turn}
               font={labelFontBold}
-              position={[0, 1.42, turn === 0 ? 0.065 : -0.005]}
+              position={[0, 1.42, turn === 0 ? 0.035 : -0.035]}
               rotation={[0, turn, 0]}
               fontSize={0.2}
               color="#3a2a1c"
               anchorX="center"
               anchorY="middle"
-              maxWidth={BOARD_LENGTH - 0.4}
+              maxWidth={BOARD_LENGTH - 0.5}
             >
               {sign.label}
             </Text>

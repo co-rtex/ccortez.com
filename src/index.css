@@ -1416,7 +1416,18 @@ body {
   }
 
   .recruiter-navigator--mobile:not([open]) {
-    width: calc(100% - 11.5rem);
+    width: auto;
+    padding: 0;
+  }
+
+  .recruiter-navigator--mobile:not([open]) .recruiter-navigator__toggle {
+    padding: 0.55rem 0.95rem;
+    font-size: 0.85rem;
+  }
+
+  /* On phones the panel covers the scene, so there is nothing to rotate. */
+  .experience-panel__inspect-hint {
+    display: none;
   }
 
   .scene-fallback {

@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+import { useGameStore } from '../state/gameStore';
 
 import {
   deriveRecruiterNavigatorData,
@@ -203,6 +205,19 @@ export function RecruiterNavigatorHUD({
   foldWhilePanelOpen = true,
 }: RecruiterNavigatorHUDProps) {
   const [isHidden, setIsHidden] = useState(false);
+  // Fold once, the first time the visitor walks off: by then they have seen it, and the world gets the space.
+  useEffect(() => {
+    if (!foldWhilePanelOpen) return;
+    let origin: { x: number; z: number } | null = null;
+    let folded = false;
+    return useGameStore.subscribe((state) => {
+      origin ??= { x: state.playerPosition.x, z: state.playerPosition.z };
+      if (!folded && Math.hypot(state.playerPosition.x - origin.x, state.playerPosition.z - origin.z) > 4) {
+        folded = true;
+        setIsHidden(true);
+      }
+    });
+  }, [foldWhilePanelOpen]);
   // While a bench panel is open the guide folds away so the scene and the panel have room; the visitor can
   // still reopen it for that panel.
   const [shownForPanelId, setShownForPanelId] = useState<string | null>(null);

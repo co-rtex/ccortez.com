@@ -9,7 +9,7 @@
   "recruiterCard": {
     "roleLabel": "Software engineer",
     "organization": "UW–Madison",
-    "dateRange": "B.S. expected May 2028",
+    "dateRange": "B.S. expected May\u00a02028",
     "location": "Madison, WI",
     "summary": "I build systems that keep working when things go wrong: crash-safe job processing, deterministic matching engines, and data pipelines researchers can rerun byte for byte. Studying Computer Science, Data Science, and Statistics at UW–Madison; looking for Summer 2027 software engineering internships.",
     "impactBullets": [

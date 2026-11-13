@@ -31,31 +31,25 @@ export function getOcclusionStrength(
 export function applyOcclusionDither(shader: WebGLProgramParametersWithUniforms): void {
   shader.uniforms.uPlayer = OCCLUSION_UNIFORMS.uPlayer;
   shader.vertexShader = shader.vertexShader
-    .replace('#include <common>', '#include <common>\nvarying vec3 vOccluderWorld;')
+    .replace('#include <common>', '#include <common>\nvarying float vOccluderFade;\nuniform vec3 uPlayer;')
     .replace(
       '#include <project_vertex>',
       `#include <project_vertex>
+  {
+    // Fade from the instance's centre, so a whole canopy puff fades evenly instead of streaking per pixel.
 #ifdef USE_INSTANCING
-  vOccluderWorld = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
+    vec3 centre = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 #else
-  vOccluderWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;
-#endif`,
+    vec3 centre = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+#endif
+    vec3 seg = (uPlayer + vec3(0.0, 0.9, 0.0)) - cameraPosition;
+    float t = clamp(dot(centre - cameraPosition, seg) / max(dot(seg, seg), 0.0001), 0.0, 1.0);
+    float d = length(centre - (cameraPosition + seg * t));
+    vOccluderFade = (1.0 - smoothstep(1.8, 3.4, d)) * step(0.04, t) * (1.0 - step(0.86, t));
+  }`,
     );
   shader.fragmentShader = shader.fragmentShader
-    .replace('#include <common>', '#include <common>\nvarying vec3 vOccluderWorld;\nuniform vec3 uPlayer;')
-    .replace(
-      '#include <clipping_planes_fragment>',
-      `#include <clipping_planes_fragment>
-  float occluderFade;
-  {
-    vec3 seg = (uPlayer + vec3(0.0, 0.9, 0.0)) - cameraPosition;
-    float t = clamp(dot(vOccluderWorld - cameraPosition, seg) / max(dot(seg, seg), 0.0001), 0.0, 1.0);
-    float d = length(vOccluderWorld - (cameraPosition + seg * t));
-    occluderFade = (1.0 - smoothstep(1.6, 3.0, d)) * step(0.04, t) * (1.0 - step(0.88, t));
-    if (occluderFade > 0.97) discard;
-  }`,
-    )
-    // With alpha-to-coverage on a multisampled canvas, alpha becomes sub-pixel coverage: a smooth fade rather
-    // than a visible screen-door pattern.
-    .replace('#include <dithering_fragment>', '#include <dithering_fragment>\n  gl_FragColor.a = 1.0 - occluderFade * 0.85;');
+    .replace('#include <common>', '#include <common>\nvarying float vOccluderFade;')
+    // With alpha-to-coverage on a multisampled canvas, alpha becomes sub-pixel coverage: an even fade.
+    .replace('#include <dithering_fragment>', '#include <dithering_fragment>\n  gl_FragColor.a = 1.0 - vOccluderFade * 0.8;');
 }

@@ -41,7 +41,7 @@ function DoorSign() {
     }
   });
   return (
-    <Html center position={[0, 2.6, BASE_RADIUS + 0.4]}>
+    <Html center position={[0, 1.9, BASE_RADIUS + 0.6]}>
       <div ref={ref} className="landmark-sign" style={{ opacity: 0, pointerEvents: 'none' }}>
         <span className="landmark-sign__title">North-shore lighthouse</span>
         <a className="landmark-sign__link" href={PROFESSIONAL_SITE_URL} target="_blank" rel="noreferrer">
@@ -91,14 +91,10 @@ export function Lighthouse() {
         );
       })}
       <DoorSign />
-      {/* Door and a round window, on the trail side. */}
+      {/* Door on the trail side. */}
       <mesh position={[0, 1.15, BASE_RADIUS - 0.02]}>
         <boxGeometry args={[0.7, 1.3, 0.12]} />
         <meshStandardMaterial color="#7a5236" roughness={0.8} />
-      </mesh>
-      <mesh position={[0, 4.6, towerRadiusAt(4.6 - 0.4) + 0.03]} rotation={[-Math.atan((BASE_RADIUS - TOP_RADIUS) / TOWER_HEIGHT), 0, 0]}>
-        <circleGeometry args={[0.2, 20]} />
-        <meshStandardMaterial color="#ffe0a3" emissive="#ffc46b" emissiveIntensity={0.8} toneMapped={false} />
       </mesh>
 
       {/* Gallery, lantern room, roof. */}

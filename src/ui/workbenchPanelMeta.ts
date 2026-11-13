@@ -42,11 +42,6 @@ export function buildWorkbenchMetaChips(workbench: WorkbenchRuntimeRecord): Arra
     });
   }
 
-  chips.push({
-    label: `District: ${workbench.districtDefinition.label}`,
-    tone: 'default',
-  });
-
   if (workbench.definition.priorityTier === 'anchor') {
     chips.push({
       label: 'Featured',

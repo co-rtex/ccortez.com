@@ -173,7 +173,7 @@ describe('LinkedWorkbenchContent', () => {
     const flattened = chipLabels.join(' | ');
 
     expect(resolvePanelEyebrow(record)).toBe('Recruiter Brief');
-    expect(chipLabels).toEqual(expect.arrayContaining(['Type: Project', 'District: Projects District', 'Featured']));
+    expect(chipLabels).toEqual(['Type: Project', 'Featured']);
     expect(flattened).not.toContain('Visibility:');
     expect(flattened).not.toContain('Presentation:');
     expect(flattened).not.toContain('Anchor:');
