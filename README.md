@@ -60,6 +60,30 @@ Workbench layout is the live world model.
 - Interaction radius and scene streaming distance are derived from the workbench definition.
 - In dev mode, add `?workbenchEditor=1` or press `Ctrl+Shift+W` to open the layout editor.
 
+## URL Parameters
+
+Public:
+
+- `?bench=<id>` opens a published bench on load, moving the player to it as if picked in the guide. The case
+  studies on ccortez.com link here (`taskforge`, `enginex`, `quantlab`, `lidar-phenotyping-research`).
+
+Screenshot and diagnostic fixtures (harmless if left in a URL; ignored when absent):
+
+- `?shot=px,py,pz,tx,ty,tz` fixes the camera at a position looking at a target; `?spawn=x,z` starts the player
+  elsewhere.
+- `?avatar=yaw[,clip[,time]]` turns the avatar and plays or freezes a clip (`idle`, `walk`, `run`).
+- `?tfsim=ticks[,worker@tick]` freezes the TaskForge bench's run at a tick, optionally after crashing a worker.
+- `?stats` publishes renderer counters on `window.__sceneStats`; `?perf=a,b` switches systems off for profiling
+  (`noshadow`, `noscenes`, `noveg`, `dpr1`, and others in `src/world/perfFlags.ts`).
+- `?debugWaterCollision` logs water walkability while moving.
+
+## Flagship Benches
+
+TaskForge, EngineX, QuantLab and the LiDAR research bench each run a small deterministic model of the work in
+`src/sim/` (job queue, order book, backtest; the LiDAR pass is time-driven in its scene). The job queue, order book
+and backtest files are shared with the professional site (`src/lib/sim/` there) and must stay identical. Each
+panel labels its model as a toy, not the real code, and runs it on a fallback clock when no 3D scene is driving it.
+
 ## Current Product Scope
 
 This stabilization baseline is intentionally recruiter-first.
