@@ -6,6 +6,7 @@ import { CameraRig } from '../world/CameraRig';
 import { DevShotCamera } from '../world/DevShotCamera';
 import { SceneTelemetry } from '../world/SceneTelemetry';
 import { StartHereBeacon } from '../world/landmarks/StartHereBeacon';
+import { FootstepDust } from '../world/FootstepDust';
 import { LoadedExperienceScenes } from '../world/LoadedExperienceScenes';
 import { PlayerController } from '../world/PlayerController';
 import { RestSpotDirector } from '../world/RestSpotDirector';
@@ -67,6 +68,7 @@ export function OverworldScene({
       <SceneTelemetry />
       <WorldEnvironment />
       <PlayerController />
+      <FootstepDust />
       <CameraRig />
       <DevShotCamera />
       <WorkbenchInspectCamera workbenches={workbenches} />
