@@ -33,8 +33,17 @@ describe('instanced vegetation', () => {
     expect(meanDensity).toBeGreaterThan(0.55);
   });
 
+  it('scatters grass tufts off the plaza and paths', async () => {
+    const { GRASS_TUFT_COUNT } = await import('./vegetation');
+    const { PLAZA_RADII } = await import('../islandPaths');
+    expect(instances.blades.length).toBeGreaterThan(GRASS_TUFT_COUNT * 3 * 0.8);
+    for (const blade of instances.blades) {
+      expect(Math.hypot(blade.position[0], blade.position[2])).toBeGreaterThan(PLAZA_RADII.edge + 4);
+    }
+  });
+
   it('keeps every instance finite', () => {
-    for (const list of [instances.trunks, instances.puffs, instances.cones, instances.blooms, instances.rocks]) {
+    for (const list of [instances.trunks, instances.puffs, instances.cones, instances.blooms, instances.rocks, instances.blades]) {
       for (const instance of list) {
         expect([...instance.position, ...instance.scale].every(Number.isFinite)).toBe(true);
       }

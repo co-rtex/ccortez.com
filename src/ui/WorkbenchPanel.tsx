@@ -163,7 +163,7 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
         </button>
       </header>
 
-      <section className="experience-panel__meta">
+      <section className="experience-panel__meta" hidden={Boolean(workbench) && metaChips.length === 0}>
         {workbench ? (
           <>
             {metaChips.map((chip) => (

@@ -83,6 +83,7 @@ export function InstancedVegetation() {
       cone: new ConeGeometry(1, 1, 8),
       bloom: new IcosahedronGeometry(1, 0),
       rock: new DodecahedronGeometry(1, 0),
+      blade: new ConeGeometry(0.045, 1, 3),
     }),
     [],
   );
@@ -94,6 +95,7 @@ export function InstancedVegetation() {
       <InstancedPart instances={instances.cones} geometry={geometries.cone} roughness={0.82} receiveShadow ditherOccluders />
       <InstancedPart instances={instances.blooms} geometry={geometries.bloom} roughness={0.6} castShadow={false} emissive={0.08} />
       <InstancedPart instances={instances.rocks} geometry={geometries.rock} roughness={0.92} receiveShadow />
+      <InstancedPart instances={instances.blades} geometry={geometries.blade} roughness={0.9} castShadow={false} receiveShadow />
     </group>
   );
 }

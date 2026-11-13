@@ -1,7 +1,8 @@
 import { BOULDER_POINTS, BUSH_POINTS, COASTAL_ROCK_POINTS, FLOWER_POINTS, TREE_POINTS } from '../biome';
 import type { RockPoint, ScatterPoint } from '../biome';
-import { PLAZA_RADII } from '../islandPaths';
-import { getIslandDistanceNormalized, getTerrainHeight } from '../terrain';
+import { PATH_NETWORK_XZ, PLAZA_RADII } from '../islandPaths';
+import { WORLD_WATER_BODIES } from '../constants';
+import { OCEAN_LEVEL, getIslandDistanceNormalized, getLakeDistance, getTerrainHeight } from '../terrain';
 
 /**
  * Turns scatter points into instance transforms for a handful of instanced meshes. Pure and deterministic:
@@ -29,6 +30,7 @@ export interface VegetationInstances {
   cones: Instance[];
   blooms: Instance[];
   rocks: Instance[];
+  blades: Instance[];
   species: TreeSpecies[];
 }
 
@@ -40,6 +42,51 @@ const TRUNKS = ['#8f6342', '#7d5639', '#9b6e4a'];
 const BUSH_GREENS = ['#5aa556', '#6cb35a', '#4c9550'];
 const PETALS = ['#ff9fc7', '#ffd875', '#bda8ff', '#ffb687', '#8bd5ff', '#ffffff'];
 const ROCK_TONES = ['#b9a48e', '#a8957f', '#c4b198', '#9e8d7a'];
+const BLADE_GREENS = ['#8fc35a', '#7bb04e', '#a6cf62', '#6fa94a'];
+export const GRASS_TUFT_COUNT = 700;
+
+function distanceToPaths(x: number, z: number): number {
+  let best = Number.POSITIVE_INFINITY;
+  for (const line of PATH_NETWORK_XZ) {
+    for (let index = 0; index < line.length - 1; index += 1) {
+      const [ax, az] = line[index]!;
+      const [bx, bz] = line[index + 1]!;
+      const vx = bx - ax;
+      const vz = bz - az;
+      const t = Math.min(Math.max(((x - ax) * vx + (z - az) * vz) / (vx * vx + vz * vz || 1), 0), 1);
+      best = Math.min(best, Math.hypot(x - (ax + vx * t), z - (az + vz * t)));
+    }
+  }
+  return best;
+}
+
+/** Small three-blade grass tufts scattered over the meadows (not on paths, the plaza, beaches or lake edges). */
+function addGrassTufts(out: VegetationInstances): void {
+  const rand = seeded(9071);
+  let placed = 0;
+  for (let attempt = 0; attempt < 20000 && placed < GRASS_TUFT_COUNT; attempt += 1) {
+    const x = (rand() - 0.5) * 140;
+    const z = (rand() - 0.5) * 134;
+    if (Math.hypot(x, z) < PLAZA_RADII.edge + 4.5) continue;
+    if (getIslandDistanceNormalized(x, z) > 0.86) continue;
+    const y = getTerrainHeight(x, z);
+    if (y < OCEAN_LEVEL + 1.3) continue;
+    if (WORLD_WATER_BODIES.some((body) => getLakeDistance(body, x, z) < 1.25)) continue;
+    if (distanceToPaths(x, z) < 1.6) continue;
+    placed += 1;
+    const color = pick(BLADE_GREENS, rand());
+    const height = 0.22 + rand() * 0.16;
+    for (let blade = 0; blade < 3; blade += 1) {
+      const angle = rand() * Math.PI * 2;
+      out.blades.push({
+        position: [x + Math.cos(angle) * 0.07, y + height / 2 - 0.02, z + Math.sin(angle) * 0.07],
+        scale: [1, height, 1],
+        rotation: [Math.cos(angle) * 0.35, rand() * Math.PI, Math.sin(angle) * 0.35],
+        color,
+      });
+    }
+  }
+}
 
 /** Small deterministic generator seeded per point so instances never depend on iteration order. */
 function seeded(seed: number): () => number {
@@ -205,7 +252,7 @@ function addRock(point: RockPoint, out: VegetationInstances): void {
 }
 
 export function buildVegetationInstances(): VegetationInstances {
-  const out: VegetationInstances = { trunks: [], puffs: [], cones: [], blooms: [], rocks: [], species: [] };
+  const out: VegetationInstances = { trunks: [], puffs: [], cones: [], blooms: [], rocks: [], blades: [], species: [] };
   for (const point of TREE_POINTS) {
     const species = getTreeSpecies(point);
     out.species.push(species);
@@ -214,5 +261,6 @@ export function buildVegetationInstances(): VegetationInstances {
   for (const point of BUSH_POINTS) addBush(point, out);
   for (const point of FLOWER_POINTS) addFlowerPatch(point, out);
   for (const point of [...BOULDER_POINTS, ...COASTAL_ROCK_POINTS]) addRock(point, out);
+  addGrassTufts(out);
   return out;
 }
