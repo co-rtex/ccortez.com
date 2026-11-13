@@ -47,38 +47,46 @@ describe('player avatar model helpers', () => {
     ]);
     expect(nodeNames).toEqual(
       expect.arrayContaining([
+        // The rig the clips animate.
+        'Hips',
+        'Torso',
+        'Head',
+        'Arm_L',
+        'Arm_R',
+        'Forearm_L',
+        'Forearm_R',
+        'Thigh_L',
+        'Thigh_R',
+        'Calf_L',
+        'Calf_R',
+        'Foot_L',
+        'Foot_R',
+        // One merged mesh per body part.
         'HeadShape',
-        'UpperSkull',
-        'Cheek_L',
-        'Cheek_R',
-        'Smile',
-        'HairFrontCap',
-        'HairBackCap',
-        'HairCrownFill',
-        'HairSideSoft_L',
-        'HairSideSoft_R',
-        'HairTemple_L',
-        'HairTemple_R',
-        'HairLayer_L',
-        'HairLayer_R',
-        'EyeLidUpper_L',
-        'EyeLidUpper_R',
-        'JeanWaist',
-        'ShirtWaistOverlap',
-        'ShirtBody',
-        'ShirtFront',
-        'ShirtCollar',
+        'Hair',
+        'Polo',
+        'Khakis_Seat',
         'Arm_L_Sleeve',
         'Arm_R_Sleeve',
-        'Arm_L_Hand',
-        'Arm_R_Hand',
-        'Arm_L_Thumb',
-        'Arm_R_Thumb',
-        'Thigh_L_ShoeBody',
-        'Thigh_L_ShoeQuarter',
-        'Thigh_R_ShoeBody',
-        'Thigh_R_ShoeQuarter',
+        'Arm_L_Forearm',
+        'Arm_R_Forearm',
+        'Thigh_L_Khaki',
+        'Thigh_R_Khaki',
+        'Calf_L_Khaki',
+        'Calf_R_Khaki',
+        'Foot_L_Sneaker',
+        'Foot_R_Sneaker',
       ]),
     );
+  });
+
+  it('stays cheap to render: a handful of meshes and materials', () => {
+    const modelPath = resolve(process.cwd(), 'public', PLAYER_AVATAR_MODEL_PATH.slice(1));
+    const gltf = JSON.parse(readFileSync(modelPath, 'utf8')) as {
+      meshes?: unknown[];
+      materials?: unknown[];
+    };
+    expect(gltf.meshes?.length ?? 0).toBeLessThanOrEqual(16);
+    expect(gltf.materials?.length ?? 0).toBeLessThanOrEqual(2);
   });
 });

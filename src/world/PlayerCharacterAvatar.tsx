@@ -5,6 +5,7 @@ import type { MutableRefObject, ReactNode } from 'react';
 import { LoopRepeat, Mesh } from 'three';
 import type { AnimationAction, Group } from 'three';
 
+import { readAvatarInspectFixture } from './avatarInspect';
 import { type PlayerLocomotionState } from './playerAvatar';
 import {
   PLAYER_AVATAR_ANIMATION_CROSSFADE_SECONDS,
@@ -71,6 +72,7 @@ function PlayerAvatarModel({ locomotionRef, visible }: PlayerAvatarProps) {
   const gltf = useGLTF(PLAYER_AVATAR_MODEL_PATH);
   const modelScene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const { actions, names } = useAnimations(gltf.animations, modelScene);
+  const inspect = useMemo(() => readAvatarInspectFixture(), []);
 
   useEffect(() => {
     modelScene.traverse((object) => {
@@ -103,12 +105,19 @@ function PlayerAvatarModel({ locomotionRef, visible }: PlayerAvatarProps) {
     }
 
     root.visible = visible;
-    root.rotation.y = locomotionRef.current.facingYaw + PLAYER_AVATAR_MODEL_YAW_OFFSET;
+    root.rotation.y = (inspect ? inspect.yaw : locomotionRef.current.facingYaw) + PLAYER_AVATAR_MODEL_YAW_OFFSET;
     if (!visible) {
       return;
     }
 
-    const desiredClipName = resolveAvailableAvatarClipName(locomotionRef.current.mode, names);
+    const desiredClipName = resolveAvailableAvatarClipName(inspect?.mode ?? locomotionRef.current.mode, names);
+    if (inspect?.time != null && desiredClipName) {
+      // Screenshot fixture: hold the clip at a fixed time.
+      const held = actions[desiredClipName];
+      if (held) holdAvatarAction(held, inspect.time);
+      activeClipNameRef.current = desiredClipName;
+      return;
+    }
     if (!desiredClipName || desiredClipName === activeClipNameRef.current) {
       return;
     }
@@ -161,6 +170,13 @@ function PlayerAvatarFallback({ locomotionRef, visible }: PlayerAvatarProps) {
       </mesh>
     </group>
   );
+}
+
+function holdAvatarAction(action: AnimationAction, time: number): void {
+  if (!action.isRunning()) action.play();
+  action.paused = true;
+  action.time = time;
+  action.weight = 1;
 }
 
 function activateAvatarAction(previousAction: AnimationAction | undefined, nextAction: AnimationAction): void {
