@@ -17,7 +17,7 @@ export function QuantlabRunControls() {
 
   return (
     <section className="taskforge-sim" aria-labelledby="quantlab-run-title">
-      <h3 id="quantlab-run-title">Re-run a backtest</h3>
+      <h4 id="quantlab-run-title">Re-run a backtest</h4>
       <p>
         The bench runs a toy backtest on synthetic prices (the ideas QuantLab is built on, not its code). Dataset
         versions never change and the rule only reads past prices, so re-running a version reproduces its manifest by

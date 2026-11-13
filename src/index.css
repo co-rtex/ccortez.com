@@ -832,8 +832,15 @@ body {
 
 .experience-panel__content h1,
 .experience-panel__content h2,
-.experience-panel__content h3 {
+.experience-panel__content h3,
+.experience-panel__story-title {
   font-family: 'Syne', 'Avenir Next', sans-serif;
+}
+
+/* A story's own section headings (its `##`), one level under the panel's "Story" heading. */
+.experience-panel__story-title {
+  margin: 1.1rem 0 0.4rem;
+  font-size: 1.15rem;
 }
 
 .experience-panel__content p,
@@ -1563,7 +1570,7 @@ body {
   border: 1px solid rgba(47, 143, 99, 0.28);
 }
 
-.taskforge-sim h3 {
+.taskforge-sim h4 {
   margin: 0 0 0.35rem;
   font-size: 1rem;
 }
@@ -1630,7 +1637,7 @@ body {
   margin: 0.2rem 0 0.9rem;
 }
 
-.taskforge-sim__trace h4 {
+.taskforge-sim__trace h5 {
   margin: 0 0 0.5rem;
   font-size: 0.88rem;
 }

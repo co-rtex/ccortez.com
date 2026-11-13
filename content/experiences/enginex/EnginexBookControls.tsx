@@ -20,7 +20,7 @@ export function EnginexBookControls() {
 
   return (
     <section className="taskforge-sim" aria-labelledby="enginex-book-title">
-      <h3 id="enginex-book-title">Send an order</h3>
+      <h4 id="enginex-book-title">Send an order</h4>
       <p>
         The bench is running a toy order book (the ideas EngineX is built on, not its code). Orders pass a single
         sequencer one at a time, are written to the journal first, and then match by price and, within a price, by

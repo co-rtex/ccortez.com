@@ -21,7 +21,7 @@ export function TaskforgeSimControls() {
 
   return (
     <section className="taskforge-sim" aria-labelledby="taskforge-sim-title">
-      <h3 id="taskforge-sim-title">Crash a worker</h3>
+      <h4 id="taskforge-sim-title">Crash a worker</h4>
       <p>
         The bench is running a toy model of TaskForge&apos;s rules (the same deterministic simulation as the homepage of
         ccortez.com, not the real system). Crash a worker that is holding a job: its heartbeats stop, the lease ring
@@ -61,7 +61,7 @@ export function TaskforgeSimControls() {
               return done ? `Job ${trace.jobId}: ${done.title}.` : '';
             })()}
           </p>
-          <h4 id="taskforge-trace-title">What happened to job {trace.jobId}</h4>
+          <h5 id="taskforge-trace-title">What happened to job {trace.jobId}</h5>
           <ol>
             {trace.steps.map((traceStep) => (
               <li

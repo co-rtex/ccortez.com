@@ -148,6 +148,21 @@ describe('LinkedWorkbenchContent', () => {
     );
   });
 
+  it('renders story headings one level under the panel, leaving out one that repeats the title', () => {
+    const Story: Parameters<typeof LinkedWorkbenchContent>[0]['ActiveStory'] = ({ components }) => {
+      const H2 = components?.h2 ?? 'h2';
+      return (
+        <>
+          <H2>TaskForge</H2>
+          <H2>How it fails</H2>
+        </>
+      );
+    };
+    const markup = renderToStaticMarkup(<LinkedWorkbenchContent title="TaskForge" ActiveStory={Story} isLoading={false} />);
+    expect(markup).not.toContain('>TaskForge<');
+    expect(markup).toContain('<h4 class="experience-panel__story-title">How it fails</h4>');
+  });
+
   it('renders an explicit error state without showing the loading copy', () => {
     const markup = renderToStaticMarkup(
       <LinkedWorkbenchContent

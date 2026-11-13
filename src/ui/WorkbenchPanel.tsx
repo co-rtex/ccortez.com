@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { useGameStore } from '../state/gameStore';
 import { getWorkbenchInspectHint, shouldShowWorkbenchInspectHint } from './workbenchPanelHints';
@@ -24,18 +25,33 @@ function buildRecruiterMetaLine(parts: Array<string | undefined>): string {
 }
 
 interface LinkedWorkbenchContentProps {
+  /** The panel's title: a story heading that only repeats it is left out. */
+  title?: string;
   recruiterCard?: ExperienceRecruiterCard;
   activeStoryError?: string;
   ActiveStory?: ExperienceStoryComponent;
   isLoading: boolean;
 }
 
+/**
+ * Story headings sit under the panel's own title (h2) and its "Story" heading (h3), so a story's `##` renders as
+ * an h4; one that only repeats the panel title (most stories open with their title) is left out.
+ */
+function StoryHeading(title: string | undefined) {
+  return function Heading({ children }: { children?: ReactNode }) {
+    if (typeof children === 'string' && children.trim() === title?.trim()) return null;
+    return <h4 className="experience-panel__story-title">{children}</h4>;
+  };
+}
+
 export function LinkedWorkbenchContent({
+  title,
   recruiterCard,
   activeStoryError,
   ActiveStory,
   isLoading,
 }: LinkedWorkbenchContentProps) {
+  const storyComponents = useMemo(() => ({ h2: StoryHeading(title) }), [title]);
   const recruiterMetaLine = recruiterCard
     ? buildRecruiterMetaLine([
         recruiterCard.roleLabel,
@@ -76,7 +92,7 @@ export function LinkedWorkbenchContent({
       {ActiveStory ? (
         <section className="experience-panel__story">
           {recruiterCard ? <h3 className="experience-panel__story-heading">Story</h3> : null}
-          <ActiveStory />
+          <ActiveStory components={storyComponents} />
         </section>
       ) : null}
     </>
@@ -258,6 +274,7 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
         ) : null}
         {workbench?.definition.contentMode === 'linked' ? (
           <LinkedWorkbenchContent
+            title={workbench.definition.title}
             recruiterCard={recruiterCard}
             activeStoryError={activeStoryError}
             ActiveStory={ActiveStory}

@@ -5,7 +5,7 @@
 export function LidarScanNote() {
   return (
     <section className="taskforge-sim" aria-labelledby="lidar-scan-title">
-      <h3 id="lidar-scan-title">The scan pass on this bench</h3>
+      <h4 id="lidar-scan-title">The scan pass on this bench</h4>
       <p>
         A scanner gantry sweeps a small crop plot. Plants it has passed show as point clouds, each finished plot gets a
         trait bar, and the plot holding an odd plant is flagged for a person to check, the way the automated quality
