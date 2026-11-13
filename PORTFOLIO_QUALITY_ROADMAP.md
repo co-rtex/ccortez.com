@@ -100,17 +100,9 @@ check` and e2e 44/44 re-run here after the change. Open: home LCP ~2.7 s on simu
 
 ## Claims audit (2026-11-13)
 
-A read-only audit compared every claim on both sites with the repositories and the source-of-truth file (ledger
-kept outside the public repos). Applied: the four game-bench corrections above. Needs Christian's decision:
-- QuantLab "18 API endpoints" (both sites): the public repo (`c2a597b`) has 58 FastAPI routes.
-- EngineX "151 GoogleTest cases" (both sites): stale; v1.0.0 (`1529090`) has 280 GoogleTest tests / 534 ctest cases.
-- QuantLab "4–8 workers, 30 s–10 min jobs": in the source of truth, but the repo defaults to 2 workers and measured 1/2/4.
-- Project dates: TaskForge "Feb 2026" (repo starts 2026-08-29), QuantLab "May 2026" (repo from 2026-10-30); FootyMind
-  and IntelliSort show 2026 in the game (repos Nov 2025).
-- TradeGrid "20+ student developers": GitHub shows 11 contributors.
-- FridgeFinder game stack (FastAPI/OpenAI/PostgreSQL/Docker): only a frontend-only repo was found.
-- Game-only benches with no source anywhere: Mathnasium, HLR, Wisconsin DNR ("Present" looks stale), Elgin Help Hub,
-  LLM Research Agent, Prediction Signal Ingestion.
+A read-only audit compared every claim on both sites with the repositories. Four game-bench corrections were
+applied (`4d8eecd`). The ledger and the remaining decisions are kept in the private professional repository
+(`docs/CLAIMS_LEDGER.md`), not here.
 
 ## Open decisions for Christian
 
