@@ -1,3 +1,4 @@
+import { PerformanceMonitor } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { ACESFilmicToneMapping, BasicShadowMap, PCFShadowMap, SRGBColorSpace } from 'three';
 import { useState } from 'react';
@@ -24,6 +25,8 @@ import type { WorkbenchEditorTransformMode } from '../workbench/editor';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import type { WorkbenchDefinition } from '../types/workbench';
 
+const MAX_DPR = 1.6;
+
 interface OverworldSceneProps {
   workbenches: WorkbenchRuntimeRecord[];
   editorEnabled: boolean;
@@ -45,6 +48,7 @@ export function OverworldScene({
 }: OverworldSceneProps) {
   const nearbyWorkbenchId = useGameStore((state) => state.nearbyWorkbenchId);
   const [activeManipulationWorkbenchId, setActiveManipulationWorkbenchId] = useState<string | null>(null);
+  const [dpr, setDpr] = useState<number>(MAX_DPR);
   const selectedWorkbench =
     selectedWorkbenchId
       ? workbenches.find((workbench) => workbench.definition.id === selectedWorkbenchId) ?? null
@@ -56,7 +60,7 @@ export function OverworldScene({
       // three r183 deprecated PCFSoftShadowMap and falls back to PCFShadowMap with a warning on every
       // shadow render, so request PCF directly: same output, no per-frame console spam.
       shadows={hasPerfFlag('noshadow') ? false : 'percentage'}
-      dpr={hasPerfFlag('dpr1') ? 1 : [1, 1.6]}
+      dpr={hasPerfFlag('dpr1') ? 1 : dpr}
       gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
       camera={{ position: [0, 16, 16], fov: 40, near: 0.1, far: 620 }}
       onCreated={({ gl }) => {
@@ -67,6 +71,10 @@ export function OverworldScene({
         gl.shadowMap.type = hasPerfFlag('shadowbasic') ? BasicShadowMap : PCFShadowMap;
       }}
     >
+      {hasPerfFlag('fixeddpr') || hasPerfFlag('dpr1') ? null : (
+        // Drop to 1x pixels only when this GPU cannot keep up; fast machines keep full sharpness.
+        <PerformanceMonitor flipflops={3} onDecline={() => setDpr(1)} onIncline={() => setDpr(MAX_DPR)} />
+      )}
       <SceneTelemetry />
       <ShadowScheduler />
       <WorldEnvironment />

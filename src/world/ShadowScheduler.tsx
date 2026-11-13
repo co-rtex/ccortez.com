@@ -3,11 +3,15 @@ import { useEffect, useRef } from 'react';
 
 import { hasPerfFlag } from './perfFlags';
 
-/** Experimental (`?perf=shadowhalf`): re-render the shadow map every other frame (the sun never moves). */
+/**
+ * Re-render the shadow map every other frame. The sun never moves and only a few small things (the player,
+ * critters) cast moving shadows, so a 30 Hz shadow update is invisible but halves the frame-time spikes measured on
+ * an M3 (uncapped p95 30 → 16 ms at spawn). `?perf=shadowfull` restores per-frame updates for comparison.
+ */
 export function ShadowScheduler(): null {
   const getState = useThree((state) => state.get);
   const frame = useRef(0);
-  const enabled = hasPerfFlag('shadowhalf');
+  const enabled = !hasPerfFlag('shadowfull');
 
   useEffect(() => {
     if (!enabled) return;
