@@ -65,6 +65,7 @@ function renderShortlistSection(
             <button
               key={entry.id}
               type="button"
+              data-workbench-id={entry.id}
               className={`recruiter-navigator__item recruiter-navigator__item--${entry.category} recruiter-navigator__item--${entry.state}${openedIds.has(entry.id) ? ' recruiter-navigator__item--opened' : ''}`}
               onClick={() => onWorkbenchOpen(entry.id)}
             >
@@ -143,6 +144,7 @@ function RecruiterNavigatorContent({
 
           <button
             type="button"
+            data-workbench-id={startEntry.id}
             className={`recruiter-navigator__item recruiter-navigator__item--start recruiter-navigator__item--${startEntry.state}`}
             onClick={() => onWorkbenchOpen(startEntry.id)}
           >

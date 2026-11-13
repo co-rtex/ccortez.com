@@ -378,6 +378,10 @@ function BenchPlinth({ accent }: { accent: string }) {
   );
 }
 
+function isCoarsePointer(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true;
+}
+
 const PENNANT_POLE_HEIGHT = 4.4;
 
 function BenchPennant({ accent, seed }: { accent: string; seed: number }) {
@@ -451,7 +455,9 @@ export function WorkbenchLandmark({
       : 'valid';
 
   const titleBadgeRef = useRef<HTMLDivElement>(null);
+  const showsTitleBadge = shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled);
   const panelOpen = useGameStore((state) => state.panelWorkbenchId !== null);
+  const showsPrompt = shouldShowWorkbenchProximityPrompt(workbench, isNearby) && !panelOpen;
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
   // Start Here stands right in front of the spawn point, so its badge sits just above the welcome board
   // (higher, it floated up against the fountain's armillary).
@@ -591,15 +597,17 @@ export function WorkbenchLandmark({
         </Html>
       ) : null}
 
-      {shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled) ? (
+      {showsTitleBadge ? (
         <Html center position={[0, rendersKit ? 2.95 : isStartHere ? startBadgeY : 3.3, 0]}>
           <div ref={titleBadgeRef} className="landmark-tooltip landmark-tooltip--title" style={{ opacity: 0 }}>
             {workbench.definition.title}
+            {/* Close by, the badge itself says how to open it: one label, not a prompt stacked on the badge. */}
+            {showsPrompt ? <span className="landmark-tooltip__action">{isCoarsePointer() ? 'Tap to open' : 'Press E'}</span> : null}
           </div>
         </Html>
       ) : null}
 
-      {shouldShowWorkbenchProximityPrompt(workbench, isNearby) && !panelOpen ? (
+      {showsPrompt && (!showsTitleBadge || editorEnabled) ? (
         <Html center distanceFactor={16} position={[0, rendersKit ? 2.38 : 3.45, 0]}>
           <div className="landmark-tooltip">
             {editorEnabled ? 'Click to select. Press E to open.' : 'Press E or Click'}

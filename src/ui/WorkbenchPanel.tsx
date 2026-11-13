@@ -97,6 +97,59 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
     [panelWorkbenchId, workbenches],
   );
 
+  // Keyboard and screen-reader users land in the panel when it opens (its heading is announced), and go back to
+  // where they were when it closes.
+  const panelRef = useRef<HTMLElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  // The last element focused outside the panel. Opening from the recruiter guide folds the guide in the same
+  // render, removing the button (and blurring it) before the open effect runs, so focus is tracked as it moves.
+  // Pressing on something that cannot take focus (the 3D world) clears it.
+  const lastFocusedOutsideRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const onFocusIn = (event: FocusEvent) => {
+      if (event.target instanceof HTMLElement && !panelRef.current?.contains(event.target)) {
+        lastFocusedOutsideRef.current = event.target;
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (target && !panelRef.current?.contains(target) && !target.closest('button, a, input, select, textarea, [tabindex]')) {
+        lastFocusedOutsideRef.current = null;
+      }
+    };
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, []);
+  useEffect(() => {
+    if (panelWorkbenchId) {
+      const active = document.activeElement;
+      const opener =
+        active instanceof HTMLElement && active !== document.body && !panelRef.current?.contains(active)
+          ? active
+          : lastFocusedOutsideRef.current;
+      if (opener) returnFocusRef.current = opener;
+      headingRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    const target = returnFocusRef.current;
+    returnFocusRef.current = null;
+    if (!target || !(panelRef.current?.contains(document.activeElement) || document.activeElement === document.body)) return;
+    if (target.isConnected) {
+      target.focus({ preventScroll: true });
+      return;
+    }
+    const workbenchId = target.dataset.workbenchId;
+    const twin = workbenchId
+      ? document.querySelector<HTMLElement>(`[data-workbench-id="${CSS.escape(workbenchId)}"]`)
+      : null;
+    twin?.focus({ preventScroll: true });
+  }, [panelWorkbenchId]);
+
   useEffect(() => {
     if (!workbench?.linkedExperience) {
       return;
@@ -147,11 +200,19 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
   const metaChips = workbench ? buildWorkbenchMetaChips(workbench) : [];
 
   return (
-    <aside className={`experience-panel ${panelWorkbenchId ? 'experience-panel--open' : ''}`}>
+    <aside
+      ref={panelRef}
+      className={`experience-panel ${panelWorkbenchId ? 'experience-panel--open' : ''}`}
+      aria-labelledby="experience-panel-title"
+      // Closed, the panel only slides off screen; inert keeps its controls out of the tab order.
+      inert={!panelWorkbenchId}
+    >
       <header className="experience-panel__header">
         <div>
           <p className="experience-panel__eyebrow">{resolvePanelEyebrow(workbench)}</p>
-          <h2>{workbench ? workbench.definition.title : 'Select a Workbench'}</h2>
+          <h2 id="experience-panel-title" ref={headingRef} tabIndex={-1}>
+            {workbench ? workbench.definition.title : 'Select a Workbench'}
+          </h2>
         </div>
         <button
           type="button"

@@ -852,7 +852,21 @@ body {
   color: #eef6fb;
 }
 
+/* The open hint inside a nearby bench's title badge. */
+.landmark-tooltip__action {
+  display: block;
+  margin-top: 0.2rem;
+  color: #ffd27a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .landmark-tooltip--title {
+  /* drei's Html wrapper has no width, so without max-content the badge shrinks to its narrowest wrap. */
+  width: max-content;
   max-width: 14rem;
   text-wrap: balance;
   transition: opacity 0.15s ease;
