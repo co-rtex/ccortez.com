@@ -18,6 +18,8 @@ interface RecruiterNavigatorHUDProps {
   nearbyWorkbenchId: string | null;
   mobileLiteMode: boolean;
   onWorkbenchOpen: (workbenchId: string) => void;
+  /** Fold the guide to its button while a bench panel is open (default on). */
+  foldWhilePanelOpen?: boolean;
 }
 
 interface RecruiterNavigatorContentProps {
@@ -198,8 +200,13 @@ export function RecruiterNavigatorHUD({
   nearbyWorkbenchId,
   mobileLiteMode,
   onWorkbenchOpen,
+  foldWhilePanelOpen = true,
 }: RecruiterNavigatorHUDProps) {
   const [isHidden, setIsHidden] = useState(false);
+  // While a bench panel is open the guide folds away so the scene and the panel have room; the visitor can
+  // still reopen it for that panel.
+  const [shownForPanelId, setShownForPanelId] = useState<string | null>(null);
+  const foldedForPanel = foldWhilePanelOpen && activeWorkbenchId !== null && shownForPanelId !== activeWorkbenchId;
   const data = useMemo(
     () => deriveRecruiterNavigatorData(workbenches, playerPosition, activeWorkbenchId, nearbyWorkbenchId),
     [activeWorkbenchId, nearbyWorkbenchId, playerPosition, workbenches],
@@ -229,13 +236,16 @@ export function RecruiterNavigatorHUD({
     );
   }
 
-  if (isHidden) {
+  if (isHidden || foldedForPanel) {
     return (
       <div className="recruiter-navigator recruiter-navigator--collapsed">
         <button
           type="button"
           className="recruiter-navigator__visibility-button recruiter-navigator__visibility-button--show"
-          onClick={() => setIsHidden(false)}
+          onClick={() => {
+            setIsHidden(false);
+            setShownForPanelId(activeWorkbenchId);
+          }}
           aria-label="Show recruiter guide"
         >
           Show Recruiter Guide

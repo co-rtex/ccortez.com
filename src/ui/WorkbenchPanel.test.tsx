@@ -188,3 +188,17 @@ describe('inspect hint wording', () => {
     expect(getWorkbenchInspectHint(false)).toContain('Scroll');
   });
 });
+
+describe('Start Here panel header', () => {
+  it('does not repeat Start Here or show a layout district', async () => {
+    const { buildWorkbenchMetaChips: chips, resolvePanelEyebrow: eyebrow } = await import('./workbenchPanelMeta');
+    const { START_HERE_WORKBENCH_ID } = await import('../world/hub');
+    const { buildWorkbenchRuntime } = await import('../workbench/runtime');
+    const { WORKBENCH_DISTRICTS, WORKBENCH_LAYOUT } = await import('../../content/workbenches/layout');
+    const start = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, []).find(
+      (record) => record.definition.id === START_HERE_WORKBENCH_ID,
+    )!;
+    expect(eyebrow(start)).toBe('Welcome');
+    expect(chips(start)).toEqual([]);
+  });
+});

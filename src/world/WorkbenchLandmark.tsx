@@ -427,6 +427,7 @@ export function WorkbenchLandmark({
       : 'valid';
 
   const titleBadgeRef = useRef<HTMLDivElement>(null);
+  const panelOpen = useGameStore((state) => state.panelWorkbenchId !== null);
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
   // Above the beacon on wide screens; at bench height on narrow ones, where the top edge holds the guide header.
   const startBadgeY = typeof window !== 'undefined' && window.innerWidth < 900 ? 3.3 : 5.9;
@@ -572,7 +573,7 @@ export function WorkbenchLandmark({
         </Html>
       ) : null}
 
-      {shouldShowWorkbenchProximityPrompt(workbench, isNearby) ? (
+      {shouldShowWorkbenchProximityPrompt(workbench, isNearby) && !panelOpen ? (
         <Html center distanceFactor={16} position={[0, rendersKit ? 2.38 : 3.45, 0]}>
           <div className="landmark-tooltip">
             {editorEnabled ? 'Click to select. Press E to open.' : 'Press E or Click'}

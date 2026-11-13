@@ -208,6 +208,7 @@ describe('RecruiterNavigatorHUD', () => {
         nearbyWorkbenchId="experience-stop"
         mobileLiteMode={false}
         onWorkbenchOpen={() => undefined}
+        foldWhilePanelOpen={false}
       />,
     );
 
@@ -216,5 +217,23 @@ describe('RecruiterNavigatorHUD', () => {
     expect(markup).toContain('recruiter-map-marker--start');
     expect(markup).toContain('recruiter-map-marker--experience');
     expect(markup).toContain('recruiter-map-marker--project');
+  });
+
+  it('folds to its show button while a bench panel is open', () => {
+    const markup = renderToStaticMarkup(
+      <RecruiterNavigatorHUD
+        workbenches={[
+          createWorkbenchRecord({ id: 'project-stop', title: 'Project Stop', linkedType: 'project', x: 8, z: -4 }),
+        ]}
+        playerPosition={{ x: 0, y: 0.8, z: 0 }}
+        activeWorkbenchId="project-stop"
+        nearbyWorkbenchId={null}
+        mobileLiteMode={false}
+        onWorkbenchOpen={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Show Recruiter Guide');
+    expect(markup).not.toContain('recruiter-map-marker');
   });
 });

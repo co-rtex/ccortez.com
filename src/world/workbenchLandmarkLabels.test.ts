@@ -85,10 +85,10 @@ describe('workbench landmark labels', () => {
 });
 
 describe('title badge distance fade', () => {
-  it('is fully visible nearby and hidden far away', async () => {
+  it('is either fully visible nearby or hidden, never half-transparent', async () => {
     const { getTitleBadgeOpacity } = await import('./workbenchLandmarkLabels');
     expect(getTitleBadgeOpacity(5)).toBe(1);
-    expect(getTitleBadgeOpacity(19)).toBeCloseTo(0.5);
-    expect(getTitleBadgeOpacity(30)).toBe(0);
+    expect(getTitleBadgeOpacity(19)).toBe(1);
+    expect(getTitleBadgeOpacity(21)).toBe(0);
   });
 });

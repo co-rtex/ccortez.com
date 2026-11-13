@@ -229,9 +229,12 @@ void main() {
 
   vec3 water = mix(uShallow, uDeep, smoothstep(64.0, 112.0, fromIsland));
   water = mix(water, uFar, smoothstep(150.0, 320.0, fromIsland));
-  float swell = sin(vWorld.x * 0.21 + uTime * 0.6) * sin(vWorld.z * 0.17 - uTime * 0.45);
-  float crest = smoothstep(0.82, 0.98, swell) * (1.0 - smoothstep(60.0, 180.0, distanceXZ));
-  water = mix(water, vec3(0.92, 0.98, 1.0), crest * 0.22);
+  // Domain-warped swell so highlights fall irregularly instead of in rows of identical ovals.
+  vec2 warp = vec2(sin(vWorld.z * 0.053 + 1.7) * 2.1, sin(vWorld.x * 0.061 - 0.4) * 1.9);
+  float swell = sin(vWorld.x * 0.21 + warp.x + uTime * 0.6) * sin(vWorld.z * 0.17 + warp.y - uTime * 0.45);
+  float patchy = 0.5 + 0.5 * sin(vWorld.x * 0.031 + vWorld.z * 0.027);
+  float crest = smoothstep(0.88, 0.99, swell) * patchy * (1.0 - smoothstep(60.0, 180.0, distanceXZ));
+  water = mix(water, vec3(0.92, 0.98, 1.0), crest * 0.16);
 
   // Shallows and surf from the baked depth map (metres below the water line).
   vec2 depthUv = vWorld.xz / uDepthExtent + 0.5;

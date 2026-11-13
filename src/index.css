@@ -843,8 +843,9 @@ body {
 }
 
 .landmark-tooltip--title {
-  max-width: 11rem;
-  transition: opacity 0.25s ease;
+  max-width: 14rem;
+  text-wrap: balance;
+  transition: opacity 0.15s ease;
   border-color: rgba(221, 209, 180, 0.62);
   background: linear-gradient(130deg, rgba(20, 31, 37, 0.82), rgba(18, 29, 34, 0.76));
   color: #f8ead2;
@@ -1395,9 +1396,27 @@ body {
 }
 
 @media (max-width: 900px) {
-  /* Phones and narrow windows: the guide and the banner carry the portfolio link instead. */
+  /* Phones and narrow windows: keep only the portfolio link, as a compact pill beside the folded guide. */
   .site-bar {
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+
+  .site-bar__button {
     display: none;
+  }
+
+  .site-bar__link {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .app-shell:has(.experience-panel--open) .site-bar {
+    display: none;
+  }
+
+  .recruiter-navigator--mobile:not([open]) {
+    width: calc(100% - 11.5rem);
   }
 
   .scene-fallback {
