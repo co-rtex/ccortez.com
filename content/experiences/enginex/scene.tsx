@@ -236,6 +236,13 @@ export default function EnginexScene(props: ExperienceSceneProps) {
             <boxGeometry args={[1.0, 0.024, 0.16]} />
             <meshStandardMaterial color="#3a4250" roughness={0.85} />
           </mesh>
+          {/* Flow chevrons: along the conveyor into the gate, then on to the journal (written before the book). */}
+          {[GATE.x + 0.95, GATE.x + 0.55, GATE.x - 0.32, GATE.x - 0.62].map((x) => (
+            <mesh key={x} position={[x, 0.03, GATE.z]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
+              <coneGeometry args={[0.05, 0.09, 3]} />
+              <meshStandardMaterial color="#f0b44c" emissive="#f0b44c" emissiveIntensity={0.25} roughness={0.6} />
+            </mesh>
+          ))}
           {/* Journal plank and trades tray. */}
           <mesh receiveShadow position={[JOURNAL.x, 0.02, JOURNAL.zFront - (JOURNAL_SHOWN - 1) * JOURNAL.step * 0.5]}>
             <boxGeometry args={[0.26, 0.04, JOURNAL_SHOWN * JOURNAL.step + 0.08]} />
