@@ -73,7 +73,13 @@ export function OverworldScene({
     >
       {hasPerfFlag('fixeddpr') || hasPerfFlag('dpr1') ? null : (
         // Drop to 1x pixels only when this GPU cannot keep up; fast machines keep full sharpness.
-        <PerformanceMonitor flipflops={3} onDecline={() => setDpr(1)} onIncline={() => setDpr(MAX_DPR)} />
+        <PerformanceMonitor
+          flipflops={3}
+          onDecline={() => setDpr(1)}
+          onIncline={() => setDpr(MAX_DPR)}
+          // After repeated flip-flops, settle on the cheaper setting rather than whichever came last.
+          onFallback={() => setDpr(1)}
+        />
       )}
       <SceneTelemetry />
       <ShadowScheduler />
