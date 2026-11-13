@@ -1,10 +1,12 @@
 import { Canvas } from '@react-three/fiber';
-import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from 'three';
+import { ACESFilmicToneMapping, BasicShadowMap, PCFShadowMap, SRGBColorSpace } from 'three';
 import { useState } from 'react';
 
 import { CameraRig } from '../world/CameraRig';
 import { DevShotCamera } from '../world/DevShotCamera';
 import { SceneTelemetry } from '../world/SceneTelemetry';
+import { hasPerfFlag } from '../world/perfFlags';
+import { ShadowScheduler } from '../world/ShadowScheduler';
 import { StartHereBeacon } from '../world/landmarks/StartHereBeacon';
 import { FootstepDust } from '../world/FootstepDust';
 import { LoadedExperienceScenes } from '../world/LoadedExperienceScenes';
@@ -53,19 +55,20 @@ export function OverworldScene({
       className="world-canvas"
       // three r183 deprecated PCFSoftShadowMap and falls back to PCFShadowMap with a warning on every
       // shadow render, so request PCF directly: same output, no per-frame console spam.
-      shadows="percentage"
-      dpr={[1, 1.6]}
+      shadows={hasPerfFlag('noshadow') ? false : 'percentage'}
+      dpr={hasPerfFlag('dpr1') ? 1 : [1, 1.6]}
       gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
       camera={{ position: [0, 16, 16], fov: 40, near: 0.1, far: 620 }}
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace;
         gl.toneMapping = ACESFilmicToneMapping;
         gl.toneMappingExposure = 0.92;
-        gl.shadowMap.enabled = true;
-        gl.shadowMap.type = PCFShadowMap;
+        gl.shadowMap.enabled = !hasPerfFlag('noshadow');
+        gl.shadowMap.type = hasPerfFlag('shadowbasic') ? BasicShadowMap : PCFShadowMap;
       }}
     >
       <SceneTelemetry />
+      <ShadowScheduler />
       <WorldEnvironment />
       <PlayerController />
       <FootstepDust />
@@ -101,7 +104,7 @@ export function OverworldScene({
         />
       ) : null}
 
-      <LoadedExperienceScenes workbenches={workbenches} />
+      {hasPerfFlag('noscenes') ? null : <LoadedExperienceScenes workbenches={workbenches} />}
     </Canvas>
   );
 }

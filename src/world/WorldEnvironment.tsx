@@ -17,6 +17,7 @@ import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
 import { BOULDER_POINTS, COASTAL_ROCK_POINTS, TREE_POINTS } from './biome';
 import { CentralPlaza } from './plaza/CentralPlaza';
 import { InstancedVegetation } from './vegetation/InstancedVegetation';
+import { hasPerfFlag } from './perfFlags';
 import { IslandTrails } from './plaza/IslandTrails';
 import { LakeWater } from './water/LakeWater';
 import { OCEAN_DEPTH_MAP_EXTENT, createOceanDepthTexture } from './water/oceanDepthMap';
@@ -550,8 +551,8 @@ export function WorldEnvironment() {
         intensity={2.35}
         position={sunsetLightPosition}
         color="#ffd2a1"
-        shadow-mapSize-width={4096}
-        shadow-mapSize-height={4096}
+        shadow-mapSize-width={hasPerfFlag('shadow2048') ? 2048 : 4096}
+        shadow-mapSize-height={hasPerfFlag('shadow2048') ? 2048 : 4096}
         shadow-bias={-0.00008}
         shadow-normalBias={0.02}
         shadow-camera-near={1}
@@ -608,7 +609,7 @@ export function WorldEnvironment() {
       <Lighthouse />
       <LakeDocks />
 
-      <InstancedVegetation />
+      {hasPerfFlag('noveg') ? null : <InstancedVegetation />}
 
       {SCENIC_REST_SPOTS.map((spot) => (
         <ScenicRestSpotBench key={spot.id} spot={spot} />

@@ -13,6 +13,7 @@ import type { Group, Mesh, MeshStandardMaterial } from 'three';
 import { CatmullRomCurve3, Color, TubeGeometry, Vector3 } from 'three';
 
 import type { ExperienceSceneProps } from '../../../src/types/experience';
+import { hasPerfFlag } from '../../../src/world/perfFlags';
 import {
   RECRUITER_SCENE_PLATFORM_GLOW_RADIUS,
   RECRUITER_SCENE_PLATFORM_HEIGHT,
@@ -386,6 +387,7 @@ export function RecruiterSceneShell({
       for (const entry of Array.isArray(material) ? material : material ? [material] : []) {
         if ('metalness' in entry && entry.metalness > MAX_SCENE_METALNESS) entry.metalness = MAX_SCENE_METALNESS;
       }
+      if (hasPerfFlag('nopropshadow')) object.castShadow = false;
     });
   }, []);
   const ringMaterialRef = useRef<MeshStandardMaterial>(null);
