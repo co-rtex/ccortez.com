@@ -23,8 +23,14 @@ import type {
 } from '../types/workbench';
 
 export const WORKBENCH_FOOTPRINT_RADIUS = 1.28;
-const STREAMING_PRELOAD_PADDING = 7.5;
-const STREAMING_UNLOAD_PADDING = 14;
+// Scenes appear from across the plaza (so the ring reads as destinations, not empty pads) and stream in a
+// little earlier than that; the reveal animation still plays as they come into range.
+// On phones scenes keep a shorter range to limit draw calls.
+export type WorkbenchSceneRange = 'plaza' | 'near';
+const SCENE_RANGE_PADDING: Record<WorkbenchSceneRange, { present: number; preload: number; unload: number }> = {
+  plaza: { present: 36, preload: 40, unload: 46 },
+  near: { present: 13.5, preload: 21.5, unload: 28 },
+};
 
 export interface WorkbenchRuntimeRecord {
   definition: WorkbenchDefinition;
@@ -32,6 +38,8 @@ export interface WorkbenchRuntimeRecord {
   placement: WorkbenchResolvedPlacement;
   linkedExperience?: ExperienceRecord;
   interactionRadius: number;
+  /** Distance at which a loaded scene is shown; falls back to `interactionRadius` when absent. */
+  presentDistance?: number;
   preloadDistance: number;
   unloadDistance: number;
   issues: WorkbenchValidationIssue[];
@@ -178,7 +186,9 @@ export function buildWorkbenchRuntime(
   definitions: WorkbenchDefinition[],
   districtDefinitions: WorkbenchDistrictDefinition[],
   experiences: ExperienceRecord[],
+  sceneRange: WorkbenchSceneRange = 'plaza',
 ): WorkbenchRuntimeRecord[] {
+  const padding = SCENE_RANGE_PADDING[sceneRange];
   const validatedDefinitions = validateWorkbenchLayout(definitions);
   const validatedDistricts = validateWorkbenchDistricts(districtDefinitions);
   const experienceById = new Map(experiences.map((experience) => [experience.manifest.id, experience] as const));
@@ -196,8 +206,9 @@ export function buildWorkbenchRuntime(
       placement: resolveWorkbenchPlacement(definition.placement),
       linkedExperience: definition.experienceId ? experienceById.get(definition.experienceId) : undefined,
       interactionRadius: definition.interactionRadius,
-      preloadDistance: definition.interactionRadius + STREAMING_PRELOAD_PADDING,
-      unloadDistance: definition.interactionRadius + STREAMING_UNLOAD_PADDING,
+      presentDistance: definition.interactionRadius + padding.present,
+      preloadDistance: definition.interactionRadius + padding.preload,
+      unloadDistance: definition.interactionRadius + padding.unload,
       issues: [] as WorkbenchValidationIssue[],
     };
   });

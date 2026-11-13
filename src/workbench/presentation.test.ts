@@ -206,3 +206,21 @@ describe('computeWorkbenchScenePresentation', () => {
     });
   });
 });
+
+describe('scene presentation distance', () => {
+  it('uses presentDistance when set and keeps a shown scene through the hysteresis band', async () => {
+    const { shouldPresentWorkbenchScene, WORKBENCH_SCENE_PRESENT_HYSTERESIS } = await import('./presentation');
+    const workbench = {
+      definition: { id: 'bench' },
+      placement: { anchor: { x: 0, y: 0, z: 0 } },
+      interactionRadius: 4,
+      presentDistance: 18,
+    } as unknown as Parameters<typeof shouldPresentWorkbenchScene>[0];
+    expect(shouldPresentWorkbenchScene(workbench, { x: 17, y: 0, z: 0 }, null)).toBe(true);
+    expect(shouldPresentWorkbenchScene(workbench, { x: 19, y: 0, z: 0 }, null)).toBe(false);
+    expect(shouldPresentWorkbenchScene(workbench, { x: 19, y: 0, z: 0 }, null, true)).toBe(true);
+    expect(
+      shouldPresentWorkbenchScene(workbench, { x: 18 + WORKBENCH_SCENE_PRESENT_HYSTERESIS + 0.5, y: 0, z: 0 }, null, true),
+    ).toBe(false);
+  });
+});

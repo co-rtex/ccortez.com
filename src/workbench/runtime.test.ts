@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PUBLISHED_WORKBENCH_PLAZA_METRICS } from '../../content/workbenches/layout';
 
 import { __resetBootstrapFlagForTests, bootstrapExperienceRegistry } from '../content/loader';
 import { __resetExperienceRegistryForTests, getAllExperiences } from '../content/registry';
@@ -78,5 +79,18 @@ describe('workbench runtime', () => {
         }),
       ]),
     );
+  });
+});
+
+describe('workbench scene range', () => {
+  it('shows scenes from across the plaza by default and nearer on phones', () => {
+    const plaza = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, []);
+    const near = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, [], 'near');
+    expect(plaza[0]!.presentDistance!).toBeGreaterThan(near[0]!.presentDistance!);
+    expect(plaza[0]!.presentDistance!).toBeGreaterThan(PUBLISHED_WORKBENCH_PLAZA_METRICS.perimeterRadius);
+    for (const record of [...plaza, ...near]) {
+      expect(record.preloadDistance).toBeGreaterThan(record.presentDistance!);
+      expect(record.unloadDistance).toBeGreaterThan(record.preloadDistance);
+    }
   });
 });

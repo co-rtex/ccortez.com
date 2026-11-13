@@ -96,8 +96,14 @@ export default function App() {
   const closeWorkbenchPanel = useGameStore((state) => state.closeWorkbenchPanel);
 
   const allWorkbenchRecords = useMemo(
-    () => buildWorkbenchRuntime(workbenchDefinitions, WORKBENCH_DISTRICTS, bootstrapState.experiences),
-    [bootstrapState.experiences, workbenchDefinitions],
+    () =>
+      buildWorkbenchRuntime(
+        workbenchDefinitions,
+        WORKBENCH_DISTRICTS,
+        bootstrapState.experiences,
+        mobileLiteMode ? 'near' : 'plaza',
+      ),
+    [bootstrapState.experiences, mobileLiteMode, workbenchDefinitions],
   );
   const visibleWorkbenchRecords = useMemo(
     () =>
