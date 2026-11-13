@@ -77,6 +77,7 @@ Nothing merges to either `main` without Christian's approval.
 | `5833f40` | Fingerposts where each trail leaves the plaza, naming its destination | `.shots/signs-lake`; 156 tests |
 | `0c43cc8` | "Workbench" used consistently for stations; How to play mentions signposts | |
 | `04de5af` | 30 Hz shadow updates + adaptive pixel ratio (see Performance) | uncapped spawn p95 33 → 13–16 ms |
+| `9c68604` | Fourth-review fixes: even per-puff canopy fade, guide folds after the first walk, no District chip, no rotate hint on phones, fingerposts face the plaza, lighthouse window disc removed and sign at the door, matching phone pills, banner auto-hides | `.shots/signs2-lake`, `follow-grove`; 156 tests |
 
 Checkpoint A (before/after, drag to compare; refreshed at `36d334c`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
