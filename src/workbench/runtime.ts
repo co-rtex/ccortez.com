@@ -4,8 +4,8 @@ import {
   CENTRAL_PLAZA_FOUNTAIN_RADIUS,
   START_HERE_ANCHOR,
   START_HERE_PLACEMENT_TOLERANCE,
+  START_HERE_ROTATION_Y,
   START_HERE_WORKBENCH_ID,
-  getWorkbenchFacingCenterRotationY,
 } from '../world/hub';
 import { SCENIC_REST_SPOTS, getRestSpotSeatAnchor } from '../world/restSpots';
 import { isPointWalkable, isPointWaterBlocked } from '../world/terrain';
@@ -67,7 +67,6 @@ function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValid
   const issues: WorkbenchValidationIssue[] = [];
   const { anchor } = record.placement;
   const radialDistance = Math.hypot(anchor.x, anchor.z);
-  const expectedStartRotation = getWorkbenchFacingCenterRotationY(anchor.x, anchor.z);
 
   if (
     record.definition.id === START_HERE_WORKBENCH_ID &&
@@ -93,11 +92,11 @@ function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValid
 
   if (
     record.definition.id === START_HERE_WORKBENCH_ID &&
-    angleDelta(record.placement.rotationY, expectedStartRotation) > 0.12
+    angleDelta(record.placement.rotationY, START_HERE_ROTATION_Y) > 0.12
   ) {
     issues.push({
       code: 'reserved-start-pad',
-      message: 'Start Here bench should face inward toward the central fountain.',
+      message: 'Start Here bench should face south, toward visitors arriving from the spawn point.',
       severity: 'warning',
     });
   }

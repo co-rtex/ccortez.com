@@ -1430,6 +1430,35 @@ body {
     padding: 0;
   }
 
+  /* An open phone guide takes the top of the screen: the portfolio pill and the intro banner step aside
+     instead of sitting on top of it, and the guide's own eyebrow would only repeat the toggle's label. */
+  .app-shell:has(.recruiter-navigator--mobile[open]) .site-bar,
+  .app-shell:has(.recruiter-navigator--mobile[open]) .mobile-lite-banner,
+  .recruiter-navigator--mobile .recruiter-navigator__eyebrow {
+    display: none;
+  }
+
+  .recruiter-navigator--mobile .recruiter-navigator__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  /* A caret shows the toggle opens and closes the list. */
+  .recruiter-navigator--mobile .recruiter-navigator__toggle::after {
+    content: '';
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-0.15rem) rotate(45deg);
+  }
+
+  .recruiter-navigator--mobile[open] .recruiter-navigator__toggle::after {
+    transform: translateY(0.1rem) rotate(-135deg);
+  }
+
   .recruiter-navigator--mobile:not([open]) .recruiter-navigator__toggle {
     padding: 0.55rem 0.95rem;
     font-size: 0.85rem;
