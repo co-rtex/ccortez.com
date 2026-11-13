@@ -43,3 +43,21 @@ describe('fast travel stand point', () => {
     expect(shouldTravelToBench({ x: 0, z: 0 }, { x: -4.28, z: 25.651 })).toBe(true);
   });
 });
+
+describe('fast travel to every published bench', () => {
+  it('lands on walkable ground inside the bench interaction radius', async () => {
+    const { WORKBENCH_LAYOUT } = await import('../../content/workbenches/layout');
+    const { isPointWalkable } = await import('./terrain');
+    const published = WORKBENCH_LAYOUT.filter((definition) => definition.visibility === 'published');
+    expect(published.length).toBeGreaterThan(10);
+    for (const definition of published) {
+      if (definition.placement.mode !== 'freeform') continue;
+      const anchor = { x: definition.placement.x, z: definition.placement.z };
+      const stand = getBenchStandPoint(anchor, definition.placement.rotationY, definition.interactionRadius);
+      expect(isPointWalkable(stand.x, stand.z, 0.42), definition.id).toBe(true);
+      expect(Math.hypot(stand.x - anchor.x, stand.z - anchor.z), definition.id).toBeLessThanOrEqual(
+        definition.interactionRadius,
+      );
+    }
+  });
+});
