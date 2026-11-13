@@ -229,6 +229,7 @@ export function RecruiterNavigatorHUD({
   const guideRef = useRef<HTMLElement>(null);
   const showButtonRef = useRef<HTMLButtonElement>(null);
   const focusShowButtonRef = useRef(false);
+  const mobileDetailsRef = useRef<HTMLDetailsElement>(null);
   // Fold once, the first time the visitor walks off: by then they have seen it, and the world gets the space.
   // Never fold while keyboard focus is inside the guide (that would drop focus to the page).
   useEffect(() => {
@@ -271,6 +272,12 @@ export function RecruiterNavigatorHUD({
 
   const progress = summarizeOpenedProgress(data.markers, openedWorkbenchIds);
 
+  // On phones the open guide would cover the bench above the details sheet, so picking a bench folds it.
+  const openFromMobileGuide = (workbenchId: string): void => {
+    mobileDetailsRef.current?.removeAttribute('open');
+    onWorkbenchOpen(workbenchId);
+  };
+
   const content = (
     <RecruiterNavigatorContent
       counts={data.counts}
@@ -278,7 +285,7 @@ export function RecruiterNavigatorHUD({
       startEntry={data.startEntry}
       sections={data.shortlistSections}
       playerMarker={data.playerMarker}
-      onWorkbenchOpen={onWorkbenchOpen}
+      onWorkbenchOpen={mobileLiteMode ? openFromMobileGuide : onWorkbenchOpen}
       openedIds={openedIds}
       progress={progress}
     />
@@ -286,7 +293,7 @@ export function RecruiterNavigatorHUD({
 
   if (mobileLiteMode) {
     return (
-      <details className="recruiter-navigator recruiter-navigator--mobile">
+      <details ref={mobileDetailsRef} className="recruiter-navigator recruiter-navigator--mobile">
         <summary className="recruiter-navigator__toggle">Recruiter Guide</summary>
         <div className="recruiter-navigator__mobile-content">{content}</div>
       </details>
