@@ -553,8 +553,12 @@ export function WorkbenchLandmark({
             <meshBasicMaterial transparent opacity={0} depthWrite={false} />
           </mesh>
           <BenchPlinth accent={indicatorColor} />
-          {/* Start Here is in plain view with its own badge; a pennant would only add a pole beside the fountain. */}
-          {isStartHere ? null : <BenchPennant accent={indicatorColor} seed={workbench.definition.id.length} />}
+          {/* Start Here is in plain view with its own badge; a pennant would only add a pole beside the fountain.
+              While this bench's panel is open the pennant is hidden: from the inspect camera its pole crosses the
+              diorama. */}
+          {isStartHere || isPanelBench ? null : (
+            <BenchPennant accent={indicatorColor} seed={workbench.definition.id.length} />
+          )}
         </>
       )}
 
