@@ -8,7 +8,7 @@ files keep release records; this file holds priorities, art direction, active wo
 | Site | Repo / local dir | Production | Working branch |
 | --- | --- | --- | --- |
 | 3D game | `co-rtex/ccortez.com` · `~/Desktop/Projects/ccortez-dual-sprint` | https://game.ccortez.com (Pages from `main`, `5176c5b`) | `game/art-direction-pass` (pushed) |
-| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (in progress) |
+| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `b815935`) |
 
 `~/Desktop/Projects/ccortez.com` is the protected original checkout (read-only; 96 dirty paths at `825fe37`).
 Nothing merges to either `main` without Christian's approval.
@@ -38,6 +38,15 @@ Nothing merges to either `main` without Christian's approval.
 | `150fe6d` | Plaza redesign (paved court + compass, lawns, six spokes, promenade, lamps), armillary fountain, island trails, bench plinths + pennants, light shared bench platform, golden-hour lighting, ocean fades into sky, `?shot`/`?spawn` fixtures, scene performance marks | `.shots/before-*` vs `.shots/v4-*`; 133 tests |
 | `fe982cd` | Instanced vegetation (4 species, groves), category-coloured plinths, fewer lamps, smaller armillary, flower beds with colliders, district signs, warmer sky, flattened clouds, spawn faces the fountain | `.shots/v5-*`, `v7-spawn`; 138 tests; independent art review applied |
 
+| `ba93606` | Bench monitors show their screens (screen was buried inside the bezel on every bench) | `.shots/v10-benchclose` |
+| `8a7c01d` | Opaque stylized lakes with foam line; trails made visible (were back-face culled); planted flower patches; grassy plaza berm | `.shots/v12-lake`, `v13-*`; 139 tests |
+| `59f5391` | North-shore lighthouse at the end of the north trail | `.shots/v14-lake`; 140 tests |
+| `c478f26` | Start Here bench moved clear of the fountain; reserved pad = paved court | `.shots/v15-*`; 140 tests |
+
+Checkpoint A (before/after, drag to compare): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
+Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
+page errors.
+
 Measured on the M3 GPU (browser pane, production build, island overview): 60 fps (median frame 16.7 ms, p95
 17.7 ms); first scene frame 1.26 s after navigation; geometries 2,508 → 843.
 
@@ -46,21 +55,23 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 
 ## Known issues / next candidates (ranked)
 
-1. Bench scenes are small and dark when revealed (palette `base` colours, black monitors); give them light
-   materials and emissive screens consistent with the new palette.
-2. Nothing to discover beyond the plaza: add destinations at trail ends (north-shore lookout, south pier, lake
-   gazebos at the existing scenic benches).
-3. The Start Here bench platform overlaps the fountain basin (pre-existing layout: anchor 4.3 m from centre).
-4. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
-5. Water: lakes still flat-shaded basic material; add gentle shoreline foam and ripples consistent with the ocean.
-6. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
-7. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
+1. Revealed bench scenes are small on their 4.2 m platforms; desks keep dark palette colours.
+2. More destinations: the south trail is short and lake trails end near the plaza (lake gazebos, south pier).
+3. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
+4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
+5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
    StrictMode (dev-only; production renders).
 
 ## Professional site
 
-Visual-identity pass running on `site/visual-identity` (homepage first viewport, generated project visuals,
-case-study hierarchy and prev/next navigation). Results and preview URL to be recorded here.
+`site/visual-identity` (`9251889`, `19c11b6`, `b815935`), done by a dedicated agent and reviewed here:
+periwinkle accent and compass mark shared with the game, first viewport with resume + PDF + email and the
+LiDAR/HCSC roles, simulator status light and job board, generated project figures (Fig. 01–05) drawn only from
+each case study's architecture data, case-study figure heroes, numbered sections, sticky contents, prev/next.
+No content facts changed (`src/content` untouched). Reported: lint/tsc clean, vitest 26/26, e2e 44/44 (6 new),
+Lighthouse home perf 96–97 (a11y/BP/SEO 100), TaskForge 98/100/100/100. Re-verified here: lint, tsc, vitest.
+Preview: https://portfolio-professional-2drvwkwhp-co-rtexs-projects.vercel.app (Vercel preview, behind Vercel
+login). Open: `og.png` still uses the old look; home LCP ~2.7 s on simulated slow 4G (display font).
 
 ## Open decisions for Christian
 
