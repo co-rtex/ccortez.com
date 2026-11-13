@@ -153,7 +153,8 @@ function shoreTrailTarget(angle: number): [number, number] {
 }
 
 export const ISLAND_TRAILS: IslandTrail[] = PLAZA_PATH_SPOKES.map((spoke) => {
-  const isShore = spoke.id === 'north-gate' || spoke.id === 'south';
+  // The south spoke points straight at Moss Heart Pond, so it leads to the pond's bench like the other lakes.
+  const isShore = spoke.id === 'north-gate';
   const target = isShore ? shoreTrailTarget(spoke.angle) : lakeTrailTarget(spoke.angle);
   return buildTrail(spoke.id, spoke.angle, isShore ? 2.6 : 2.1, target);
 });

@@ -3,7 +3,8 @@ import { BufferAttribute, BufferGeometry, Color } from 'three';
 
 import { ISLAND_TRAILS, PLAZA_RADII } from '../islandPaths';
 import type { IslandTrail } from '../islandPaths';
-import { getTerrainHeight } from '../terrain';
+import { getTerrainMeshHeight } from '../terrainMesh';
+import { getPlazaBermHeight } from './plazaBerm';
 
 /**
  * Trails draped over the terrain. Each trail is a ribbon seven vertices wide that follows the ground, with a
@@ -12,7 +13,7 @@ import { getTerrainHeight } from '../terrain';
 
 const ACROSS = [-1, -0.72, -0.4, 0, 0.4, 0.72, 1];
 const ALPHA = [0, 0.5, 0.92, 1, 0.92, 0.5, 0];
-const LIFT = 0.05;
+const LIFT = 0.04;
 const centerColor = new Color('#ecd7ab');
 const edgeColor = new Color('#d5bb8d');
 
@@ -47,7 +48,7 @@ export function buildTrailGeometry(trail: IslandTrail): BufferGeometry {
       const pz = z + nz * offset * halfWidth * Math.max(taper, 0.35);
       const index = row * columns + column;
       positions[index * 3] = px;
-      positions[index * 3 + 1] = getTerrainHeight(px, pz) + LIFT;
+      positions[index * 3 + 1] = Math.max(getTerrainMeshHeight(px, pz), getPlazaBermHeight(px, pz)) + LIFT;
       positions[index * 3 + 2] = pz;
       color.copy(centerColor).lerp(edgeColor, Math.abs(offset) * 0.8 + hash(index) * 0.15);
       colors[index * 4] = color.r;

@@ -2,11 +2,11 @@ import { useLayoutEffect, useMemo, useRef } from 'react';
 import { Color, Object3D } from 'three';
 import type { InstancedMesh } from 'three';
 
-import { CENTRAL_PLAZA_FOUNDATION_DEPTH } from '../hub';
 import { PLAZA_FLOWER_BEDS, PLAZA_LAMP_POSITIONS, PLAZA_RADII } from '../islandPaths';
-import { getCentralPlazaOuterRadius, getCentralPlazaTopHeight } from '../terrain';
+import { getCentralPlazaTopHeight } from '../terrain';
 import { PlazaFountain } from './PlazaFountain';
 import { applyPlazaFloorShader } from './plazaFloorShader';
+import { PLAZA_BERM } from './plazaBerm';
 
 const LAMP_POST_HEIGHT = 2.7;
 
@@ -149,13 +149,12 @@ function PlazaFlowerBeds({ y }: { y: number }) {
 
 export function CentralPlaza() {
   const centerY = getCentralPlazaTopHeight();
-  const outerRadius = getCentralPlazaOuterRadius();
 
   return (
     <group>
       {/* Grassy berm from the plaza edge down to the surrounding terrain. */}
-      <mesh receiveShadow position={[0, centerY - CENTRAL_PLAZA_FOUNDATION_DEPTH * 0.5, 0]}>
-        <cylinderGeometry args={[PLAZA_RADII.edge + 0.25, outerRadius + 1.2, CENTRAL_PLAZA_FOUNDATION_DEPTH, 96, 1, true]} />
+      <mesh receiveShadow position={[0, PLAZA_BERM.topY - PLAZA_BERM.depth * 0.5, 0]}>
+        <cylinderGeometry args={[PLAZA_BERM.topRadius, PLAZA_BERM.bottomRadius, PLAZA_BERM.depth, 96, 1, true]} />
         <meshStandardMaterial color="#86b85a" roughness={1} flatShading />
       </mesh>
 

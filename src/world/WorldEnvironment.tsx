@@ -40,11 +40,17 @@ import { AmbientBirds } from './AmbientBirds';
 import { AmbientCritters } from './AmbientCritters';
 import { LakeFaunaManager } from './LakeFaunaManager';
 import { planeXYToWorldXZ } from './renderSpace';
+import { TERRAIN_MESH_SEGMENTS, TERRAIN_MESH_SIZE } from './terrainMesh';
 
 import type { ScenicRestSpotDefinition } from './restSpots';
 
 function buildTerrainGeometry(): PlaneGeometry {
-  const geometry = new PlaneGeometry(430, 430, 360, 360);
+  const geometry = new PlaneGeometry(
+    TERRAIN_MESH_SIZE,
+    TERRAIN_MESH_SIZE,
+    TERRAIN_MESH_SEGMENTS,
+    TERRAIN_MESH_SEGMENTS,
+  );
   const positions = geometry.attributes.position;
   const colors = new Float32Array(positions.count * 3);
   const color = new Color();
