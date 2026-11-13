@@ -19,6 +19,7 @@ import { CentralPlaza } from './plaza/CentralPlaza';
 import { InstancedVegetation } from './vegetation/InstancedVegetation';
 import { IslandTrails } from './plaza/IslandTrails';
 import { LakeWater } from './water/LakeWater';
+import { OCEAN_DEPTH_MAP_EXTENT, createOceanDepthTexture } from './water/oceanDepthMap';
 import { Lighthouse } from './landmarks/Lighthouse';
 import { LakeDocks } from './landmarks/LakeDocks';
 import {
@@ -70,11 +71,18 @@ function buildTerrainGeometry(): PlaneGeometry {
     );
     const nearOcean = MathUtils.clamp((height - OCEAN_LEVEL) / 1.15, 0, 1);
 
-    if (height < OCEAN_LEVEL + 0.62) {
-      const hue = 0.1 + (1 - nearOcean) * 0.03;
-      const saturation = 0.58 - (1 - nearOcean) * 0.2;
-      const lightness = MathUtils.clamp(0.63 - (1 - nearOcean) * 0.3, 0.31, 0.72);
+    if (height < OCEAN_LEVEL + 0.85) {
+      // Beach: pale dry sand above the water line, darker wet sand just below it.
+      const wet = MathUtils.clamp((OCEAN_LEVEL + 0.12 - height) / 0.6, 0, 1);
+      const hue = 0.11 - wet * 0.01;
+      const saturation = 0.62 - wet * 0.14;
+      const lightness = MathUtils.clamp(0.76 - wet * 0.22 - (1 - nearOcean) * 0.06, 0.4, 0.78);
       color.setHSL(hue, saturation, lightness);
+    } else if (height < OCEAN_LEVEL + 1.15) {
+      // Short blend from sand into grass so the beach edge is soft.
+      const t = (height - (OCEAN_LEVEL + 0.85)) / 0.3;
+      const grassHue = 0.26 - height * 0.007 + islandDistance * 0.015;
+      color.setHSL(MathUtils.lerp(0.11, grassHue, t), MathUtils.lerp(0.5, 0.56 + moisture * 0.18, t), MathUtils.lerp(0.74, MathUtils.clamp(0.24 + moisture * 0.25 + height * 0.05, 0.18, 0.7), t));
     } else {
       const hue = 0.26 - height * 0.007 + islandDistance * 0.015;
       const saturation = 0.56 + moisture * 0.18;
@@ -199,6 +207,10 @@ uniform float uTime;
 uniform vec3 uShallow;
 uniform vec3 uDeep;
 uniform vec3 uFar;
+uniform vec3 uLagoon;
+uniform vec3 uFoam;
+uniform sampler2D uDepth;
+uniform float uDepthExtent;
 varying vec3 vWorld;
 
 void main() {
@@ -213,9 +225,18 @@ void main() {
   float crest = smoothstep(0.82, 0.98, swell) * (1.0 - smoothstep(60.0, 180.0, distanceXZ));
   water = mix(water, vec3(0.92, 0.98, 1.0), crest * 0.22);
 
+  // Shallows and surf from the baked depth map (metres below the water line).
+  vec2 depthUv = vWorld.xz / uDepthExtent + 0.5;
+  float depth = texture2D(uDepth, depthUv).r * 4.0 - 1.0;
+  float shallow = 1.0 - smoothstep(0.0, 1.8, depth);
+  water = mix(water, uLagoon, shallow * 0.75);
+  float surfBand = (1.0 - smoothstep(0.04, 0.42, depth)) * step(-0.02, depth);
+  float surfWave = 0.55 + 0.45 * smoothstep(0.2, 0.95, sin(depth * 26.0 - uTime * 1.7 + vWorld.x * 0.15));
+  water = mix(water, uFoam, surfBand * surfWave * 0.85);
+
   float horizon = smoothstep(90.0, 520.0, distanceXZ);
   vec3 color = mix(water, horizonSky(dir), pow(horizon, 1.15));
-  float alpha = mix(0.8, 1.0, smoothstep(70.0, 110.0, fromIsland));
+  float alpha = mix(1.0, 0.78, shallow * (1.0 - surfBand));
   gl_FragColor = vec4(color, alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -380,6 +401,10 @@ export function WorldEnvironment() {
       uShallow: { value: new Color('#5fd2cf') },
       uDeep: { value: new Color('#2b8fb3') },
       uFar: { value: new Color('#3f78b0') },
+      uLagoon: { value: new Color('#7fe2d6') },
+      uFoam: { value: new Color('#f6fffb') },
+      uDepth: { value: createOceanDepthTexture() },
+      uDepthExtent: { value: OCEAN_DEPTH_MAP_EXTENT },
     }),
     [skyUniforms],
   );
