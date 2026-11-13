@@ -167,6 +167,9 @@ Done (each commit verified with lint, types, unit tests, build and GPU screensho
   in-scene labels on phones; panel headings in order with no repeated title under Story (`a956f75`, `695d83a`,
   `6ae4bd1`, `588ee4f`, `86a6aa6`). Not acted on: the spawn camera framing (lighthouse at centre, the ring a thin
   band) and flagpoles crossing dioramas; both are wider art-direction changes for a later pass.
+- Last items: flagship panels have "Try the live model", which jumps to the demo (below the fold on phones)
+  (`b4cdbfa`); `npm run check:shared-sim` compares the bench models with the professional site's copies (all four
+  match) (`ab05d4b`); the fallback clock's decision is a pure, tested function (`3dbc46d`). Tests: 242 passing.
 - Verified end to end (scripted, GPU): first frame 1.84 s at 1366×768; guide → Start Here → Escape (focus back on
   the guide entry) → TaskForge (travel, crash, trace) → close (prompt up at the bench) → walk; no console errors;
   61 fps with a panel open. Uncapped at the north ring the four live benches cost ~0.2 ms a frame (5.6 vs 5.4 ms
