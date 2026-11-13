@@ -843,13 +843,14 @@ body {
 }
 
 .landmark-tooltip--title {
-  max-width: 8.75rem;
+  max-width: 11rem;
+  transition: opacity 0.25s ease;
   border-color: rgba(221, 209, 180, 0.62);
   background: linear-gradient(130deg, rgba(20, 31, 37, 0.82), rgba(18, 29, 34, 0.76));
   color: #f8ead2;
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   line-height: 1.25;
   text-align: center;
   text-transform: none;

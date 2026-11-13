@@ -5,9 +5,12 @@ import { useMemo, useRef } from 'react';
 import { Color, DoubleSide, Shape } from 'three';
 import type { Group, MeshStandardMaterial } from 'three';
 
+import { useGameStore } from '../state/gameStore';
+import { START_HERE_WORKBENCH_ID } from './hub';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
 import {
+  getTitleBadgeOpacity,
   shouldShowPersistentWorkbenchTitleBadge,
   shouldShowWorkbenchProximityPrompt,
 } from './workbenchLandmarkLabels';
@@ -423,7 +426,21 @@ export function WorkbenchLandmark({
       ? 'warning'
       : 'valid';
 
+  const titleBadgeRef = useRef<HTMLDivElement>(null);
+  const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
   useFrame(({ clock }) => {
+    const badge = titleBadgeRef.current;
+    if (badge) {
+      const { playerPosition } = useGameStore.getState();
+      const distance = Math.hypot(
+        playerPosition.x - workbench.placement.anchor.x,
+        playerPosition.z - workbench.placement.anchor.z,
+      );
+      // Start Here is the first destination, so its badge stays visible from anywhere on the plaza.
+      const opacity = (isStartHere ? 1 : getTitleBadgeOpacity(distance)).toFixed(2);
+      if (badge.style.opacity !== opacity) badge.style.opacity = opacity;
+    }
+
     const ringMaterial = ringMaterialRef.current;
     if (ringMaterial) {
       const pulse = 0.78 + Math.sin(clock.elapsedTime * 3 + workbench.definition.id.length) * 0.24;
@@ -546,8 +563,10 @@ export function WorkbenchLandmark({
       ) : null}
 
       {shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled) ? (
-        <Html center distanceFactor={16} position={[0, rendersKit ? 2.95 : 4.15, 0]}>
-          <div className="landmark-tooltip landmark-tooltip--title">{workbench.definition.title}</div>
+        <Html center position={[0, rendersKit ? 2.95 : isStartHere ? 5.9 : 3.3, 0]}>
+          <div ref={titleBadgeRef} className="landmark-tooltip landmark-tooltip--title" style={{ opacity: 0 }}>
+            {workbench.definition.title}
+          </div>
         </Html>
       ) : null}
 
