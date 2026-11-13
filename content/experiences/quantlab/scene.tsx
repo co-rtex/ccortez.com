@@ -141,17 +141,31 @@ export default function QuantlabScene(props: ExperienceSceneProps) {
             <boxGeometry args={[0.3, 0.34, 0.26]} />
             <meshStandardMaterial color="#4a4f63" roughness={0.6} />
           </mesh>
-          <mesh position={[WORKER.x, 0.36, WORKER.z + 0.08]}>
-            <sphereGeometry args={[0.045, 12, 10]} />
+          {/* The worker's front: a small screen whose glow pulses while a run is going. */}
+          <mesh position={[WORKER.x, 0.2, WORKER.z + 0.131]}>
+            <boxGeometry args={[0.22, 0.14, 0.01]} />
             <meshStandardMaterial ref={workerLampRef} color="#9b8cff" emissive="#9b8cff" emissiveIntensity={0.25} />
           </mesh>
+          {[0.235, 0.205, 0.175].map((y, i) => (
+            <mesh key={y} position={[WORKER.x - 0.03 + i * 0.02, y, WORKER.z + 0.137]}>
+              <boxGeometry args={[0.12 - i * 0.03, 0.012, 0.004]} />
+              <meshStandardMaterial color="#2b2f3d" roughness={0.6} />
+            </mesh>
+          ))}
+          {/* The manifest: a sheet on a stand with printed lines (version, rule, result hash); green when reproduced. */}
           <group position={[PLAQUE.x, 0.2, PLAQUE.z]} rotation={[-0.5, 0, 0]}>
             <mesh castShadow>
               <boxGeometry args={[0.42, 0.28, 0.04]} />
               <meshStandardMaterial ref={plaqueRef} color="#e1def0" roughness={0.5} />
             </mesh>
+            {[0.08, 0.035, -0.01, -0.055].map((y, i) => (
+              <mesh key={y} position={[-0.04 + (i === 3 ? -0.05 : 0), y, 0.022]}>
+                <boxGeometry args={[i === 3 ? 0.2 : 0.3, 0.018, 0.004]} />
+                <meshStandardMaterial color="#3a3f52" roughness={0.7} />
+              </mesh>
+            ))}
           </group>
-          <mesh castShadow position={[PLAQUE.x, 0.08, PLAQUE.z + 0.06]}>
+          <mesh castShadow position={[PLAQUE.x, 0.08, PLAQUE.z - 0.07]}>
             <boxGeometry args={[0.06, 0.16, 0.06]} />
             <meshStandardMaterial color="#4a4f63" roughness={0.6} />
           </mesh>
