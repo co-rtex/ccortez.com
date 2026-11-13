@@ -14,13 +14,21 @@ export interface ClockedModel {
   advance: (seconds: number) => void;
 }
 
+/**
+ * Seconds to advance a model that was last advanced at `lastAdvancedAt`, or null while a scene is driving it.
+ * It is the real time since the last advance (capped at a second), so the model keeps its normal pace.
+ */
+export function fallbackAdvanceSeconds(lastAdvancedAt: number, now: number): number | null {
+  const since = now - lastAdvancedAt;
+  return since > STALE_MS ? Math.min(since, 1000) / 1000 : null;
+}
+
 export function useFallbackClock(getState: () => ClockedModel): void {
   useEffect(() => {
     const id = window.setInterval(() => {
       const state = getState();
-      const since = performance.now() - state.lastAdvancedAt;
-      // Real time since the last advance (capped), so the model keeps its normal pace on this timer.
-      if (since > STALE_MS) state.advance(Math.min(since, 1000) / 1000);
+      const seconds = fallbackAdvanceSeconds(state.lastAdvancedAt, performance.now());
+      if (seconds !== null) state.advance(seconds);
     }, CHECK_MS);
     return () => window.clearInterval(id);
   }, [getState]);
