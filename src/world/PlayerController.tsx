@@ -14,6 +14,7 @@ import type { CollisionFeedbackReason } from '../types/collisionFeedback';
 
 import { PLAYER_START, WORLD_BOUNDS } from './constants';
 import { PlayerAvatar } from './PlayerCharacterAvatar';
+import { prefersReducedMotion } from './reducedMotion';
 import { WORLD_COLLISION_OBSTACLES } from './biome';
 import {
   createInitialPlayerLocomotionState,
@@ -43,6 +44,7 @@ const WATER_DEBUG_INTERVAL_MS = 300;
 const COLLISION_FEEDBACK_COOLDOWN_MS = 620;
 const MOVEMENT_EPSILON = 0.0001;
 const SEAT_BLEND_SPEED = 8;
+const ARRIVAL_SETTLE_SECONDS = 0.28;
 const BLOCKED_MOVEMENT_RATIO_THRESHOLD = 0.42;
 
 function isWaterBoundaryReason(reason: WalkabilityBlockReason): boolean {
@@ -93,6 +95,8 @@ export function PlayerController() {
   const activeRestSpotId = useGameStore((state) => state.activeRestSpotId);
   const travelRequest = useGameStore((state) => state.travelRequest);
   const handledTravelSerialRef = useRef(0);
+  /** Seconds since the last fast-travel arrival, for the short settle the avatar plays on landing. */
+  const arrivalAgeRef = useRef(Number.POSITIVE_INFINITY);
   const [keyboardMode, setKeyboardMode] = useState(getDefaultKeyboardMode);
   const debugWaterMode = useMemo(
     () =>
@@ -227,6 +231,7 @@ export function PlayerController() {
         currentPosition.y = getTerrainHeight(destination.x, destination.z) + 0.82;
         lastSafePositionRef.current = { x: destination.x, z: destination.z };
         locomotionRef.current = createInitialPlayerLocomotionState(travelRequest.facingYaw);
+        arrivalAgeRef.current = 0;
       }
     }
 
@@ -353,6 +358,12 @@ export function PlayerController() {
 
     playerGroup.position.set(nextPosition.x, nextPosition.y, nextPosition.z);
     setPlayerPosition(nextPosition);
+
+    // Arrival settle after fast travel: a quick ease from 88% to full size, so the avatar lands rather than pops
+    // into place. Skipped under reduced motion.
+    arrivalAgeRef.current += delta;
+    const settle = prefersReducedMotion() ? 1 : Math.min(1, arrivalAgeRef.current / ARRIVAL_SETTLE_SECONDS);
+    playerGroup.scale.setScalar(1 - 0.12 * (1 - settle) * (1 - settle));
   });
 
   return (
