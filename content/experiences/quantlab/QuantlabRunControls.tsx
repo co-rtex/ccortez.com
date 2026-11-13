@@ -39,8 +39,8 @@ export function QuantlabRunControls() {
       </p>
       <ul className="taskforge-sim__legend" aria-label="Colours in the diorama">
         <li><span style={{ background: '#72d4c2' }} /> holding, at a new high</li>
-        <li><span style={{ background: '#8e8aa6' }} /> out of the market</li>
-        <li><span style={{ background: '#b98aa6' }} /> below its running peak</li>
+        <li><span style={{ background: '#a3a6a8' }} /> out of the market</li>
+        <li><span style={{ background: '#d8735f' }} /> below its running peak</li>
         <li><span style={{ background: '#58c08f' }} /> manifest reproduced</li>
       </ul>
     </section>

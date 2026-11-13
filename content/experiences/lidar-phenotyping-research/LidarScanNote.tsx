@@ -14,7 +14,7 @@ export function LidarScanNote() {
       <ul className="taskforge-sim__legend" aria-label="Colours in the diorama">
         <li><span style={{ background: '#6aa84f' }} /> plants</li>
         <li><span style={{ background: '#7fe0ff' }} /> point cloud</li>
-        <li><span style={{ background: '#7cc6e8' }} /> trait per plot</li>
+        <li><span style={{ background: '#3f6fc4' }} /> trait per plot</li>
         <li><span style={{ background: '#e8b04a' }} /> flagged by QC</li>
       </ul>
     </section>

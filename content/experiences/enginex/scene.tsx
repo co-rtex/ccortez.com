@@ -51,7 +51,7 @@ const COLORS = {
   buyToken: new Color('#3f9e6e'),
   sellToken: new Color('#d8664f'),
   market: new Color('#f0b44c'),
-  trade: new Color('#f0c66a'),
+  trade: new Color('#f3ecd8'),
 };
 
 function Label({ position, children, show }: { position: [number, number, number]; children: string; show: boolean }) {

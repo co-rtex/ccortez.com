@@ -35,8 +35,8 @@ const equityHeight = (equity: number): number => 0.1 + Math.max(0, equity - 0.88
 
 const COLORS = {
   up: new Color('#72d4c2'),
-  drawdown: new Color('#b98aa6'),
-  flat: new Color('#8e8aa6'),
+  drawdown: new Color('#d8735f'),
+  flat: new Color('#a3a6a8'),
   version: new Color('#6f6a8c'),
   pinned: new Color('#9b8cff'),
 };

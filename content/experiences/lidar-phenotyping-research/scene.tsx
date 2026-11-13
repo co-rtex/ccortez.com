@@ -40,7 +40,7 @@ const BARS = { x: 1.24, z0: -0.52, step: 0.2 };
 const COLORS = {
   plant: [new Color('#4f8f45'), new Color('#6aa84f'), new Color('#7fb85a')],
   points: new Color('#7fe0ff'),
-  bar: new Color('#7cc6e8'),
+  bar: new Color('#3f6fc4'),
   flagged: new Color('#e8b04a'),
 };
 

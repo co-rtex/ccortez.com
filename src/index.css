@@ -667,6 +667,12 @@ body {
   border-bottom: 1px solid rgba(84, 104, 111, 0.2);
 }
 
+/* The panel moves focus to its title so screen readers announce it; the title is not a control (tabindex -1),
+   so it shows no focus box. The next Tab lands on Close, which does. */
+#experience-panel-title:focus {
+  outline: none;
+}
+
 .experience-panel__header h2 {
   margin: 0;
   font-family: 'Syne', 'Avenir Next', sans-serif;

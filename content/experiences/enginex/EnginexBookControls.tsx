@@ -56,7 +56,7 @@ export function EnginexBookControls() {
         <li><span style={{ background: '#3f9e6e' }} /> bids (buy orders)</li>
         <li><span style={{ background: '#d8664f' }} /> asks (sell orders)</li>
         <li><span style={{ background: '#f0b44c' }} /> your market orders</li>
-        <li><span style={{ background: '#f0c66a' }} /> fills</li>
+        <li><span style={{ background: '#f3ecd8' }} /> fills</li>
       </ul>
     </section>
   );

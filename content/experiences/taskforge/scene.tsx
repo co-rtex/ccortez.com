@@ -313,7 +313,7 @@ export default function TaskforgeScene(props: ExperienceSceneProps) {
       <Label show={isFocused} position={[QUEUE.x, 1.3, QUEUE.z]}>queue, backoff shelf</Label>
       <Label show={isFocused} position={[0, 0.95, 0.62]}>workers (leases)</Label>
       <Label show={isFocused} position={[LEDGER.x, 1.05, LEDGER.z]}>PostgreSQL</Label>
-      <Label show={isFocused} position={[DONE.x, 1.05, DONE.z]}>succeeded</Label>
+      <Label show={isFocused} position={[DONE.x - 0.05, 0.5, DONE.z + 0.1]}>succeeded</Label>
       <Label show={isFocused} position={[DEAD.x, 0.55, DEAD.z]}>dead-letter</Label>
       </group>
     </RecruiterSceneShell>
