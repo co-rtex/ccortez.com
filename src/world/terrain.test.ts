@@ -12,6 +12,7 @@ import {
   getCentralPlazaOuterRadius,
   getCentralPlazaTopHeight,
   getCentralPlazaTopRadius,
+  getIslandEdgeRadiusFactor,
   getLakeBoundaryPoint,
   getLakeBoundaryPolyline,
   getLakeDistance,
@@ -280,5 +281,23 @@ describe('terrain water carving', () => {
 
     expect(getWalkabilityBlockReason(sampleLake.centerX, sampleLake.centerZ, 0.42)).toBe('water');
     expect(getWalkabilityBlockReason(0, 0, 0.42)).toBe('none');
+  });
+});
+
+describe('island outline', () => {
+  it('is continuous where the polar angle wraps (no spit due west)', () => {
+    const justBelow = getIslandEdgeRadiusFactor(Math.PI - 1e-6);
+    const justAbove = getIslandEdgeRadiusFactor(-Math.PI + 1e-6);
+    expect(Math.abs(justBelow - justAbove)).toBeLessThan(1e-4);
+  });
+
+  it('never changes faster than a smooth coastline would', () => {
+    let previous = getIslandEdgeRadiusFactor(-Math.PI);
+    for (let i = 1; i <= 2000; i += 1) {
+      const angle = -Math.PI + (i / 2000) * Math.PI * 2;
+      const value = getIslandEdgeRadiusFactor(angle);
+      expect(Math.abs(value - previous)).toBeLessThan(0.01);
+      previous = value;
+    }
   });
 });
