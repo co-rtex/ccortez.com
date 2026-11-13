@@ -113,7 +113,7 @@ function RecruiterNavigatorContent({
       </header>
 
       <p className="recruiter-navigator__intro">
-        Walk to any bench, or pick one here to jump straight to it.
+        Walk to any workbench, or pick one here to jump straight to it.
       </p>
       <p className="recruiter-navigator__alt-link">
         Short on time?{' '}

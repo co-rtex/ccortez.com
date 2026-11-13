@@ -65,7 +65,7 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode }: 
         <p>
           {editorEnabled
             ? 'Move with WASD. Hold Shift to run. Explore the island and open workbenches when a prompt appears.'
-            : 'Walk with WASD or the arrow keys, hold Shift to run, and press E at a bench to open it.'}
+            : 'Walk with WASD or the arrow keys, hold Shift to run, and press E at a workbench to open it.'}
         </p>
       </div>
     );
