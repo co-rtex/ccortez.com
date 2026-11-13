@@ -137,12 +137,19 @@ vec3 sunsetPalette(float t) {
   return color;
 }
 
+// Warm golden-hour haze along the whole horizon, strongest at eye level.
+vec3 applyHorizonHaze(vec3 color, float elevation) {
+  float band = exp(-pow((elevation - 0.01) / 0.16, 2.0));
+  return mix(color, mix(uAmber, uRose, 0.55), band * 0.3);
+}
+
 // Sky colour just above the horizon in a given direction (used to fade the ocean into the sky).
 vec3 horizonSky(vec3 dir) {
   vec3 flatDir = normalize(vec3(dir.x, 0.0, dir.z));
   float sunDistance = acos(clamp(dot(flatDir, normalize(vec3(uSunDirection.x, 0.0, uSunDirection.z))), -1.0, 1.0));
   vec3 color = sunsetPalette(pow(clamp(sunDistance / 1.7, 0.0, 1.0), 0.92));
-  return mix(color, uRose, (1.0 - smoothstep(0.0, 0.34, sunDistance / 1.7)) * 0.1);
+  color = mix(color, uRose, (1.0 - smoothstep(0.0, 0.34, sunDistance / 1.7)) * 0.1);
+  return applyHorizonHaze(color, 0.0);
 }
 `;
 
@@ -184,6 +191,7 @@ void main() {
   color = mix(color, uSunWhite, whiteCore * mix(0.92, 0.68, lowSun));
   color = mix(color, uGold, solarHaze * 0.14);
   color = mix(color, uSunWhite, horizonBloom * 0.08);
+  color = applyHorizonHaze(color, dir.y);
 
   gl_FragColor = vec4(color, 1.0);
   #include <tonemapping_fragment>
