@@ -430,7 +430,7 @@ export function WorkbenchLandmark({
   const panelOpen = useGameStore((state) => state.panelWorkbenchId !== null);
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
   // Above the beacon on wide screens; at bench height on narrow ones, where the top edge holds the guide header.
-  const startBadgeY = typeof window !== 'undefined' && window.innerWidth < 900 ? 3.3 : 5.9;
+  const startBadgeY = typeof window !== 'undefined' && window.innerWidth < 900 ? 3.3 : 4.6;
   useFrame(({ clock }) => {
     const badge = titleBadgeRef.current;
     if (badge) {
