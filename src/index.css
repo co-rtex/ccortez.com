@@ -1779,3 +1779,12 @@ body {
     font-size: 0.6rem;
   }
 }
+
+/* Phones and portrait tablets: the inspect camera starts 1.5x further back there, which shrinks the in-scene labels
+   (they scale with distance); a larger base size brings them back to a readable ~11 px. */
+@media (max-width: 700px), (max-width: 1024px) and (orientation: portrait) {
+  .taskforge-label {
+    font-size: 0.95rem;
+    padding: 0.2rem 0.6rem;
+  }
+}
