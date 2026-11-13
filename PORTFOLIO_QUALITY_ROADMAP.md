@@ -53,6 +53,10 @@ Nothing merges to either `main` without Christian's approval.
 | `9a2c4e0` | Shorter amber beacon (no longer stacks with the lighthouse lamp); lighthouse beam halo removed; trail reaches the door | `.shots/follow-spawn`, `lh2-lake` |
 | `4cb1872` | Foliage between camera and player dithers out (Bayer stipple) | `.shots/follow-grove`; 148 tests; M3 60 fps |
 
+| `6d9e4fa` | Bench names render at a fixed readable size and fade by distance (full ≤14 m, gone by 24 m); Start Here always labelled above its beacon | `.shots/follow-spawn`, `follow-bench` |
+| `1946b5c` | Lint fix: CI had failed on every push from `8a7c01d` to `6d9e4fa` (react-refresh rule); green again from `3375936` | `gh run list` |
+| `3375936` | Idle prompt is a one-line controls hint that hides after walking; mobile-lite shows a single banner | `.shots/follow-mobile` |
+
 Checkpoint A (before/after, drag to compare): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
@@ -65,10 +69,8 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 
 ## Known issues / next candidates (ranked)
 
-1. Ring labels are ~5 px text from spawn (drei Html with distanceFactor); consider screen-size labels for the
-   nearest benches only (second review, item 3).
-2. HUD weight: guide panel + bottom toast repeat "start at the centre bench"; hide the toast after first move
-   (second review, item 4). Mobile: two stacked banners (~22% height) could merge.
+1. Guide panel is ~400 px wide on desktop; a compact default (header, map, featured items) would free the
+   left third of the frame. On phones the Start Here badge sits under the header pill.
 3. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
 4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
