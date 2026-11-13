@@ -57,7 +57,10 @@ Nothing merges to either `main` without Christian's approval.
 | `1946b5c` | Lint fix: CI had failed on every push from `8a7c01d` to `6d9e4fa` (react-refresh rule); green again from `3375936` | `gh run list` |
 | `3375936` | Idle prompt is a one-line controls hint that hides after walking; mobile-lite shows a single banner | `.shots/follow-mobile` |
 
-Checkpoint A (before/after, drag to compare): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
+| `590d17c` | Guide panel 336 px with a one-line intro; no controls hint without WebGL; Start Here badge clear of the phone header | `.shots/hud-1366-first`, `follow-mobile` |
+| `16ae247` | `public/robots.txt` (Lighthouse SEO) | Lighthouse a11y 100, best practices 100 (desktop + mobile) |
+
+Checkpoint A (before/after, drag to compare; refreshed at `16ae247`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
 
@@ -69,8 +72,8 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 
 ## Known issues / next candidates (ranked)
 
-1. Guide panel is ~400 px wide on desktop; a compact default (header, map, featured items) would free the
-   left third of the frame. On phones the Start Here badge sits under the header pill.
+1. Bench dioramas are small relative to their 4.2 m platforms.
+2. Real-phone GPU check still pending (phones use the shorter ~18 m scene range).
 3. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
 4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
