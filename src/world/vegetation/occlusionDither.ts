@@ -9,9 +9,17 @@ export const OCCLUSION_UNIFORMS = {
   uPlayer: { value: new Vector3(0, -1000, 0) },
 };
 
-/** Fragment-space test, mirrored in TypeScript for tests: how strongly a point occludes the player (0..1). */
+/**
+ * TypeScript mirror of the vertex-shader test below, for tests: how strongly an instance whose centre is at
+ * `centre` fades (0..1) because it sits between the camera and the player. Keep the constants in sync.
+ */
+export const OCCLUSION_INNER_RADIUS = 1.8;
+export const OCCLUSION_OUTER_RADIUS = 3.4;
+export const OCCLUSION_T_MIN = 0.04;
+export const OCCLUSION_T_MAX = 0.86;
+
 export function getOcclusionStrength(
-  point: { x: number; y: number; z: number },
+  centre: { x: number; y: number; z: number },
   camera: { x: number; y: number; z: number },
   player: { x: number; y: number; z: number },
 ): number {
@@ -19,13 +27,14 @@ export function getOcclusionStrength(
   const sy = player.y + 0.9 - camera.y;
   const sz = player.z - camera.z;
   const len2 = sx * sx + sy * sy + sz * sz || 1;
-  const t = Math.min(Math.max(((point.x - camera.x) * sx + (point.y - camera.y) * sy + (point.z - camera.z) * sz) / len2, 0), 1);
-  const dx = point.x - (camera.x + sx * t);
-  const dy = point.y - (camera.y + sy * t);
-  const dz = point.z - (camera.z + sz * t);
-  const d = Math.hypot(dx, dy, dz);
-  const radial = 1 - Math.min(Math.max((d - 1.6) / 1.4, 0), 1);
-  return t > 0.04 && t < 0.88 ? radial : 0;
+  const t = Math.min(
+    Math.max(((centre.x - camera.x) * sx + (centre.y - camera.y) * sy + (centre.z - camera.z) * sz) / len2, 0),
+    1,
+  );
+  const d = Math.hypot(centre.x - (camera.x + sx * t), centre.y - (camera.y + sy * t), centre.z - (camera.z + sz * t));
+  const edge = Math.min(Math.max((d - OCCLUSION_INNER_RADIUS) / (OCCLUSION_OUTER_RADIUS - OCCLUSION_INNER_RADIUS), 0), 1);
+  const radial = 1 - edge * edge * (3 - 2 * edge);
+  return t >= OCCLUSION_T_MIN && t < OCCLUSION_T_MAX ? radial : 0;
 }
 
 export function applyOcclusionDither(shader: WebGLProgramParametersWithUniforms): void {
@@ -45,7 +54,7 @@ export function applyOcclusionDither(shader: WebGLProgramParametersWithUniforms)
     vec3 seg = (uPlayer + vec3(0.0, 0.9, 0.0)) - cameraPosition;
     float t = clamp(dot(centre - cameraPosition, seg) / max(dot(seg, seg), 0.0001), 0.0, 1.0);
     float d = length(centre - (cameraPosition + seg * t));
-    vOccluderFade = (1.0 - smoothstep(1.8, 3.4, d)) * step(0.04, t) * (1.0 - step(0.86, t));
+    vOccluderFade = (1.0 - smoothstep(${OCCLUSION_INNER_RADIUS.toFixed(2)}, ${OCCLUSION_OUTER_RADIUS.toFixed(2)}, d)) * step(${OCCLUSION_T_MIN.toFixed(2)}, t) * (1.0 - step(${OCCLUSION_T_MAX.toFixed(2)}, t));
   }`,
     );
   shader.fragmentShader = shader.fragmentShader
