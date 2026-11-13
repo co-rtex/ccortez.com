@@ -4,6 +4,7 @@ import { bootstrapExperienceRegistry } from '../content/loader';
 import { getAllExperiences } from '../content/registry';
 import { useGameStore } from '../state/gameStore';
 import { getBenchStandPoint, shouldTravelToBench } from '../world/benchTravel';
+import { parseBenchDeepLink } from './benchDeepLink';
 import { WorkbenchEditorOverlay } from '../ui/WorkbenchEditorOverlay';
 import { WorkbenchPanel } from '../ui/WorkbenchPanel';
 import { WorkbenchPrompt } from '../ui/WorkbenchPrompt';
@@ -154,6 +155,37 @@ export default function App() {
       window.removeEventListener('resize', updateMode);
     };
   }, []);
+
+  // Opening a bench from the guide is fast travel: the player moves to the bench's front too, so closing the
+  // panel leaves them at the bench rather than wherever they had been standing.
+  const openWorkbenchFromGuide = useCallback(
+    (workbenchId: string): void => {
+      const record = visibleWorkbenchRecords.find((candidate) => candidate.definition.id === workbenchId);
+      const { playerPosition: player, playerMode: mode } = useGameStore.getState();
+      if (record && shouldTravelToBench(player, record.placement.anchor)) {
+        if (mode === 'seated') exitSeatedMode();
+        requestTravel(
+          getBenchStandPoint(record.placement.anchor, record.placement.rotationY, record.interactionRadius),
+        );
+      }
+      openWorkbenchPanel(workbenchId);
+    },
+    [exitSeatedMode, openWorkbenchPanel, requestTravel, visibleWorkbenchRecords],
+  );
+
+  // `?bench=<id>` (linked from the case studies on ccortez.com) opens that bench once, on load.
+  const deepLinkHandledRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandledRef.current || workbenchEditorEnabled) return;
+    deepLinkHandledRef.current = true;
+    const publishedIds = new Set(
+      visibleWorkbenchRecords
+        .filter((record) => record.definition.visibility === 'published')
+        .map((record) => record.definition.id),
+    );
+    const benchId = parseBenchDeepLink(window.location.search, publishedIds);
+    if (benchId) openWorkbenchFromGuide(benchId);
+  }, [openWorkbenchFromGuide, visibleWorkbenchRecords, workbenchEditorEnabled]);
 
   useEffect(() => {
     const visibleIds = new Set(visibleWorkbenchRecords.map((record) => record.definition.id));
@@ -429,20 +461,6 @@ export default function App() {
     openWorkbenchPanel(activeSelectedWorkbenchId);
   }
 
-
-  // Opening a bench from the guide is fast travel: the player moves to the bench's front too, so closing the
-  // panel leaves them at the bench rather than wherever they had been standing.
-  const openWorkbenchFromGuide = (workbenchId: string): void => {
-    const record = visibleWorkbenchRecords.find((candidate) => candidate.definition.id === workbenchId);
-    const { playerPosition: player, playerMode: mode } = useGameStore.getState();
-    if (record && shouldTravelToBench(player, record.placement.anchor)) {
-      if (mode === 'seated') exitSeatedMode();
-      requestTravel(
-        getBenchStandPoint(record.placement.anchor, record.placement.rotationY, record.interactionRadius),
-      );
-    }
-    openWorkbenchPanel(workbenchId);
-  };
 
   return (
     <main className={appClassName}>
