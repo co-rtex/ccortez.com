@@ -14,6 +14,8 @@ import { getTerrainMeshHeight } from './terrainMesh';
 const POOL = 24;
 const LIFETIME = 0.55;
 const MIN_SPEED = 1.2;
+// Running puffs come faster and bigger: halfway between the walk (2.2 m/s) and run (5.0 m/s) speeds.
+const RUN_SPEED = 3.6;
 
 interface Puff {
   x: number;
@@ -51,7 +53,7 @@ export function FootstepDust() {
     const speed = delta > 0 ? Math.hypot(dx, dz) / delta : 0;
 
     s.sinceSpawn += delta;
-    const interval = speed > 5 ? 0.07 : 0.13;
+    const interval = speed > RUN_SPEED ? 0.07 : 0.13;
     if (playerMode === 'exploring' && speed > MIN_SPEED && speed < 30 && s.sinceSpawn > interval) {
       s.sinceSpawn = 0;
       const puff = puffs[s.next]!;
@@ -62,7 +64,7 @@ export function FootstepDust() {
       puff.z = playerPosition.z - dz * back - side * dx;
       puff.y = getTerrainMeshHeight(puff.x, puff.z) + 0.06;
       puff.age = 0;
-      puff.size = speed > 5 ? 0.16 : 0.11;
+      puff.size = speed > RUN_SPEED ? 0.16 : 0.11;
     }
 
     puffs.forEach((puff, index) => {

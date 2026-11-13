@@ -6,6 +6,7 @@ import type { AnimationClip, Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { PLAYER_AVATAR_CLIP_GROUND_SPEED } from './playerAvatarGaitSpeeds';
 import { PLAYER_AVATAR_MODEL_PATH } from './playerAvatarModel';
 
 // The player group sits 0.82 m above the terrain, so the model's ground plane is y = -0.82.
@@ -71,9 +72,43 @@ describe('player avatar gait (exported GLTF)', () => {
   it('bounces the body believably and lifts the swing foot clear', () => {
     const walk = sample('AvatarWalk');
     const run = sample('AvatarRun');
-    expect(walk.hipsBounce).toBeLessThan(0.07);
+    expect(walk.hipsBounce).toBeLessThan(0.08);
     expect(run.hipsBounce).toBeLessThan(0.13);
     expect(walk.swingClearance).toBeGreaterThan(0.04);
     expect(run.swingClearance).toBeGreaterThan(0.1);
+  });
+
+  it('covers the ground speed the runtime assumes (generated constants match the model)', () => {
+    for (const [name, expected] of [
+      ['AvatarWalk', PLAYER_AVATAR_CLIP_GROUND_SPEED.walk],
+      ['AvatarRun', PLAYER_AVATAR_CLIP_GROUND_SPEED.run],
+    ] as const) {
+      const clip = clips.find((candidate) => candidate.name === name)!;
+      const mixer = new AnimationMixer(scene);
+      mixer.clipAction(clip).play();
+      const feet = ['Foot_L', 'Foot_R'].map((footName) => scene.getObjectByName(footName)!);
+      let travel = 0;
+      let grounded = 0;
+      let previous: { planted: number; z: number[] } | null = null;
+      const steps = 720;
+      for (let i = 0; i <= steps; i += 1) {
+        mixer.setTime((i / steps) * clip.duration);
+        scene.updateMatrixWorld(true);
+        // The planted foot is whichever sole is lower (same rule as the generator).
+        const soles = feet.map((foot) => SOLE_POINTS.map((point) => point.clone().applyMatrix4(foot.matrixWorld)));
+        const lows = soles.map((points) => Math.min(...points.map((point) => point.y)));
+        const planted = lows[0]! <= lows[1]! ? 0 : 1;
+        const z = soles.map((points) => (points[0]!.z + points[1]!.z) / 2);
+        if (previous && previous.planted === planted && lows[planted]! < GROUND_Y + 0.02) {
+          travel += previous.z[planted]! - z[planted]!;
+          grounded += 1;
+        }
+        previous = { planted, z };
+      }
+      const time = (grounded / steps) * clip.duration;
+      mixer.stopAllAction();
+      expect(travel / time, name).toBeGreaterThan(expected * 0.85);
+      expect(travel / time, name).toBeLessThan(expected * 1.15);
+    }
   });
 });

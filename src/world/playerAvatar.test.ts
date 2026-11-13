@@ -42,7 +42,7 @@ describe('player avatar helpers', () => {
 
   it('steps locomotion state using planar movement and preserves facing when frozen', () => {
     const initial = createInitialPlayerLocomotionState();
-    const moving = stepPlayerLocomotionState(initial, { x: 0.5, z: 0 }, 0.1, false);
+    const moving = stepPlayerLocomotionState(initial, { x: 0.22, z: 0 }, 0.1, false);
     const frozen = stepPlayerLocomotionState(moving, { x: 0, z: 0 }, 0.1, true);
 
     expect(moving.mode).toBe('walk');

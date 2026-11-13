@@ -7,8 +7,11 @@ import {
   PLAYER_AVATAR_ANIMATION_NAMES,
   PLAYER_AVATAR_MODEL_PATH,
   resolveAvailableAvatarClipName,
+  resolveGaitPlaybackRate,
   resolvePreferredAvatarClipName,
 } from './playerAvatarModel';
+import { PLAYER_AVATAR_CLIP_GROUND_SPEED } from './playerAvatarGaitSpeeds';
+import { DEFAULT_MOVEMENT_SPEED_CONFIG } from '../engine/playerSpeed';
 
 describe('player avatar model helpers', () => {
   it('keeps the local avatar asset contract stable', () => {
@@ -88,5 +91,22 @@ describe('player avatar model helpers', () => {
     };
     expect(gltf.meshes?.length ?? 0).toBeLessThanOrEqual(16);
     expect(gltf.materials?.length ?? 0).toBeLessThanOrEqual(2);
+  });
+
+  it('plays gait clips so the planted foot keeps pace with the ground at the default speeds', () => {
+    for (const mode of ['walk', 'run'] as const) {
+      const speed = DEFAULT_MOVEMENT_SPEED_CONFIG[mode];
+      const rate = resolveGaitPlaybackRate(mode, speed);
+      // Unclamped at the nominal speed, so foot speed = clip ground speed x rate = movement speed (no slide).
+      expect(rate * PLAYER_AVATAR_CLIP_GROUND_SPEED[mode]).toBeCloseTo(speed, 5);
+      // And a believable cadence: neither slow motion nor a frantic shuffle.
+      expect(rate).toBeGreaterThan(0.9);
+      expect(rate).toBeLessThan(1.45);
+    }
+  });
+
+  it('clamps the playback rate at extreme speeds', () => {
+    expect(resolveGaitPlaybackRate('walk', 0.05)).toBe(0.55);
+    expect(resolveGaitPlaybackRate('run', 40)).toBe(1.6);
   });
 });

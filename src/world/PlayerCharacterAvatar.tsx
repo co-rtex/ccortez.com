@@ -6,13 +6,14 @@ import { LoopRepeat, Mesh } from 'three';
 import type { AnimationAction, Group, Material } from 'three';
 
 import { readAvatarInspectFixture } from './avatarInspect';
-import { PLAYER_AVATAR_APPEARANCE, type PlayerLocomotionState } from './playerAvatar';
+import { PLAYER_AVATAR_APPEARANCE, type PlayerLocomotionMode, type PlayerLocomotionState } from './playerAvatar';
 import {
   PLAYER_AVATAR_ANIMATION_CROSSFADE_SECONDS,
   PLAYER_AVATAR_MODEL_PATH,
   PLAYER_AVATAR_MODEL_SCALE,
   PLAYER_AVATAR_MODEL_YAW_OFFSET,
   resolveAvailableAvatarClipName,
+  resolveGaitPlaybackRate,
 } from './playerAvatarModel';
 
 interface PlayerAvatarProps {
@@ -119,7 +120,13 @@ function PlayerAvatarModel({ locomotionRef, visible }: PlayerAvatarProps) {
       activeClipNameRef.current = desiredClipName;
       return;
     }
-    if (!desiredClipName || desiredClipName === activeClipNameRef.current) {
+    if (desiredClipName && desiredClipName === activeClipNameRef.current) {
+      // Keep the feet in step with the ground as the player speeds up and slows down.
+      const active = actions[desiredClipName];
+      if (active) matchGaitPlayback(active, locomotionRef.current.mode, locomotionRef.current.planarSpeed);
+      return;
+    }
+    if (!desiredClipName) {
       return;
     }
 
@@ -199,6 +206,15 @@ function applyAvatarLightFloor(material: Material | Material[]): void {
     entry.customProgramCacheKey = () => 'avatar-light-floor-v1';
     entry.needsUpdate = true;
   }
+}
+
+/** Plays a gait clip at the rate that makes its planted foot move with the ground at this speed. */
+function matchGaitPlayback(action: AnimationAction, mode: PlayerLocomotionMode, planarSpeed: number): void {
+  if (mode === 'idle') {
+    action.timeScale = 1;
+    return;
+  }
+  action.timeScale = resolveGaitPlaybackRate(mode, planarSpeed);
 }
 
 function holdAvatarAction(action: AnimationAction, time: number): void {
