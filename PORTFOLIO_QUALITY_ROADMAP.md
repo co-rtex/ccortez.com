@@ -120,9 +120,43 @@ Measured on the M3 GPU (browser pane, production build, island overview): 60 fps
 `.shots/` is local only (gitignored). Before images were rendered from the production code with identical
 camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 
+## Flagships, travel and framing (2026-11-13, deep product pass)
+
+Problems found (not on the earlier list):
+- The spawn camera faces the north gate, but the ring placed projects after work experience all the way round,
+  so TaskForge, EngineX and QuantLab stood at the far south: the one arc the first screen never shows.
+- "Featured" was every anchor-tier bench (10 of 19), so it singled nothing out.
+- The four benches with case studies were look-alike desks with monitors; nothing showed what the work does.
+- Opening a bench from the guide flew only the camera, so closing the panel left the visitor across the island.
+- The inspect camera used one world offset, so every south-ring bench was inspected from behind.
+- The follow camera never turns, so a south bench sat below the frame while the player stood at it.
+- On phones the details panel covered the whole screen; any in-panel demo could not be watched.
+
+Done (each commit verified with lint, types, unit tests, build and GPU screenshots in `.shots/v8/`):
+- Ring: work experience runs west from the gate and projects east, each in priority order, TaskForge first
+  (`c03bfcb`). Flagships = benches with a case study (TaskForge, EngineX, QuantLab, LiDAR): guide tag "Case study"
+  and listed first, panel chip, name badges readable from the spawn point on screens ≥ 900 px.
+- Live flagship dioramas, each driven by a small deterministic model that the panel labels as a toy, not the
+  real code: TaskForge job queue with crash-a-worker and a recovery trace (`7feae9f`, `a6a7788`); EngineX order
+  book with a sequencer gate, journal-first writes, market orders and journal replay (`aeef62b`); LiDAR scan pass
+  with point clouds, per-plot traits and a QC flag (`484053a`); QuantLab backtest with immutable dataset versions
+  and a manifest that reproduces on re-run (`b24bc33`). Tests cover price-time priority, an uncrossed book,
+  replay, reproducibility and no look-ahead. Draw calls at spawn 589 → 516; 60 fps at spawn and at each bench.
+- Fast travel: the guide moves the player to the bench's front, inside its interaction radius, facing it
+  (`8e2f164`); `?bench=<id>` opens a bench on load (`30f10be`), linked from the case studies on ccortez.com.
+- Cameras: inspect offset turns with the bench (`7feae9f`); the follow camera eases toward a bench south of the
+  player while in range (`8e2f164`); the view is offset so the bench centres beside or above the panel, which is a
+  bottom sheet on phones, and the inspect camera starts 1.5x back on portrait screens (`f3b6c8d`).
+- Independent review fixes (`f38e91e`, `5ee0e1f`): panels no longer announce every tick (only the visitor's own
+  actions and the crashed job's trace); dead-lettered jobs stack on the bin, not inside it; button names match
+  their text; a market order goes to the head of the line; two trace sentences corrected to match the model.
+- Accessibility: axe (WCAG 2.2 A/AA) clean at spawn and in the TaskForge and EngineX panels; focus returns to the
+  guide's show button when the guide has folded; crash buttons keep focus when they become unavailable.
+
 ## Known issues / next candidates (ranked)
 
-1. Bench dioramas: scaled 1.5× and on plinths (`d5cdfc3`). Next: per-scene props.
+1. Bench dioramas: the four flagships are live models. Next: the 14 other benches still share the desk kit;
+   the guide minimap does not mark flagships; on phones the guide toggle can overlap a bench badge.
 2. Real-phone GPU check still pending (phones use the shorter ~18 m scene range).
 3. Terrain: grass variation done; plaza rim is now a seat wall. The reviewer noted meadow hue blotches clash a
    little with the saturated plaza lawn.
@@ -230,6 +264,9 @@ Guide progress styling checked visually (`.shots/v6/now-guide-progress.png`): th
 336 px and the opened markers show their centre dot.
 
 ## Open decisions for Christian
+
+- `?bench=` links on ccortez.com case studies only open the bench once this game branch is deployed; until then
+  the game ignores the parameter and starts at the spawn point (harmless).
 
 - Merge `game/art-direction-pass` to `main` (deploys game.ccortez.com) once Checkpoint A is reviewed.
 - Earlier items still open: preferred email on the site, restoring any removed game metrics, the stale TaskForge
