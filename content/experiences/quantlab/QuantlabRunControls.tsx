@@ -1,5 +1,6 @@
 import { DAYS } from '../../../src/sim/backtestSim';
-import { describeRun, useQuantlabRuns } from '../../../src/sim/quantlabRunStore';
+import { describeRun, useQuantlabRuns, visibleDays } from '../../../src/sim/quantlabRunStore';
+import { useFallbackClock } from '../../../src/sim/useFallbackClock';
 
 /**
  * Controls for the QuantLab workbench's toy backtest, in the details panel: re-run the same manifest (it must
@@ -11,6 +12,8 @@ export function QuantlabRunControls() {
   const shown = useQuantlabRuns((state) => state.shown);
   const announcement = useQuantlabRuns((state) => state.announcement);
   const queue = useQuantlabRuns((state) => state.queue);
+  useFallbackClock(useQuantlabRuns.getState);
+  const days = visibleDays(shown);
 
   return (
     <section className="taskforge-sim" aria-labelledby="quantlab-run-title">
@@ -29,7 +32,7 @@ export function QuantlabRunControls() {
         </button>
       </div>
       <p className="taskforge-sim__status">
-        {shown < DAYS ? `Run ${run.id} on dataset v${run.result.version}: day ${shown} of ${DAYS}` : describeRun(run)}
+        {days < DAYS ? `Run ${run.id} on dataset v${run.result.version}: day ${days} of ${DAYS}` : describeRun(run)}
       </p>
       <p className="visually-hidden" aria-live="polite">
         {announcement}

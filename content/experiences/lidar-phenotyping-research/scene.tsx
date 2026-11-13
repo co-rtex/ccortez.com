@@ -162,8 +162,8 @@ export default function LidarPhenotypingResearchScene(props: ExperienceSceneProp
         const height = plot.heights[i]!;
         for (let p = 0; p < POINTS_PER_PLANT; p += 1) {
           const [px, py, pz] = conePoints[p]!;
-          // A touch outside the canopy surface, so the cloud reads over the plant.
-          dummy.position.set(plotX(plotIndex) + px * 0.075, py * height + 0.01, rowZ(i % ROWS) + pz * 0.075);
+          // The cone's radius at that height is 0.11 * (1 - h); 1.12x of it puts the point just outside.
+          dummy.position.set(plotX(plotIndex) + px * 0.123, py * height + 0.01, rowZ(i % ROWS) + pz * 0.123);
           dummy.scale.setScalar(visible ? 0.022 : 0);
           dummy.updateMatrix();
           points.setMatrixAt(i * POINTS_PER_PLANT + p, dummy.matrix);

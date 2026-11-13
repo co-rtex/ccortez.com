@@ -35,6 +35,7 @@ export function WorkbenchInspectCamera({
   const cameraMode = useGameStore((state) => state.cameraMode);
   const inspectedWorkbenchId = useGameStore((state) => state.inspectedWorkbenchId);
   const { camera } = useThree();
+  const getThree = useThree((state) => state.get);
   const distanceScale = useThree((state) => getWorkbenchInspectDistanceScale(state.size.width, state.size.height));
   const controlsRef = useRef<OrbitControlsHandle | null>(null);
   const startPositionRef = useRef(new Vector3());
@@ -72,7 +73,8 @@ export function WorkbenchInspectCamera({
       getWorkbenchInspectCameraPosition(
         activeWorkbench.placement.anchor,
         activeWorkbench.placement.rotationY,
-        distanceScale,
+        // Read when a bench is opened, not tracked: a resize mid-inspect must not throw away the visitor's orbit.
+        getWorkbenchInspectDistanceScale(getThree().size.width, getThree().size.height),
       ),
     );
     transitionTargetRef.current.copy(currentTarget);
@@ -81,7 +83,7 @@ export function WorkbenchInspectCamera({
     if (controls) {
       controls.enabled = false;
     }
-  }, [activeWorkbench, camera, distanceScale]);
+  }, [activeWorkbench, camera, getThree]);
 
   useFrame((_, delta) => {
     if (!activeWorkbench) {

@@ -10,6 +10,7 @@ import {
   restingLots,
   step,
   submit,
+  sequenceMarketOrders,
   type BookSim,
 } from './orderBookSim';
 
@@ -54,6 +55,21 @@ describe('toy order book', () => {
       [12, 4, 1],
       [12, 6, 1],
     ]);
+  });
+
+  it('sequences strictly in arrival order, refuses a full line, and can run a paused book up to a market order', () => {
+    let sim = createBook(4);
+    sim = { ...sim, inbox: [{ side: 'buy', price: 8, qty: 1 }] };
+    const queued = submit(sim, marketOrder('sell', 2));
+    expect(queued.inbox.map((order) => Boolean(order.market))).toEqual([false, true]);
+    let full = queued;
+    for (let i = 0; i < 10; i += 1) full = submit(full, marketOrder('buy', 1));
+    expect(submit(full, marketOrder('buy', 1))).toBe(full);
+    const done = sequenceMarketOrders(queued);
+    expect(done.inbox.some((order) => order.market)).toBe(false);
+    const sequenced = done.journal.slice(queued.journal.length);
+    expect(sequenced[0]).toMatchObject({ side: 'buy', price: 8 });
+    expect(sequenced[1]).toMatchObject({ side: 'sell', market: true });
   });
 
   it('replaying the journal reproduces the book exactly', () => {

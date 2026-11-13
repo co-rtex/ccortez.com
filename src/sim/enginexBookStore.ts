@@ -25,6 +25,8 @@ export const REPLAY_SHOWN_TICKS = 6;
 interface EnginexBookState {
   sim: BookSim;
   pending: number;
+  /** performance.now() of the last advance, so a panel can tell whether a scene is driving the model. */
+  lastAdvancedAt: number;
   replay: ReplayCheck | null;
   /** What the visitor's latest market order did, once the sequencer has taken it; announced to screen readers. */
   announcement: string;
@@ -39,7 +41,9 @@ export const useEnginexBook = create<EnginexBookState>((set, get) => ({
   pending: 0,
   replay: null,
   announcement: '',
+  lastAdvancedAt: 0,
   advance: (seconds) => {
+    set({ lastAdvancedAt: performance.now() });
     const state = get();
     let pending = state.pending + seconds;
     let sim = state.sim;
@@ -57,7 +61,15 @@ export const useEnginexBook = create<EnginexBookState>((set, get) => ({
     if (sim !== state.sim) set({ sim, pending, announcement, replay });
     else set({ pending });
   },
-  market: (side) => set({ sim: submit(get().sim, marketOrder(side, 3)), replay: null }),
+  market: (side) => {
+    const { sim } = get();
+    const next = submit(sim, marketOrder(side, 3));
+    if (next === sim) {
+      set({ announcement: 'The sequencer’s line is full; try again in a moment.' });
+      return;
+    }
+    set({ sim: next, replay: null, announcement: `Market ${side} 3 joined the line at the sequencer.` });
+  },
   replayJournal: () => {
     const { sim } = get();
     const replayed = replayJournal(sim.journal);

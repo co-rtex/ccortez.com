@@ -1,6 +1,7 @@
 import { isSettled } from '../../../src/sim/jobSim';
 import { recoveryTrace } from '../../../src/sim/recoveryTrace';
 import { useTaskforgeSim } from '../../../src/sim/taskforgeSimStore';
+import { useFallbackClock } from '../../../src/sim/useFallbackClock';
 
 /**
  * Controls for the TaskForge workbench's live model, in the details panel: crash a worker and watch its lease
@@ -9,6 +10,7 @@ import { useTaskforgeSim } from '../../../src/sim/taskforgeSimStore';
  */
 export function TaskforgeSimControls() {
   const sim = useTaskforgeSim((state) => state.sim);
+  useFallbackClock(useTaskforgeSim.getState);
   const crash = useTaskforgeSim((state) => state.crash);
   const restart = useTaskforgeSim((state) => state.restart);
   const succeeded = sim.jobs.filter((job) => job.state === 'succeeded').length;

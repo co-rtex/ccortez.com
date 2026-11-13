@@ -28,11 +28,13 @@ describe('EngineX bench order book store', () => {
     expect(replay.entries).toBe(useEnginexBook.getState().sim.journal.length);
   });
 
-  it('puts a market order at the head of the line and announces what it did once sequenced', () => {
+  it('puts a market order at the back of the line, in arrival order, and announces its fills once sequenced', () => {
     useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS * 5);
+    const waiting = useEnginexBook.getState().sim.inbox.length;
     useEnginexBook.getState().market('sell');
-    expect(useEnginexBook.getState().sim.inbox[0]).toMatchObject({ side: 'sell', market: true });
-    useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS);
+    expect(useEnginexBook.getState().sim.inbox.at(-1)).toMatchObject({ side: 'sell', market: true });
+    expect(useEnginexBook.getState().sim.inbox).toHaveLength(waiting + 1);
+    useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS * 8);
     expect(useEnginexBook.getState().announcement).toMatch(/market sell 3/);
   });
 });

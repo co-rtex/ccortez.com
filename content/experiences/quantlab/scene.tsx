@@ -8,7 +8,7 @@ import { RecruiterSceneShell, RevealStage } from '../_shared/recruiterBenchPrimi
 
 import type { ExperienceSceneProps } from '../../../src/types/experience';
 import { DATASET_VERSIONS, DAYS, drawdownDays } from '../../../src/sim/backtestSim';
-import { useQuantlabRuns, type Run } from '../../../src/sim/quantlabRunStore';
+import { useQuantlabRuns, visibleDays, type Run } from '../../../src/sim/quantlabRunStore';
 import { prefersReducedMotion } from '../../../src/world/reducedMotion';
 
 /**
@@ -64,7 +64,7 @@ export default function QuantlabScene(props: ExperienceSceneProps) {
     useQuantlabRuns.getState().advance(Math.min(delta, 0.25));
     const { run, shown: liveShown } = useQuantlabRuns.getState();
     const reduced = prefersReducedMotion();
-    const shown = reduced ? DAYS : liveShown;
+    const shown = visibleDays(liveShown);
     const drawn = drawnRef.current;
     const ease = 1 - Math.exp(-8 * delta);
 

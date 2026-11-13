@@ -16,6 +16,8 @@ interface TaskforgeSimState {
   sim: Sim;
   /** Seconds accumulated toward the next tick. */
   pending: number;
+  /** performance.now() of the last advance, so a panel can tell whether a scene is driving the model. */
+  lastAdvancedAt: number;
   /** Seconds the current run has been settled. */
   settledFor: number;
   /** Advance by real time; ticks the simulation as often as whole ticks have elapsed. */
@@ -28,7 +30,9 @@ export const useTaskforgeSim = create<TaskforgeSimState>((set, get) => ({
   sim: createSim(FIRST_SEED),
   pending: 0,
   settledFor: 0,
+  lastAdvancedAt: 0,
   advance: (seconds) => {
+    set({ lastAdvancedAt: performance.now() });
     const state = get();
     if (isSettled(state.sim)) {
       const settledFor = state.settledFor + seconds;

@@ -21,6 +21,11 @@ describe('QuantLab bench run loop', () => {
     const after = useQuantlabRuns.getState().run;
     expect(after.result.version).not.toBe(before.result.version);
     expect(after.reproduces).toBeNull();
-    expect(useQuantlabRuns.getState().announcement).toMatch(new RegExp(`^Run ${after.id} on dataset v${after.result.version}`));
+    // Announced as started at once, and with its result once the curve has been drawn.
+    expect(useQuantlabRuns.getState().announcement).toBe(`Run ${after.id} started on dataset v${after.result.version}.`);
+    useQuantlabRuns.getState().advance(DAYS * DAY_SECONDS + 0.01);
+    expect(useQuantlabRuns.getState().announcement).toMatch(new RegExp(`^Run ${after.id} on dataset v${after.result.version}: `));
+    // The loop carries on with the other kind of run: a re-run of this version.
+    expect(useQuantlabRuns.getState().next).toBe('rerun');
   });
 });

@@ -1,5 +1,6 @@
 import { bestAsk, bestBid, bookHash } from '../../../src/sim/orderBookSim';
 import { REPLAY_SHOWN_TICKS, useEnginexBook } from '../../../src/sim/enginexBookStore';
+import { useFallbackClock } from '../../../src/sim/useFallbackClock';
 
 /**
  * Controls for the EngineX workbench's toy order book, in the details panel: send a market order through the
@@ -8,6 +9,7 @@ import { REPLAY_SHOWN_TICKS, useEnginexBook } from '../../../src/sim/enginexBook
  */
 export function EnginexBookControls() {
   const sim = useEnginexBook((state) => state.sim);
+  useFallbackClock(useEnginexBook.getState);
   const replay = useEnginexBook((state) => state.replay);
   const announcement = useEnginexBook((state) => state.announcement);
   const market = useEnginexBook((state) => state.market);

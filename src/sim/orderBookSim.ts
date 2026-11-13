@@ -113,12 +113,25 @@ export function restingLots(levels: Level[]): number {
   return levels.reduce((sum, level) => sum + level.orders.reduce((inner, order) => inner + order.qty, 0), 0);
 }
 
+/** Room in the sequencer's line for orders sent by a visitor on top of ordinary arrivals. */
+const VISITOR_ROOM = 3;
+
 /**
- * Queue a visitor's order for the sequencer. It goes to the head of the line, so it is the next order sequenced;
- * if the line is full, the newest waiting arrival is dropped to make room.
+ * Queue a visitor's order for the sequencer. Like every order it joins the back of the line: the sequencer takes
+ * orders strictly in arrival order. A full line refuses it (the same sim comes back), and the caller says so.
  */
 export function submit(sim: BookSim, order: IncomingOrder): BookSim {
-  return { ...sim, inbox: [order, ...sim.inbox].slice(0, INBOX_LIMIT + 1) };
+  if (sim.inbox.length >= INBOX_LIMIT + VISITOR_ROOM) return sim;
+  return { ...sim, inbox: [...sim.inbox, order] };
+}
+
+/** Step until no visitor (market) order is waiting, so a paused book shows a submitted order's fills at once. */
+export function sequenceMarketOrders(sim: BookSim): BookSim {
+  let next = sim;
+  for (let guard = 0; guard < INBOX_LIMIT + VISITOR_ROOM + 2 && next.inbox.some((order) => order.market); guard += 1) {
+    next = step(next);
+  }
+  return next;
 }
 
 export function marketOrder(side: Side, qty: number): IncomingOrder {
