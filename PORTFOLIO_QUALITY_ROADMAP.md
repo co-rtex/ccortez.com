@@ -67,6 +67,11 @@ Nothing merges to either `main` without Christian's approval.
 | `2cd836f` | No black bench props: lifted dark bases, metalness capped in scenes, cool fill light opposite the sun, SSEC racks/platform lightened | `.shots/ssec4-lake` |
 | `4d8eecd` | Four game benches aligned with their repositories (finance-ops, FootyMind, Quant Signal Workstation, IntelliSort) per the claims audit | 151 tests |
 
+| `380be8f` | Ambient birds recoloured as pale gulls (were black specks) | `.shots/birds-sunset` |
+| `2f71846` | Phone bench panel opaque above the HUD; touch-aware "Pinch to zoom" hint | `.shots/m-panel` |
+| `72f056b` | Third-review fixes: guide folds while a panel is open, prompt hidden then; Start Here panel about Christian (verified wording) without repeated header/district; all-or-nothing bench labels; phone portfolio pill; irregular ocean highlights | `.shots/interact-panel`, `follow-mobile`; 154 tests |
+| `ab4d3aa` | Occluding foliage fades by alpha-to-coverage (no stipple) | `.shots/follow-grove`; M3 60 fps, p95 18.6 ms |
+
 Checkpoint A (before/after, drag to compare; refreshed at `16ae247`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
