@@ -13,6 +13,7 @@ import {
   isPointWalkable,
 } from './terrain';
 import { CENTRAL_PLAZA_FOUNTAIN_RADIUS } from './hub';
+import { TRAIL_SIGNS } from './landmarks/trailSignLayout';
 import {
   LANDMARK_CLEAR_ZONES,
   LIGHTHOUSE,
@@ -366,6 +367,7 @@ function createTreeAndRockCollisionObstacles(): CircleObstacle[] {
     ...PLAZA_LAMP_POSITIONS.map(([x, z]) => ({ centerX: x, centerZ: z, radius: PLAZA_LAMP_COLLIDER_RADIUS })),
     ...PLAZA_FLOWER_BED_COLLIDERS.map(({ x, z, radius }) => ({ centerX: x, centerZ: z, radius })),
     { centerX: LIGHTHOUSE.x, centerZ: LIGHTHOUSE.z, radius: LIGHTHOUSE.radius },
+    ...TRAIL_SIGNS.map((sign) => ({ centerX: sign.x, centerZ: sign.z, radius: 0.22 })),
     ...treeObstacles,
     ...boulderObstacles,
   ];

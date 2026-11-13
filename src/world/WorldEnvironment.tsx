@@ -23,6 +23,7 @@ import { LakeWater } from './water/LakeWater';
 import { OCEAN_DEPTH_MAP_EXTENT, createOceanDepthTexture } from './water/oceanDepthMap';
 import { Lighthouse } from './landmarks/Lighthouse';
 import { LakeDocks } from './landmarks/LakeDocks';
+import { TrailSigns } from './landmarks/TrailSigns';
 import {
   OCEAN_LEVEL,
   getIslandDistanceNormalized,
@@ -608,6 +609,7 @@ export function WorldEnvironment() {
       <IslandTrails />
       <Lighthouse />
       <LakeDocks />
+      <TrailSigns />
 
       {hasPerfFlag('noveg') ? null : <InstancedVegetation />}
 
