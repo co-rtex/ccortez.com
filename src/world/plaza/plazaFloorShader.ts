@@ -16,6 +16,8 @@ export const PLAZA_FLOOR_COLORS = {
   terracottaDark: '#c4714c',
   lawnLight: '#9ccc58',
   lawnDark: '#6fa94a',
+  /** Sun-dried patches, a warm yellow-green. */
+  lawnDry: '#b9bf5e',
   kerb: '#c7ac83',
 } as const;
 
@@ -45,6 +47,7 @@ uniform vec3 uTerracotta;
 uniform vec3 uTerracottaDark;
 uniform vec3 uLawnLight;
 uniform vec3 uLawnDark;
+uniform vec3 uLawnDry;
 uniform vec3 uKerb;
 
 float plazaHash(vec2 p) {
@@ -123,10 +126,17 @@ vec3 plazaAlbedo(vec2 xz) {
   float band = smoothstep(uCourt - 0.75 - aa, uCourt - 0.75 + aa, r) * (1.0 - smoothstep(uCourt - 0.35 - aa, uCourt - 0.35 + aa, r));
   court = mix(court, uTerracotta * (0.92 + wear * 0.1), band);
 
-  // Lawn: two greens broken up by low-frequency noise, with faint mowing rings.
-  float grassNoise = plazaNoise(xz * 0.22) * 0.6 + plazaNoise(xz * 1.3) * 0.4;
-  vec3 lawn = mix(uLawnDark, uLawnLight, grassNoise);
-  lawn *= 0.96 + 0.05 * step(0.5, fract(r / 1.6));
+  // Lawn: two greens in broad patches (the noise sum is remapped, or it averages out to one flat tone), warm
+  // sun-dried drifts at a larger scale, clump-sized speckle, and mowing rings.
+  float grassNoise = plazaNoise(xz * 0.22) * 0.65 + plazaNoise(xz * 0.9) * 0.35;
+  vec3 lawn = mix(uLawnDark, uLawnLight, smoothstep(0.28, 0.72, grassNoise));
+  float dry = smoothstep(0.58, 0.82, plazaNoise(xz * 0.075 + 17.0));
+  lawn = mix(lawn, uLawnDry, dry * 0.7);
+  // Soft clump mottling, faded out where a pixel spans more than a few clumps (it would shimmer).
+  float clumpDetail = 1.0 - smoothstep(0.08, 0.25, max(fwidth(xz.x), fwidth(xz.y)));
+  float clump = plazaNoise(xz * 2.7) * 0.6 + plazaNoise(xz * 6.1) * 0.4;
+  lawn *= 1.0 + (clump - 0.5) * 0.17 * clumpDetail;
+  lawn *= 0.95 + 0.07 * step(0.5, fract(r / 1.6));
 
   // Spoke paving: rectangular stones laid along the path.
   vec2 cell = vec2(floor(along / 0.9), floor((lateral + 8.0) / 0.7 + mod(floor(along / 0.9), 2.0) * 0.5));
@@ -170,6 +180,7 @@ export function applyPlazaFloorShader(shader: WebGLProgramParametersWithUniforms
   shader.uniforms.uTerracottaDark = colorUniform(PLAZA_FLOOR_COLORS.terracottaDark);
   shader.uniforms.uLawnLight = colorUniform(PLAZA_FLOOR_COLORS.lawnLight);
   shader.uniforms.uLawnDark = colorUniform(PLAZA_FLOOR_COLORS.lawnDark);
+  shader.uniforms.uLawnDry = colorUniform(PLAZA_FLOOR_COLORS.lawnDry);
   shader.uniforms.uKerb = colorUniform(PLAZA_FLOOR_COLORS.kerb);
 
   shader.vertexShader = shader.vertexShader

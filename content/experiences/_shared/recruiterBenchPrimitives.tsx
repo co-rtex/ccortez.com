@@ -365,7 +365,7 @@ function liftedBase(base: string): string {
   return `#${new Color(base).lerp(new Color('#cfc8bc'), 0.38).getHexString()}`;
 }
 
-export const RECRUITER_SCENE_CONTENT_SCALE = 1.3;
+export const RECRUITER_SCENE_CONTENT_SCALE = 1.5;
 const MAX_SCENE_METALNESS = 0.12;
 
 export function RecruiterSceneShell({
