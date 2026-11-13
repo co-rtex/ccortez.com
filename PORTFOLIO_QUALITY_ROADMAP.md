@@ -43,6 +43,9 @@ Nothing merges to either `main` without Christian's approval.
 | `59f5391` | North-shore lighthouse at the end of the north trail | `.shots/v14-lake`; 140 tests |
 | `c478f26` | Start Here bench moved clear of the fountain; reserved pad = paved court | `.shots/v15-*`; 140 tests |
 
+| `ae00104` | Lower, forward-looking follow camera (sky, ocean, lighthouse and armillary in frame); look-ahead shrinks on portrait screens | `.shots/follow-*`; 141 tests |
+| `aed2fff` | Plank docks with lanterns beside each lake's scenic bench | `.shots/dock4-lake`; 142 tests |
+
 Checkpoint A (before/after, drag to compare): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
@@ -56,7 +59,7 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 ## Known issues / next candidates (ranked)
 
 1. Revealed bench scenes are small on their 4.2 m platforms; desks keep dark palette colours.
-2. More destinations: the south trail is short and lake trails end near the plaza (lake gazebos, south pier).
+2. The south trail is still short (ends ~3 m past the plaza edge).
 3. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
 4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
@@ -71,7 +74,8 @@ each case study's architecture data, case-study figure heroes, numbered sections
 No content facts changed (`src/content` untouched). Reported: lint/tsc clean, vitest 26/26, e2e 44/44 (6 new),
 Lighthouse home perf 96–97 (a11y/BP/SEO 100), TaskForge 98/100/100/100. Re-verified here: lint, tsc, vitest.
 Preview: https://portfolio-professional-2drvwkwhp-co-rtexs-projects.vercel.app (Vercel preview, behind Vercel
-login). Open: `og.png` still uses the old look; home LCP ~2.7 s on simulated slow 4G (display font).
+login). `4a02ed2`: `og.png` regenerated in the new look by `npm run og:image` (scripts/export-og-image.mjs); `npm run
+check` and e2e 44/44 re-run here after the change. Open: home LCP ~2.7 s on simulated slow 4G (display font).
 
 ## Open decisions for Christian
 
