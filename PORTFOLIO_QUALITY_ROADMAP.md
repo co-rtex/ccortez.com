@@ -46,6 +46,9 @@ Nothing merges to either `main` without Christian's approval.
 | `ae00104` | Lower, forward-looking follow camera (sky, ocean, lighthouse and armillary in frame); look-ahead shrinks on portrait screens | `.shots/follow-*`; 141 tests |
 | `aed2fff` | Plank docks with lanterns beside each lake's scenic bench | `.shots/dock4-lake`; 142 tests |
 
+| `8cb2e8d` | South trail leads to Moss Heart Pond; trails drape over the rendered terrain triangles (`getTerrainMeshHeight`) and the plaza berm, which had hidden their first metres | `.shots/south3-lake`; 144 tests |
+| `be5142e` | Pulsing beacon over the Start Here bench, fading once its panel is opened | `.shots/follow-spawn` |
+
 Checkpoint A (before/after, drag to compare): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
@@ -59,7 +62,6 @@ camera fixtures (`?shot=px,py,pz,tx,ty,tz`, `?spawn=x,z`).
 ## Known issues / next candidates (ranked)
 
 1. Revealed bench scenes are small on their 4.2 m platforms; desks keep dark palette colours.
-2. The south trail is still short (ends ~3 m past the plaza edge).
 3. Terrain: plaza retaining wall reads as a brown ramp; shoreline sand band is thin; no grass variation.
 4. Onboarding: first-minute flow (How to play → Start Here) and HUD weight on 1366×768.
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
