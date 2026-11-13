@@ -8,7 +8,7 @@ files keep release records; this file holds priorities, art direction, active wo
 | Site | Repo / local dir | Production | Working branch |
 | --- | --- | --- | --- |
 | 3D game | `co-rtex/ccortez.com` · `~/Desktop/Projects/ccortez-dual-sprint` | https://game.ccortez.com (Pages from `main`, `5176c5b`) | `game/art-direction-pass` (pushed) |
-| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `aaf0b6a`) |
+| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `608d21a`) |
 
 `~/Desktop/Projects/ccortez.com` is the protected original checkout (read-only; 96 dirty paths at `825fe37`).
 Nothing merges to either `main` without Christian's approval.
@@ -73,6 +73,10 @@ Nothing merges to either `main` without Christian's approval.
 | `ab4d3aa` | Occluding foliage fades by alpha-to-coverage (no stipple) | `.shots/follow-grove`; M3 60 fps, p95 18.6 ms |
 | `306b561` | 700 instanced grass tufts in the meadows; empty chip row hidden on Start Here | `.shots/follow-grove2`; 155 tests |
 | `36d334c` | Lighthouse door sign linking to the written portfolio | `.shots/sign-lake` |
+| `572d82b` | EngineX / QuantLab benches match the evidence (see Claims audit) | 155 tests |
+| `5833f40` | Fingerposts where each trail leaves the plaza, naming its destination | `.shots/signs-lake`; 156 tests |
+| `0c43cc8` | "Workbench" used consistently for stations; How to play mentions signposts | |
+| `04de5af` | 30 Hz shadow updates + adaptive pixel ratio (see Performance) | uncapped spawn p95 33 → 13–16 ms |
 
 Checkpoint A (before/after, drag to compare; refreshed at `36d334c`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
@@ -125,6 +129,15 @@ clean, vitest 29/29, Playwright 50 passed + 2 viewport skips, Lighthouse mobile 
 TaskForge 100s. Preview: https://portfolio-professional-kkw3flklg-co-rtexs-projects.vercel.app (Vercel login).
 Open: phone Experience entries are long (stacked numbers); tall TaskForge/QuantLab drawings push facts below the
 fold at 1440; edge labels sit close to boxes.
+
+Pass 4 (`e3b6ccb`, `66fc584`, `f6cbfc5`, `e97e374`, `2a8a37f`; agent-reported, spot-checked here): architecture
+edge labels clear of boxes (≥ 11 units measured, unit test ≥ 8) with halos; case-study hero drawing capped at 384 px
+so title, summary, figure and facts fit the first 1440×900 screen (e2e test for all five); compact metric tables
+on narrow columns (LiDAR entry 1363 → 1163 px at 390); equal button heights; resume PDF regenerated. Check clean,
+vitest 30/30, Playwright 51 + 3 viewport skips, Lighthouse mobile home 99/100/100/100, TaskForge 100s. `608d21a`:
+footer says "workbench" like the game. Preview: https://portfolio-professional-9p0yzgii8-co-rtexs-projects.vercel.app
+(Vercel login; a newer one builds from `608d21a`). Open: at 1366×768 the facts sit just below the fold; four-column
+drawings have ~10.6 px edge labels at 1024.
 
 ## Claims audit (2026-11-13)
 
