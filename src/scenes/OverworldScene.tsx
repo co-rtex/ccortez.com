@@ -1,7 +1,7 @@
 import { PerformanceMonitor } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { ACESFilmicToneMapping, BasicShadowMap, PCFShadowMap, SRGBColorSpace } from 'three';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { CameraRig } from '../world/CameraRig';
 import { DevShotCamera } from '../world/DevShotCamera';
@@ -9,6 +9,8 @@ import { SceneTelemetry } from '../world/SceneTelemetry';
 import { hasPerfFlag } from '../world/perfFlags';
 import { ShadowScheduler } from '../world/ShadowScheduler';
 import { StartHereBeacon } from '../world/landmarks/StartHereBeacon';
+import { BenchGardens } from '../world/BenchGardens';
+import { START_HERE_WORKBENCH_ID } from '../world/hub';
 import { FootstepDust } from '../world/FootstepDust';
 import { LoadedExperienceScenes } from '../world/LoadedExperienceScenes';
 import { PlayerController } from '../world/PlayerController';
@@ -49,6 +51,14 @@ export function OverworldScene({
   const nearbyWorkbenchId = useGameStore((state) => state.nearbyWorkbenchId);
   const [activeManipulationWorkbenchId, setActiveManipulationWorkbenchId] = useState<string | null>(null);
   const [dpr, setDpr] = useState<number>(MAX_DPR);
+  const ringWorkbenches = useMemo(
+    () =>
+      workbenches.filter(
+        (workbench) =>
+          workbench.definition.visibility === 'published' && workbench.definition.id !== START_HERE_WORKBENCH_ID,
+      ),
+    [workbenches],
+  );
   const selectedWorkbench =
     selectedWorkbenchId
       ? workbenches.find((workbench) => workbench.definition.id === selectedWorkbenchId) ?? null
@@ -100,6 +110,7 @@ export function OverworldScene({
       <RestSpotDirector />
       {!editorEnabled ? <RecruiterArcMarkers /> : null}
       {!editorEnabled ? <StartHereBeacon /> : null}
+      <BenchGardens workbenches={ringWorkbenches} />
 
       {workbenches.map((workbench) => (
         <WorkbenchLandmark

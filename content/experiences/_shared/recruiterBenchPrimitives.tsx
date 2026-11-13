@@ -16,14 +16,6 @@ import type { ExperienceSceneProps } from '../../../src/types/experience';
 import { hasPerfFlag } from '../../../src/world/perfFlags';
 import { prefersReducedMotion } from '../../../src/world/reducedMotion';
 import {
-  RECRUITER_SCENE_PLATFORM_GLOW_RADIUS,
-  RECRUITER_SCENE_PLATFORM_HEIGHT,
-  RECRUITER_SCENE_PLATFORM_OUTER_BOTTOM_RADIUS,
-  RECRUITER_SCENE_PLATFORM_OUTER_TOP_RADIUS,
-  RECRUITER_SCENE_PLATFORM_RING_INNER_RADIUS,
-  RECRUITER_SCENE_PLATFORM_RING_OUTER_RADIUS,
-} from './recruiterBenchPlatform';
-import {
   RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS,
   getRecruiterRevealMotionAmount,
   getRecruiterRevealStageProgress,
@@ -369,16 +361,7 @@ function liftedBase(base: string): string {
 export const RECRUITER_SCENE_CONTENT_SCALE = 1.5;
 const MAX_SCENE_METALNESS = 0.12;
 
-export function RecruiterSceneShell({
-  anchor,
-  rotationY,
-  isNearby,
-  isFocused,
-  presentationState,
-  palette,
-  children,
-}: SceneShellProps) {
-  const platformGroupRef = useRef<Group>(null);
+export function RecruiterSceneShell({ anchor, rotationY, presentationState, children }: SceneShellProps) {
   const contentGroupRef = useRef<Group>(null);
 
   // There is no environment map to reflect, so metallic props render near-black; cap metalness once mounted.
@@ -391,11 +374,7 @@ export function RecruiterSceneShell({
       if (hasPerfFlag('nopropshadow')) object.castShadow = false;
     });
   }, []);
-  const ringMaterialRef = useRef<MeshStandardMaterial>(null);
-  const glowMaterialRef = useRef<MeshStandardMaterial>(null);
   const presentationStateRef = useRef(presentationState);
-  // Light stone with a hint of the bench accent; the dark palette base read as a black disc on the plaza.
-  const platformColor = useMemo(() => new Color('#ece0c6').lerp(new Color(palette.accent), 0.1), [palette.accent]);
   const transitionElapsedMsRef = useRef(
     presentationState === 'visible' ? RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS : 0,
   );
@@ -414,7 +393,7 @@ export function RecruiterSceneShell({
       presentationState === 'visible' ? RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS : 0;
   }, [presentationState]);
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     if (presentationStateRef.current !== 'visible') {
       transitionElapsedMsRef.current += delta * 1000;
     }
@@ -425,75 +404,13 @@ export function RecruiterSceneShell({
       getRecruiterRevealStageProgress(3, presentationStateRef.current, transitionElapsedMsRef.current),
     ];
 
-    const stageOneProgress = stageProgressRef.current[0];
-    const activity = getSceneActivityState(
-      clock.elapsedTime,
-      isNearby,
-      isFocused,
-      0.2,
-      getRecruiterRevealMotionAmount(stageOneProgress),
-    );
-
-    if (platformGroupRef.current) {
-      platformGroupRef.current.position.y = (1 - Math.min(stageOneProgress, 1)) * -0.12;
-      platformGroupRef.current.scale.setScalar(0.96 + Math.max(stageOneProgress, 0) * 0.04);
-    }
-
-    if (ringMaterialRef.current) {
-      ringMaterialRef.current.emissiveIntensity =
-        0.08 + stageOneProgress * 0.16 + activity.ambient * 0.52 + activity.focused * 0.68;
-    }
-    if (glowMaterialRef.current) {
-      glowMaterialRef.current.opacity =
-        stageOneProgress * (0.12 + activity.nearby * 0.08 + activity.focused * 0.12);
-    }
   });
 
   return (
     <RecruiterSceneRevealContext.Provider value={revealRuntime}>
       <group position={[anchor.x, anchor.y, anchor.z]} rotation={[0, rotationY, 0]}>
-        <group ref={platformGroupRef}>
-          <mesh receiveShadow position={[0, 0.04, 0]}>
-            <cylinderGeometry
-              args={[
-                RECRUITER_SCENE_PLATFORM_OUTER_TOP_RADIUS,
-                RECRUITER_SCENE_PLATFORM_OUTER_BOTTOM_RADIUS,
-                RECRUITER_SCENE_PLATFORM_HEIGHT,
-                48,
-              ]}
-            />
-            <meshStandardMaterial color={platformColor} roughness={0.86} metalness={0.02} />
-          </mesh>
-          <mesh receiveShadow position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry
-              args={[
-                RECRUITER_SCENE_PLATFORM_RING_INNER_RADIUS,
-                RECRUITER_SCENE_PLATFORM_RING_OUTER_RADIUS,
-                48,
-              ]}
-            />
-            <meshStandardMaterial
-              ref={ringMaterialRef}
-              color={palette.accent}
-              emissive={palette.accent}
-              emissiveIntensity={0.28}
-              roughness={0.22}
-              metalness={0.24}
-            />
-          </mesh>
-          <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[RECRUITER_SCENE_PLATFORM_GLOW_RADIUS, 40]} />
-            <meshStandardMaterial
-              ref={glowMaterialRef}
-              color={palette.glow}
-              emissive={palette.glow}
-              emissiveIntensity={0.18}
-              transparent
-              opacity={0.14}
-              depthWrite={false}
-            />
-          </mesh>
-        </group>
+        {/* The plinth under the props belongs to the world (WorkbenchLandmark), so it stays put whether or
+            not this scene is loaded. */}
         {/* Scene props were authored small for the 4.2 m platform; scale them so a bench reads from the plaza. */}
         <group ref={contentGroupRef} scale={RECRUITER_SCENE_CONTENT_SCALE}>
           {children}

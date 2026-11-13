@@ -11,7 +11,13 @@ import type { Group, MeshStandardMaterial } from 'three';
 import { MathUtils, QuadraticBezierCurve3, Vector3 } from 'three';
 
 import type { ExperienceSceneProps } from '../../../src/types/experience';
-import { SSEC_PLATFORM_INNER_SIZE, SSEC_PLATFORM_OUTER_SIZE } from './platform';
+import {
+  SSEC_PLATFORM_INNER_SIZE,
+  SSEC_PLATFORM_INNER_Y,
+  SSEC_PLATFORM_OUTER_SIZE,
+  SSEC_PLATFORM_OUTER_Y,
+  SSEC_FLOOR_LIFT,
+} from './platform';
 import {
   RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS,
   getRecruiterRevealMotionAmount,
@@ -672,7 +678,7 @@ export default function SsecTechnicalComputingScene({
     if (floorGroup) {
       floorGroup.position.y =
         (1 - Math.min(stageOneProgress, 1)) * -0.12 +
-        0.02 +
+        SSEC_FLOOR_LIFT +
         Math.sin(clock.elapsedTime * 0.45) * 0.01 * getRecruiterRevealMotionAmount(stageOneProgress);
       floorGroup.scale.setScalar(0.96 + Math.max(stageOneProgress, 0) * 0.04);
     }
@@ -687,11 +693,11 @@ export default function SsecTechnicalComputingScene({
     <SsecRevealContext.Provider value={revealRuntime}>
       <group position={[anchor.x, anchor.y, anchor.z]} rotation={[0, rotationY, 0]}>
         <group ref={floorGroupRef}>
-          <mesh receiveShadow position={[0, 0.04, -0.1]}>
+          <mesh receiveShadow position={[0, SSEC_PLATFORM_OUTER_Y, -0.1]}>
             <boxGeometry args={SSEC_PLATFORM_OUTER_SIZE} />
             <meshStandardMaterial color="#b9b2a4" roughness={0.8} metalness={0.02} />
           </mesh>
-          <mesh receiveShadow position={[0, 0.08, -0.1]}>
+          <mesh receiveShadow position={[0, SSEC_PLATFORM_INNER_Y, -0.1]}>
             <boxGeometry args={SSEC_PLATFORM_INNER_SIZE} />
             <meshStandardMaterial
               ref={deskGlowRef}

@@ -7,6 +7,7 @@ import { getCentralPlazaTopHeight } from '../terrain';
 import { PlazaFountain } from './PlazaFountain';
 import { applyPlazaFloorShader } from './plazaFloorShader';
 import { PLAZA_BERM } from './plazaBerm';
+import { PlazaWall } from './PlazaWall';
 
 const LAMP_POST_HEIGHT = 2.7;
 
@@ -168,11 +169,8 @@ export function CentralPlaza() {
         />
       </mesh>
 
-      {/* Low kerb along the outer edge. */}
-      <mesh castShadow receiveShadow position={[0, centerY + 0.05, 0]}>
-        <cylinderGeometry args={[PLAZA_RADII.edge + 0.25, PLAZA_RADII.edge + 0.32, 0.34, 128, 1, true]} />
-        <meshStandardMaterial color="#c4a77c" roughness={0.88} />
-      </mesh>
+      {/* Seat wall along the outer edge, open where the paths leave. */}
+      <PlazaWall />
 
       <PlazaLamps y={centerY} />
       <PlazaFlowerBeds y={centerY} />

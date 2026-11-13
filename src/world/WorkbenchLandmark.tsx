@@ -6,6 +6,7 @@ import { Color, DoubleSide, Shape } from 'three';
 import type { Group, MeshStandardMaterial } from 'three';
 
 import { useGameStore } from '../state/gameStore';
+import { BENCH_PLINTH } from './benchPlinth';
 import { prefersReducedMotion } from './reducedMotion';
 import { START_HERE_WORKBENCH_ID } from './hub';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -338,19 +339,31 @@ interface WorkbenchLandmarkProps {
  * Every scene-owned bench keeps a permanent stone dais and a pennant in its category colour, so the bench ring
  * reads as a set of destinations from across the plaza before any scene streams in.
  */
-function BenchDais({ accent }: { accent: string }) {
-  // Compact plinth tinted with the category colour (the guide's legend: orange experiences, blue projects).
-  // Kept below the revealed platform's top (0.10) so scene props are never buried.
-  const top = useMemo(() => new Color('#f6ead2').lerp(new Color(accent), 0.32), [accent]);
+/**
+ * The bench's architectural base: a faceted stone drum with a light coping lip, a field tinted with the
+ * category colour (the guide's legend: orange experiences, blue projects) and room for the accent inlay ring.
+ * It replaces a broad flat disk that read as a pale placemat on the promenade paving.
+ */
+function BenchPlinth({ accent }: { accent: string }) {
+  const field = useMemo(() => new Color('#d9c8a8').lerp(new Color(accent), 0.2), [accent]);
+  const riserHeight = BENCH_PLINTH.deckY - BENCH_PLINTH.copingHeight - BENCH_PLINTH.footY;
   return (
     <group>
-      <mesh castShadow receiveShadow position={[0, 0.04, 0]}>
-        <cylinderGeometry args={[2.62, 2.74, 0.08, 48]} />
-        <meshStandardMaterial color={top} roughness={0.8} />
+      <mesh castShadow receiveShadow position={[0, BENCH_PLINTH.footY + riserHeight / 2, 0]}>
+        <cylinderGeometry
+          args={[BENCH_PLINTH.topRadius, BENCH_PLINTH.baseRadius, riserHeight, BENCH_PLINTH.sides]}
+        />
+        <meshStandardMaterial color="#a88f6f" roughness={0.9} flatShading />
       </mesh>
-      <mesh position={[0, 0.03, 0]}>
-        <cylinderGeometry args={[2.8, 2.84, 0.07, 48, 1, true]} />
-        <meshStandardMaterial color={accent} roughness={0.6} />
+      <mesh receiveShadow position={[0, BENCH_PLINTH.deckY - BENCH_PLINTH.copingHeight / 2, 0]}>
+        <cylinderGeometry
+          args={[BENCH_PLINTH.copingRadius, BENCH_PLINTH.copingRadius, BENCH_PLINTH.copingHeight, BENCH_PLINTH.sides]}
+        />
+        <meshStandardMaterial color="#efe3cb" roughness={0.8} flatShading />
+      </mesh>
+      <mesh receiveShadow position={[0, BENCH_PLINTH.deckY + 0.002, 0]} rotation={[-Math.PI / 2, 0, Math.PI / BENCH_PLINTH.sides]}>
+        <circleGeometry args={[BENCH_PLINTH.fieldRadius, BENCH_PLINTH.sides]} />
+        <meshStandardMaterial color={field} roughness={0.85} />
       </mesh>
     </group>
   );
@@ -420,7 +433,7 @@ export function WorkbenchLandmark({
   const accentMaterial = accentMaterialMap[workbench.definition.visualRecipe.accentMaterial];
   const presentationMode = workbench.definition.presentationMode;
   const rendersKit = presentationMode !== 'scene-owned';
-  const ringRadius = rendersKit ? 1.08 : 2.38;
+  const ringRadius = rendersKit ? 1.08 : BENCH_PLINTH.inlayRadius;
   const issueSeverity = workbench.issues.some((issue) => issue.severity === 'error')
     ? 'error'
     : workbench.issues.length > 0
@@ -514,14 +527,14 @@ export function WorkbenchLandmark({
             <boxGeometry args={[5.8, 2.8, 5.8]} />
             <meshBasicMaterial transparent opacity={0} depthWrite={false} />
           </mesh>
-          <BenchDais accent={indicatorColor} />
+          <BenchPlinth accent={indicatorColor} />
           {/* Start Here is in plain view with its own badge; a pennant would only add a pole beside the fountain. */}
           {isStartHere ? null : <BenchPennant accent={indicatorColor} seed={workbench.definition.id.length} />}
         </>
       )}
 
-      <mesh position={[0, rendersKit ? 0.22 : 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[ringRadius, rendersKit ? 0.08 : 0.055, 10, 48]} />
+      <mesh position={[0, rendersKit ? 0.22 : BENCH_PLINTH.deckY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[ringRadius, rendersKit ? 0.08 : 0.06, 10, 64]} />
         <meshStandardMaterial
           ref={ringMaterialRef}
           color={indicatorColor}

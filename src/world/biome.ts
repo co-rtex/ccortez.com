@@ -22,6 +22,7 @@ import {
   PLAZA_LAMP_COLLIDER_RADIUS,
   PLAZA_LAMP_POSITIONS,
 } from './islandPaths';
+import { PLAZA_WALL_COLLIDERS } from './plaza/plazaWallLayout';
 
 import type { CircleObstacle, CollisionObstacle } from '../engine/movement';
 
@@ -368,6 +369,7 @@ function createTreeAndRockCollisionObstacles(): CircleObstacle[] {
     ...PLAZA_FLOWER_BED_COLLIDERS.map(({ x, z, radius }) => ({ centerX: x, centerZ: z, radius })),
     { centerX: LIGHTHOUSE.x, centerZ: LIGHTHOUSE.z, radius: LIGHTHOUSE.radius },
     ...TRAIL_SIGNS.map((sign) => ({ centerX: sign.x, centerZ: sign.z, radius: 0.22 })),
+    ...PLAZA_WALL_COLLIDERS,
     ...treeObstacles,
     ...boulderObstacles,
   ];
