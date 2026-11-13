@@ -1,3 +1,5 @@
+// Shared with the professional site (ccortez.com, src/lib/sim/orderBook.ts): the same toy order book drives the
+// EngineX case study there and the EngineX bench here. Keep the two copies identical.
 /**
  * A toy limit-order book for the EngineX workbench: the ideas the engine is built on, small enough to watch.
  * It is not EngineX's code.
