@@ -1,3 +1,5 @@
+// Shared with the professional site (ccortez.com, src/lib/sim/backtest.ts): the same toy backtest drives the
+// QuantLab case study there and the QuantLab bench here. Keep the two copies identical.
 /**
  * A toy backtest for the QuantLab workbench: the ideas QuantLab is built on, small enough to watch. It is not
  * QuantLab's code, and the prices are synthetic.
