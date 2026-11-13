@@ -8,6 +8,8 @@ import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import type { ExperienceRecruiterCard } from '../types/experience';
 import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMeta';
+import { isFlagshipWorkbench } from '../workbench/flagships';
+import { prefersReducedMotion } from '../world/reducedMotion';
 
 interface WorkbenchPanelProps {
   workbenches: WorkbenchRuntimeRecord[];
@@ -116,6 +118,17 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
   // Keyboard and screen-reader users land in the panel when it opens (its heading is announced), and go back to
   // where they were when it closes.
   const panelRef = useRef<HTMLElement>(null);
+  const jumpToDemo = (): void => {
+    const demo = panelRef.current?.querySelector<HTMLElement>('.taskforge-sim');
+    if (!demo) return;
+    demo.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    // Move focus to the demo's heading so keyboard and screen-reader users land there too.
+    const heading = demo.querySelector<HTMLElement>('h4');
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
+  };
   const headingRef = useRef<HTMLHeadingElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   // The last element focused outside the panel. Opening from the recruiter guide folds the guide in the same
@@ -255,6 +268,12 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
                 {chip.label}
               </span>
             ))}
+            {/* Flagships carry a live model further down the story; this jumps to it (on phones it is below the fold). */}
+            {isFlagshipWorkbench(workbench.definition.id) ? (
+              <button type="button" className="experience-panel__demo-jump" onClick={jumpToDemo}>
+                Try the live model
+              </button>
+            ) : null}
           </>
         ) : (
           <span className="experience-panel__meta-chip experience-panel__meta-chip--default">

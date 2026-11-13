@@ -1795,3 +1795,31 @@ body {
     padding: 0.2rem 0.6rem;
   }
 }
+
+/* "Try the live model" on flagship panels: a quiet button beside the chips that jumps to the demo. */
+.experience-panel__demo-jump {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-height: 1.9rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #2f8f63;
+  background: #eef4f0;
+  color: #1f5e42;
+  cursor: pointer;
+}
+
+.experience-panel__demo-jump:hover {
+  background: #2f8f63;
+  color: #fffdf8;
+}
+
+.experience-panel__demo-jump:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}
+
+.taskforge-sim h4:focus {
+  outline: none;
+}
