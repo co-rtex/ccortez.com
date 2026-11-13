@@ -1529,3 +1529,108 @@ body {
   outline: 2px solid #ffd27a;
   outline-offset: 3px;
 }
+
+/* ---- TaskForge workbench: live model controls in the details panel, and its in-scene labels ---- */
+.taskforge-sim {
+  margin: 0 0 1.1rem;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: 14px;
+  background: #eef4f0;
+  border: 1px solid rgba(47, 143, 99, 0.28);
+}
+
+.taskforge-sim h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.taskforge-sim p {
+  margin: 0 0 0.6rem;
+  font-size: 0.88rem;
+}
+
+.taskforge-sim__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.2rem 0 0.7rem;
+}
+
+.taskforge-sim__buttons button {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #23404a;
+  background: #fffdf8;
+  color: #23404a;
+  cursor: pointer;
+}
+
+.taskforge-sim__buttons button:hover:not(:disabled) {
+  background: #23404a;
+  color: #fffdf8;
+}
+
+.taskforge-sim__buttons button:disabled {
+  border-color: rgba(212, 81, 60, 0.6);
+  color: #9b3a2c;
+  cursor: default;
+}
+
+.taskforge-sim__buttons .taskforge-sim__restart {
+  border-style: dashed;
+}
+
+.taskforge-sim__buttons button:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}
+
+.taskforge-sim .taskforge-sim__status {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.taskforge-sim .taskforge-sim__event {
+  min-height: 1.6em;
+  font-family: 'SFMono-Regular', Consolas, Monaco, monospace;
+  font-size: 0.8rem;
+}
+
+.taskforge-sim__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+}
+
+.taskforge-sim__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.taskforge-sim__legend span {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.taskforge-label {
+  display: block;
+  white-space: nowrap;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(20, 31, 37, 0.82);
+  color: #f8ead2;
+  font-size: 0.7rem;
+  font-weight: 700;
+  pointer-events: none;
+}

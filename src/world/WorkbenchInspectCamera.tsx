@@ -66,7 +66,9 @@ export function WorkbenchInspectCamera({
     startPositionRef.current.copy(camera.position);
     startTargetRef.current.copy(currentTarget);
     endTargetRef.current.copy(getWorkbenchInspectTarget(activeWorkbench.placement.anchor));
-    endPositionRef.current.copy(getWorkbenchInspectCameraPosition(activeWorkbench.placement.anchor));
+    endPositionRef.current.copy(
+      getWorkbenchInspectCameraPosition(activeWorkbench.placement.anchor, activeWorkbench.placement.rotationY),
+    );
     transitionTargetRef.current.copy(currentTarget);
     transitionProgressRef.current = 0;
 

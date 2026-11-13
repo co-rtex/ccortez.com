@@ -33,6 +33,15 @@ describe('workbench inspect camera helpers', () => {
     expect(distance).toBeLessThanOrEqual(WORKBENCH_INSPECT_MAX_DISTANCE);
   });
 
+  it('turns with the bench, so a bench facing north (south side of the ring) is seen from its front', () => {
+    const anchor = { x: 0, y: 2, z: 25 };
+    const target = getWorkbenchInspectTarget(anchor);
+    const cameraPosition = getWorkbenchInspectCameraPosition(anchor, Math.PI);
+    // Facing -z, so the camera is on the -z side (toward the plaza), not behind the bench.
+    expect(cameraPosition.z).toBeLessThan(target.z);
+    expect(cameraPosition.distanceTo(target)).toBeCloseTo(getWorkbenchInspectCameraPosition(anchor).distanceTo(target), 6);
+  });
+
   it('exposes the requested orbit pitch limits', () => {
     expect(WORKBENCH_INSPECT_MIN_ELEVATION_DEG).toBe(18);
     expect(WORKBENCH_INSPECT_MAX_ELEVATION_DEG).toBe(55);

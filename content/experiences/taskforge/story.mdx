@@ -1,4 +1,8 @@
+import { TaskforgeSimControls } from './TaskforgeSimControls';
+
 ## TaskForge
+
+<TaskforgeSimControls />
 
 TaskForge implements the hard parts of a background job system directly instead of wrapping a queue framework. Each way a job system fails, such as a worker dying while it holds work or a notification getting lost after a commit, has an explicit mechanism and a test.
 
