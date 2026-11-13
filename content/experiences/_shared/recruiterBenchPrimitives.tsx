@@ -15,6 +15,7 @@ import { CatmullRomCurve3, Color, TubeGeometry, Vector3 } from 'three';
 import type { ExperienceSceneProps } from '../../../src/types/experience';
 import { hasPerfFlag } from '../../../src/world/perfFlags';
 import { prefersReducedMotion } from '../../../src/world/reducedMotion';
+import { useSceneShadowBudget } from '../../../src/world/sceneShadowBudget';
 import {
   RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS,
   getRecruiterRevealMotionAmount,
@@ -363,6 +364,7 @@ const MAX_SCENE_METALNESS = 0.12;
 
 export function RecruiterSceneShell({ anchor, rotationY, presentationState, children }: SceneShellProps) {
   const contentGroupRef = useRef<Group>(null);
+  useSceneShadowBudget(contentGroupRef, anchor);
 
   // There is no environment map to reflect, so metallic props render near-black; cap metalness once mounted.
   useEffect(() => {
@@ -557,8 +559,8 @@ export function DisplayPanel({
     <group ref={groupRef} position={position} rotation={rotation} scale={scale}>
       <mesh castShadow>
         <boxGeometry args={[1, 0.6, 0.08]} />
-        {/* Mid slate, not near-black: seen from behind (outside the ring) the backs were dark holes. */}
-        <meshStandardMaterial color="#6f7886" roughness={0.5} metalness={0.1} />
+        {/* Warm mid grey, not near-black: seen from behind (outside the ring) the backs were dark slabs. */}
+        <meshStandardMaterial color="#928a82" roughness={0.55} metalness={0.05} />
       </mesh>
       {/* The screen sits just proud of the bezel (front face at z 0.04) and its content just proud of the screen. */}
       <mesh position={[0, 0, 0.043]}>

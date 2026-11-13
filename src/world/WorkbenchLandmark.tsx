@@ -345,7 +345,7 @@ interface WorkbenchLandmarkProps {
  * It replaces a broad flat disk that read as a pale placemat on the promenade paving.
  */
 function BenchPlinth({ accent }: { accent: string }) {
-  const field = useMemo(() => new Color('#d9c8a8').lerp(new Color(accent), 0.2), [accent]);
+  const field = useMemo(() => new Color('#d9c8a8').lerp(new Color(accent), 0.36), [accent]);
   const riserHeight = BENCH_PLINTH.deckY - BENCH_PLINTH.copingHeight - BENCH_PLINTH.footY;
   return (
     <group>
@@ -365,6 +365,15 @@ function BenchPlinth({ accent }: { accent: string }) {
         <circleGeometry args={[BENCH_PLINTH.fieldRadius, BENCH_PLINTH.sides]} />
         <meshStandardMaterial color={field} roughness={0.85} />
       </mesh>
+      {/* Front step, facing the plaza centre (local +z). */}
+      <mesh
+        castShadow
+        receiveShadow
+        position={[0, (BENCH_PLINTH.footY + BENCH_PLINTH.deckY) / 2 - 0.06, BENCH_PLINTH.topRadius + BENCH_PLINTH.stepDepth / 2 - 0.08]}
+      >
+        <boxGeometry args={[BENCH_PLINTH.stepWidth, BENCH_PLINTH.deckY - BENCH_PLINTH.footY - 0.12, BENCH_PLINTH.stepDepth]} />
+        <meshStandardMaterial color="#e2d3b6" roughness={0.85} />
+      </mesh>
     </group>
   );
 }
@@ -381,7 +390,8 @@ function BenchPennant({ accent, seed }: { accent: string; seed: number }) {
   });
 
   return (
-    <group position={[3.05, 0, -2.75]}>
+    // On the plinth's back-right rim, clear of the hedge crescent behind it.
+    <group position={[2.12, BENCH_PLINTH.deckY, -2.12]}>
       <mesh castShadow position={[0, PENNANT_POLE_HEIGHT / 2, 0]}>
         <cylinderGeometry args={[0.045, 0.06, PENNANT_POLE_HEIGHT, 8]} />
         <meshStandardMaterial color="#f4ead6" roughness={0.6} />

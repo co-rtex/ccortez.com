@@ -8,7 +8,6 @@ import { DevShotCamera } from '../world/DevShotCamera';
 import { SceneTelemetry } from '../world/SceneTelemetry';
 import { hasPerfFlag } from '../world/perfFlags';
 import { ShadowScheduler } from '../world/ShadowScheduler';
-import { StartHereBeacon } from '../world/landmarks/StartHereBeacon';
 import { BenchGardens } from '../world/BenchGardens';
 import { START_HERE_WORKBENCH_ID } from '../world/hub';
 import { FootstepDust } from '../world/FootstepDust';
@@ -109,7 +108,6 @@ export function OverworldScene({
       <WorkbenchDirector workbenches={workbenches} />
       <RestSpotDirector />
       {!editorEnabled ? <RecruiterArcMarkers /> : null}
-      {!editorEnabled ? <StartHereBeacon /> : null}
       <BenchGardens workbenches={ringWorkbenches} />
 
       {workbenches.map((workbench) => (

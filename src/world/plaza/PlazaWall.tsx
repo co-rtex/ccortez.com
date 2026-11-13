@@ -57,7 +57,8 @@ function applyWallShader(baseY: number) {
   };
 }
 
-const PIER_BODY = new Color('#c4ad8a');
+// Matches the wall's average block tone.
+const PIER_BODY = new Color('#b39a77');
 const PIER_CAP = new Color('#efe3cb');
 
 export function PlazaWall() {

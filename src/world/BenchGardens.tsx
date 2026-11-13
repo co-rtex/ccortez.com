@@ -23,7 +23,8 @@ const RIM = 0.09;
 const CURB_TOP = new Color('#e6d7bb');
 const CURB_SIDE = new Color('#b39b7a');
 const SOIL = new Color('#5e4630');
-const HEDGE_TONES = ['#3f7a37', '#4b8a3c', '#56963f'].map((hex) => new Color(hex));
+// Close to the tree greens, so hedges read as part of the same planting.
+const HEDGE_TONES = ['#4c8a3d', '#5a9844', '#4f9047'].map((hex) => new Color(hex));
 
 interface GardenBench extends BenchPlacementXZ {
   floorY: number;
@@ -105,9 +106,10 @@ export function BenchGardens({ workbenches }: { workbenches: WorkbenchRuntimeRec
     if (!mesh) return;
     const dummy = new Object3D();
     bushes.forEach((bush, index) => {
-      dummy.position.set(bush.x, bush.y + bush.size * 0.55, bush.z);
+      // Sunk about a third into the planter soil, and kept low: they frame the bench without hiding it.
+      dummy.position.set(bush.x, bush.y + bush.size * 0.38, bush.z);
       dummy.rotation.set(0, bush.rotationY, 0);
-      dummy.scale.set(bush.size, bush.size * 0.82, bush.size);
+      dummy.scale.set(bush.size, bush.size * 0.74, bush.size);
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
       mesh.setColorAt(index, HEDGE_TONES[bush.tone]!);

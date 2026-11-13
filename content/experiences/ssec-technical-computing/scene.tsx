@@ -18,6 +18,7 @@ import {
   SSEC_PLATFORM_OUTER_Y,
   SSEC_FLOOR_LIFT,
 } from './platform';
+import { useSceneShadowBudget } from '../../../src/world/sceneShadowBudget';
 import {
   RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS,
   getRecruiterRevealMotionAmount,
@@ -625,6 +626,8 @@ export default function SsecTechnicalComputingScene({
   presentationState,
 }: ExperienceSceneProps) {
   const floorGroupRef = useRef<Group>(null);
+  const rootRef = useRef<Group>(null);
+  useSceneShadowBudget(rootRef, anchor);
   const deskGlowRef = useRef<MeshStandardMaterial>(null);
   const presentationStateRef = useRef(presentationState);
   const transitionElapsedMsRef = useRef(
@@ -691,7 +694,7 @@ export default function SsecTechnicalComputingScene({
 
   return (
     <SsecRevealContext.Provider value={revealRuntime}>
-      <group position={[anchor.x, anchor.y, anchor.z]} rotation={[0, rotationY, 0]}>
+      <group ref={rootRef} position={[anchor.x, anchor.y, anchor.z]} rotation={[0, rotationY, 0]}>
         <group ref={floorGroupRef}>
           <mesh receiveShadow position={[0, SSEC_PLATFORM_OUTER_Y, -0.1]}>
             <boxGeometry args={SSEC_PLATFORM_OUTER_SIZE} />

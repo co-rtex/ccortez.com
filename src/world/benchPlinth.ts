@@ -14,25 +14,28 @@ export const BENCH_PLINTH = {
   sides: 16,
   /** Riser runs from just below the plaza floor up to the coping. */
   footY: -BENCH_ANCHOR_LIFT - 0.04,
-  baseRadius: 3.42,
-  topRadius: 3.3,
+  baseRadius: 3.16,
+  topRadius: 3.05,
   /** Light coping lip; its top is the deck that scene props stand on. */
   copingHeight: 0.07,
-  copingRadius: 3.38,
+  copingRadius: 3.12,
   /** Deck height: scene content was authored to stand at 0.10 above the anchor. */
   deckY: 0.1,
   /** Category-tinted field inside the coping, and the accent inlay ring at its edge. */
-  fieldRadius: 2.92,
-  inlayRadius: 3.06,
+  fieldRadius: 2.7,
+  inlayRadius: 2.83,
+  /** Front step toward the plaza centre: an invitation up onto the plinth. */
+  stepWidth: 1.7,
+  stepDepth: 0.42,
 } as const;
 
 export const BENCH_PLANTER = {
-  innerRadius: 3.62,
-  outerRadius: 4.32,
+  innerRadius: 3.32,
+  outerRadius: 3.98,
   /** Half the crescent's angular span, centred on the bench's outer side. */
-  halfSpan: (68 * Math.PI) / 180,
+  halfSpan: (58 * Math.PI) / 180,
   curbHeight: 0.16,
-  bushesPerCrescent: 13,
+  bushesPerCrescent: 11,
 } as const;
 
 /** Paths keep this much clear width either side of their centreline. */
@@ -112,7 +115,7 @@ export function getHedgeBushes(benches: readonly BenchPlacementXZ[]): HedgeBush[
       bushes.push({
         x,
         z,
-        size: (0.64 + hash01(seed + 2) * 0.14) * crest,
+        size: 0.6 * (0.72 + hash01(seed + 2) * 0.38) * crest,
         rotationY: hash01(seed + 3) * Math.PI * 2,
         tone: Math.floor(hash01(seed + 4) * 3),
       });
