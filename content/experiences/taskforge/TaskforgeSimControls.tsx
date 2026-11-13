@@ -1,4 +1,5 @@
 import { isSettled } from '../../../src/sim/jobSim';
+import { recoveryTrace } from '../../../src/sim/recoveryTrace';
 import { useTaskforgeSim } from '../../../src/sim/taskforgeSimStore';
 
 /**
@@ -14,6 +15,7 @@ export function TaskforgeSimControls() {
   const dead = sim.jobs.filter((job) => job.state === 'dead_letter').length;
   const latest = sim.events.at(-1);
   const settled = isSettled(sim);
+  const trace = recoveryTrace(sim);
 
   return (
     <section className="taskforge-sim" aria-labelledby="taskforge-sim-title">
@@ -28,8 +30,11 @@ export function TaskforgeSimControls() {
           <button
             key={worker.id}
             type="button"
-            onClick={() => crash(worker.id)}
-            disabled={!worker.alive || settled}
+            // aria-disabled rather than disabled, so the button keeps keyboard focus after it is pressed.
+            onClick={() => {
+              if (worker.alive && !settled) crash(worker.id);
+            }}
+            aria-disabled={!worker.alive || settled}
             aria-label={`Crash worker ${worker.id}${worker.jobId ? `, holding job ${worker.jobId}` : ''}`}
           >
             {worker.alive ? `Crash w${worker.id}` : `w${worker.id} restarting`}
@@ -45,6 +50,27 @@ export function TaskforgeSimControls() {
       <p className="taskforge-sim__event" aria-live="polite">
         {latest ? latest.text : 'Workers are pulling the first jobs.'}
       </p>
+      {trace ? (
+        <section className="taskforge-sim__trace" aria-labelledby="taskforge-trace-title">
+          <h4 id="taskforge-trace-title">What happened to job {trace.jobId}</h4>
+          <ol>
+            {trace.steps.map((traceStep) => (
+              <li
+                key={traceStep.key}
+                className={`taskforge-sim__step taskforge-sim__step--${
+                  traceStep.tick === null ? 'next' : traceStep.key.split('-')[0]
+                }`}
+              >
+                <p>
+                  <span>{traceStep.tick === null ? 'next' : `tick ${traceStep.tick}`}</span>
+                  {traceStep.title}
+                </p>
+                <p>{traceStep.detail}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
       <ul className="taskforge-sim__legend" aria-label="Colours in the diorama">
         <li><span style={{ background: '#ebe4d4' }} /> queued</li>
         <li><span style={{ background: '#58c08f' }} /> running</li>

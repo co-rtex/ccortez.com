@@ -1569,12 +1569,12 @@ body {
   cursor: pointer;
 }
 
-.taskforge-sim__buttons button:hover:not(:disabled) {
+.taskforge-sim__buttons button:hover:not([aria-disabled='true']) {
   background: #23404a;
   color: #fffdf8;
 }
 
-.taskforge-sim__buttons button:disabled {
+.taskforge-sim__buttons button[aria-disabled='true'] {
   border-color: rgba(212, 81, 60, 0.6);
   color: #9b3a2c;
   cursor: default;
@@ -1598,6 +1598,80 @@ body {
   min-height: 1.6em;
   font-family: 'SFMono-Regular', Consolas, Monaco, monospace;
   font-size: 0.8rem;
+}
+
+/* The crashed job's story, as a timeline: a rail with one dot per step; the last, hollow dot is what the run is
+   waiting for next. */
+.taskforge-sim__trace {
+  margin: 0.2rem 0 0.9rem;
+}
+
+.taskforge-sim__trace h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+}
+
+.taskforge-sim__trace ol {
+  margin: 0;
+  padding: 0 0 0 1rem;
+  list-style: none;
+  border-left: 1px solid rgba(35, 64, 74, 0.35);
+}
+
+.taskforge-sim__step {
+  position: relative;
+  margin: 0 0 0.6rem;
+}
+
+.taskforge-sim__step::before {
+  content: '';
+  position: absolute;
+  top: 0.35rem;
+  left: calc(-1rem - 5px);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e8b04a;
+}
+
+.taskforge-sim__step--crash::before,
+.taskforge-sim__step--dead_letter::before {
+  background: #d4513c;
+}
+
+.taskforge-sim__step--success::before {
+  background: #2f8f63;
+}
+
+.taskforge-sim__step--next::before {
+  background: #eef4f0;
+  border: 1px dashed #23404a;
+  box-sizing: border-box;
+}
+
+.taskforge-sim .taskforge-sim__step p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.taskforge-sim .taskforge-sim__step p:first-child {
+  font-weight: 700;
+}
+
+.taskforge-sim .taskforge-sim__step p:last-child {
+  color: #4b5a5f;
+}
+
+.taskforge-sim__step--next p:first-child {
+  color: #4b5a5f;
+}
+
+.taskforge-sim__step p span {
+  margin-right: 0.45rem;
+  font-family: 'SFMono-Regular', Consolas, Monaco, monospace;
+  font-size: 0.74rem;
+  font-weight: 400;
+  color: #4b5a5f;
 }
 
 .taskforge-sim__legend {

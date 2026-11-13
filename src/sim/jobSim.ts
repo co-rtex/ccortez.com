@@ -39,6 +39,12 @@ export type SimEvent = {
   tick: number;
   kind: "claim" | "success" | "failure" | "dead_letter" | "crash" | "restart" | "lease_expired" | "retry_ready";
   text: string;
+  /** The job this event is about, if any. Not part of the history hash. */
+  jobId?: number;
+  /** The worker this event is about, if any. Not part of the history hash. */
+  workerId?: number;
+  /** The job's fence at this event, if it is about a job. Not part of the history hash. */
+  fence?: number;
 };
 
 export type SimInput = { tick: number; type: "kill"; workerId: number };
@@ -159,9 +165,9 @@ export function step(prev: Sim): Sim {
   let rng = prev.rng;
   let nextFence = prev.nextFence;
 
-  const emit = (kind: SimEvent["kind"], text: string) => {
+  const emit = (kind: SimEvent["kind"], text: string, about: Pick<SimEvent, "jobId" | "workerId" | "fence"> = {}) => {
     const seq = events.length + 1;
-    events.push({ seq, tick, kind, text });
+    events.push({ seq, tick, kind, text, ...about });
     hash = fnv1a(hash, `${seq}|${tick}|${kind}|${text}`);
   };
   const random = () => {
@@ -183,6 +189,9 @@ export function step(prev: Sim): Sim {
       worker.jobId !== null
         ? `worker ${worker.id} crashed while holding job ${worker.jobId}`
         : `worker ${worker.id} crashed while idle`,
+      worker.jobId !== null
+        ? { jobId: worker.jobId, workerId: worker.id, fence: jobById(worker.jobId).fence }
+        : { workerId: worker.id },
     );
     // The job stays "running" in the database; nobody knows yet. Only its lease will tell.
     worker.jobId = null;
@@ -193,7 +202,7 @@ export function step(prev: Sim): Sim {
     if (!worker.alive && worker.restartAt === tick) {
       worker.alive = true;
       worker.session += 1;
-      emit("restart", `worker ${worker.id} restarted (session ${worker.session})`);
+      emit("restart", `worker ${worker.id} restarted (session ${worker.session})`, { workerId: worker.id });
     }
   }
 
@@ -205,11 +214,17 @@ export function step(prev: Sim): Sim {
     job.workerId = null;
     if (job.attempt >= config.maxAttempts) {
       job.state = "dead_letter";
-      emit("dead_letter", `lease on job ${job.id} expired (fence ${job.fence}); out of attempts, dead-lettered`);
+      emit("dead_letter", `lease on job ${job.id} expired (fence ${job.fence}); out of attempts, dead-lettered`, {
+        jobId: job.id,
+        fence: job.fence,
+      });
     } else {
       job.state = "queued";
       job.readyAt = tick;
-      emit("lease_expired", `lease on job ${job.id} expired (fence ${job.fence}); requeued`);
+      emit("lease_expired", `lease on job ${job.id} expired (fence ${job.fence}); requeued`, {
+        jobId: job.id,
+        fence: job.fence,
+      });
     }
   }
 
@@ -217,7 +232,7 @@ export function step(prev: Sim): Sim {
   for (const job of jobs) {
     if (job.state === "retry_wait" && job.readyAt <= tick) {
       job.state = "queued";
-      emit("retry_ready", `job ${job.id} is ready for attempt ${job.attempt + 1}`);
+      emit("retry_ready", `job ${job.id} is ready for attempt ${job.attempt + 1}`, { jobId: job.id });
     }
   }
 
@@ -234,16 +249,28 @@ export function step(prev: Sim): Sim {
     if (random() < config.failureRate) {
       if (job.attempt >= config.maxAttempts) {
         job.state = "dead_letter";
-        emit("dead_letter", `job ${job.id} failed attempt ${job.attempt}; dead-lettered`);
+        emit("dead_letter", `job ${job.id} failed attempt ${job.attempt}; dead-lettered`, {
+          jobId: job.id,
+          workerId: worker.id,
+          fence: job.fence,
+        });
       } else {
         const backoff = 2 ** job.attempt;
         job.state = "retry_wait";
         job.readyAt = tick + backoff;
-        emit("failure", `job ${job.id} failed attempt ${job.attempt}; retry in ${backoff} ticks`);
+        emit("failure", `job ${job.id} failed attempt ${job.attempt}; retry in ${backoff} ticks`, {
+          jobId: job.id,
+          workerId: worker.id,
+          fence: job.fence,
+        });
       }
     } else {
       job.state = "succeeded";
-      emit("success", `worker ${worker.id} finished job ${job.id} (fence ${job.fence})`);
+      emit("success", `worker ${worker.id} finished job ${job.id} (fence ${job.fence})`, {
+        jobId: job.id,
+        workerId: worker.id,
+        fence: job.fence,
+      });
     }
   }
 
@@ -260,7 +287,11 @@ export function step(prev: Sim): Sim {
     job.workLeft = 2 + Math.floor(random() * 4);
     job.leaseUntil = tick + config.leaseTicks;
     worker.jobId = job.id;
-    emit("claim", `worker ${worker.id} claimed job ${job.id} (attempt ${job.attempt}, fence ${job.fence})`);
+    emit("claim", `worker ${worker.id} claimed job ${job.id} (attempt ${job.attempt}, fence ${job.fence})`, {
+      jobId: job.id,
+      workerId: worker.id,
+      fence: job.fence,
+    });
   }
 
   return { ...prev, tick: tick + 1, rng, nextFence, jobs, workers, events, hash };
