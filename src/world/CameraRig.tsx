@@ -3,7 +3,7 @@ import { useMemo, useRef } from 'react';
 import { Vector3 } from 'three';
 import type { PerspectiveCamera } from 'three';
 
-import { getBenchFramingWeight, getFollowLookAhead } from './followCamera';
+import { getBenchFramingWeight, getFollowLookAhead, getPanelViewOffset } from './followCamera';
 import { prefersReducedMotion } from './reducedMotion';
 
 import { useGameStore } from '../state/gameStore';
@@ -36,14 +36,7 @@ const VIEW_OFFSET_BLEND_SPEED = 7;
 
 function getPanelViewOffsetTarget(canvas: DOMRect): { x: number; y: number } {
   const panel = document.querySelector('.experience-panel--open');
-  if (!panel) return { x: 0, y: 0 };
-  const rect = panel.getBoundingClientRect();
-  const coveredWidth = Math.max(0, canvas.right - rect.left);
-  const coveredHeight = Math.max(0, canvas.bottom - rect.top);
-  // A panel covering (nearly) the whole canvas leaves nothing to centre in.
-  if (coveredWidth >= canvas.width * 0.95 && coveredHeight >= canvas.height * 0.95) return { x: 0, y: 0 };
-  if (rect.height >= canvas.height * 0.9) return { x: Math.min(coveredWidth, canvas.width * 0.6) / 2, y: 0 };
-  return { x: 0, y: Math.min(coveredHeight, canvas.height * 0.7) / 2 };
+  return panel ? getPanelViewOffset(canvas, panel.getBoundingClientRect()) : { x: 0, y: 0 };
 }
 
 export function CameraRig({ benchAnchors }: CameraRigProps): null {

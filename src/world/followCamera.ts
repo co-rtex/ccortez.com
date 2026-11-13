@@ -18,3 +18,25 @@ export function getBenchFramingWeight(
   const south = bench.z - player.z;
   return Math.min(Math.max((south - 0.5) / 2.5, 0), 1);
 }
+
+interface Rect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * How far to shift the rendered view so the bench sits in the middle of what an open panel leaves visible:
+ * half the covered width for a side panel (content moves left), half the covered height for a bottom sheet
+ * (content moves up), nothing when the panel covers (nearly) everything.
+ */
+export function getPanelViewOffset(canvas: Rect, panel: Rect): { x: number; y: number } {
+  const coveredWidth = Math.max(0, canvas.right - panel.left);
+  const coveredHeight = Math.max(0, canvas.bottom - panel.top);
+  if (coveredWidth >= canvas.width * 0.95 && coveredHeight >= canvas.height * 0.95) return { x: 0, y: 0 };
+  if (panel.height >= canvas.height * 0.9) return { x: Math.min(coveredWidth, canvas.width * 0.6) / 2, y: 0 };
+  return { x: 0, y: Math.min(coveredHeight, canvas.height * 0.7) / 2 };
+}
