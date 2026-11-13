@@ -13,6 +13,7 @@ import {
   isPointWalkable,
 } from './terrain';
 import { CENTRAL_PLAZA_FOUNTAIN_RADIUS } from './hub';
+import { PATH_NETWORK_XZ, PLAZA_LAMP_COLLIDER_RADIUS, PLAZA_LAMP_POSITIONS } from './islandPaths';
 
 import type { CircleObstacle, CollisionObstacle } from '../engine/movement';
 
@@ -35,6 +36,7 @@ export const ROCK_COLLIDER_BUFFER = 0.04;
 export const WORKBENCH_GROUND_COVER_CLEAR_RADIUS = 2.2;
 export const CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS = CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.18;
 
+/** District corridors used by the workbench editor for placement snapping. */
 export const ROAD_PATH_NETWORK_XZ: Array<Array<[number, number]>> = [
   [
     [0, 0],
@@ -137,7 +139,8 @@ function pointToSegmentDistance(
 function distanceToRoad(pointX: number, pointZ: number): number {
   let minDistance = Number.POSITIVE_INFINITY;
 
-  for (const polyline of ROAD_PATH_NETWORK_XZ) {
+  // Vegetation keeps clear of the editor corridors and of the visible plaza spokes and island trails.
+  for (const polyline of [...ROAD_PATH_NETWORK_XZ, ...PATH_NETWORK_XZ]) {
     for (let index = 0; index < polyline.length - 1; index += 1) {
       const [startX, startZ] = polyline[index] ?? [0, 0];
       const [endX, endZ] = polyline[index + 1] ?? [0, 0];
@@ -322,6 +325,7 @@ function createTreeAndRockCollisionObstacles(): CircleObstacle[] {
       centerZ: 0,
       radius: CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS,
     },
+    ...PLAZA_LAMP_POSITIONS.map(([x, z]) => ({ centerX: x, centerZ: z, radius: PLAZA_LAMP_COLLIDER_RADIUS })),
     ...treeObstacles,
     ...boulderObstacles,
   ];

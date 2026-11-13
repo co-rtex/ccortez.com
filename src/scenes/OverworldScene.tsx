@@ -3,6 +3,8 @@ import { ACESFilmicToneMapping, PCFShadowMap, SRGBColorSpace } from 'three';
 import { useState } from 'react';
 
 import { CameraRig } from '../world/CameraRig';
+import { DevShotCamera } from '../world/DevShotCamera';
+import { SceneTelemetry } from '../world/SceneTelemetry';
 import { LoadedExperienceScenes } from '../world/LoadedExperienceScenes';
 import { PlayerController } from '../world/PlayerController';
 import { RestSpotDirector } from '../world/RestSpotDirector';
@@ -52,18 +54,20 @@ export function OverworldScene({
       shadows="percentage"
       dpr={[1, 1.6]}
       gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
-      camera={{ position: [0, 16, 16], fov: 40, near: 0.1, far: 360 }}
+      camera={{ position: [0, 16, 16], fov: 40, near: 0.1, far: 620 }}
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace;
         gl.toneMapping = ACESFilmicToneMapping;
-        gl.toneMappingExposure = 0.76;
+        gl.toneMappingExposure = 0.92;
         gl.shadowMap.enabled = true;
         gl.shadowMap.type = PCFShadowMap;
       }}
     >
+      <SceneTelemetry />
       <WorldEnvironment />
       <PlayerController />
       <CameraRig />
+      <DevShotCamera />
       <WorkbenchInspectCamera workbenches={workbenches} />
       <WorkbenchDirector workbenches={workbenches} />
       <RestSpotDirector />

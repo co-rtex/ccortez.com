@@ -97,14 +97,18 @@ export function PlayerController() {
       typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debugWaterCollision'),
     [],
   );
-  const spawnPoint = useMemo(
-    () => ({
-      x: PLAYER_START.x,
-      y: getTerrainHeight(PLAYER_START.x, PLAYER_START.z) + 0.82,
-      z: PLAYER_START.z,
-    }),
-    [],
-  );
+  const spawnPoint = useMemo(() => {
+    // `?spawn=x,z` starts the player elsewhere (used for repeatable screenshots); invalid values are ignored.
+    const requested =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('spawn')?.split(',').map(Number)
+        : undefined;
+    const start =
+      requested && requested.length === 2 && requested.every(Number.isFinite)
+        ? { x: requested[0]!, z: requested[1]! }
+        : { x: PLAYER_START.x, z: PLAYER_START.z };
+    return { x: start.x, y: getTerrainHeight(start.x, start.z) + 0.82, z: start.z };
+  }, []);
 
   useEffect(() => {
     lastSafePositionRef.current = { x: spawnPoint.x, z: spawnPoint.z };

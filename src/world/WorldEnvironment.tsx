@@ -14,6 +14,7 @@ import {
   ShapeGeometry,
   Vector3,
 } from 'three';
+import type { ShaderMaterial } from 'three';
 
 import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
 import {
@@ -23,17 +24,11 @@ import {
   FLOWER_POINTS,
   TREE_POINTS,
 } from './biome';
-import {
-  CENTRAL_PLAZA_CENTER_PAD_RADIUS,
-  CENTRAL_PLAZA_FOUNDATION_DEPTH,
-  CENTRAL_PLAZA_FOUNTAIN_RADIUS,
-} from './hub';
+import { CentralPlaza } from './plaza/CentralPlaza';
+import { IslandTrails } from './plaza/IslandTrails';
 import {
   OCEAN_LEVEL,
   LAKE_SHORELINE_SAMPLE_DETAIL,
-  getCentralPlazaOuterRadius,
-  getCentralPlazaTopHeight,
-  getCentralPlazaTopRadius,
   getIslandDistanceNormalized,
   getLakeBoundaryPolyline,
   getNearestLakeShoreSignedDistance,
@@ -55,8 +50,6 @@ import { planeXYToWorldXZ, worldXZToPlaneXY } from './renderSpace';
 import type { WaterBodyDefinition } from './constants';
 import type { RockPoint, ScatterPoint } from './biome';
 import type { ScenicRestSpotDefinition } from './restSpots';
-
-type FountainArcPoint = [number, number, number];
 
 function buildTerrainGeometry(): PlaneGeometry {
   const geometry = new PlaneGeometry(430, 430, 360, 360);
@@ -113,7 +106,7 @@ void main() {
 }
 `;
 
-const SUNSET_SKY_FRAGMENT_SHADER = `
+const SKY_PALETTE_CHUNK = `
 uniform vec3 uEdgeBlue;
 uniform vec3 uViolet;
 uniform vec3 uMauve;
@@ -124,7 +117,6 @@ uniform vec3 uGold;
 uniform vec3 uYellow;
 uniform vec3 uSunWhite;
 uniform vec3 uSunDirection;
-varying vec3 vDirection;
 
 vec3 sunsetPalette(float t) {
   vec3 color = uSunWhite;
@@ -138,6 +130,19 @@ vec3 sunsetPalette(float t) {
   color = mix(color, uEdgeBlue, smoothstep(0.86, 1.0, t));
   return color;
 }
+
+// Sky colour just above the horizon in a given direction (used to fade the ocean into the sky).
+vec3 horizonSky(vec3 dir) {
+  vec3 flatDir = normalize(vec3(dir.x, 0.0, dir.z));
+  float sunDistance = acos(clamp(dot(flatDir, normalize(vec3(uSunDirection.x, 0.0, uSunDirection.z))), -1.0, 1.0));
+  vec3 color = sunsetPalette(pow(clamp(sunDistance / 1.7, 0.0, 1.0), 0.92));
+  return mix(color, uRose, (1.0 - smoothstep(0.0, 0.34, sunDistance / 1.7)) * 0.1);
+}
+`;
+
+const SUNSET_SKY_FRAGMENT_SHADER = `
+${SKY_PALETTE_CHUNK}
+varying vec3 vDirection;
 
 void main() {
   vec3 dir = normalize(vDirection);
@@ -175,6 +180,45 @@ void main() {
   color = mix(color, uSunWhite, horizonBloom * 0.08);
 
   gl_FragColor = vec4(color, 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}
+`;
+
+
+const OCEAN_VERTEX_SHADER = `
+varying vec3 vWorld;
+void main() {
+  vec4 world = modelMatrix * vec4(position, 1.0);
+  vWorld = world.xyz;
+  gl_Position = projectionMatrix * viewMatrix * world;
+}
+`;
+
+const OCEAN_FRAGMENT_SHADER = `
+${SKY_PALETTE_CHUNK}
+uniform float uTime;
+uniform vec3 uShallow;
+uniform vec3 uDeep;
+uniform vec3 uFar;
+varying vec3 vWorld;
+
+void main() {
+  vec3 toFragment = vWorld - cameraPosition;
+  float distanceXZ = length(toFragment.xz);
+  vec3 dir = normalize(toFragment);
+  float fromIsland = length(vWorld.xz / vec2(1.0, 0.94));
+
+  vec3 water = mix(uShallow, uDeep, smoothstep(64.0, 112.0, fromIsland));
+  water = mix(water, uFar, smoothstep(150.0, 320.0, fromIsland));
+  float swell = sin(vWorld.x * 0.21 + uTime * 0.6) * sin(vWorld.z * 0.17 - uTime * 0.45);
+  float crest = smoothstep(0.82, 0.98, swell) * (1.0 - smoothstep(60.0, 180.0, distanceXZ));
+  water = mix(water, vec3(0.92, 0.98, 1.0), crest * 0.22);
+
+  float horizon = smoothstep(90.0, 520.0, distanceXZ);
+  vec3 color = mix(water, horizonSky(dir), pow(horizon, 1.15));
+  float alpha = mix(0.8, 1.0, smoothstep(70.0, 110.0, fromIsland));
+  gl_FragColor = vec4(color, alpha);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
@@ -231,17 +275,17 @@ void main() {
 `;
 
 const WATER_RENDER_STYLE = {
-  seamColor: '#335666',
-  seamOpacity: 0.44,
-  bedColor: '#173642',
+  seamColor: '#7fc9c4',
+  seamOpacity: 0.5,
+  bedColor: '#1f5d73',
   bedOpacity: 0.9,
-  surfaceDeepColor: '#21495d',
-  surfaceEdgeCoolColor: '#2d6176',
-  surfaceWarmTintColor: '#6b566b',
-  surfaceOpacity: 0.84,
-  highlightColor: '#8fb8ca',
-  highlightOpacity: 0.11,
-  edgeColor: '#84aab8',
+  surfaceDeepColor: '#2a86a6',
+  surfaceEdgeCoolColor: '#55c4c6',
+  surfaceWarmTintColor: '#e0a7a0',
+  surfaceOpacity: 0.86,
+  highlightColor: '#dff6ff',
+  highlightOpacity: 0.12,
+  edgeColor: '#e8fbf6',
 } as const;
 
 function buildShape(points: Array<{ x: number; z: number }>): Shape {
@@ -388,7 +432,7 @@ function StylizedTree({ point }: { point: ScatterPoint }) {
     <group position={[point.x, y, point.z]}>
       <mesh castShadow position={[0, trunkHeight * 0.5, 0]}>
         <cylinderGeometry args={[0.16, 0.26, trunkHeight, 12]} />
-        <meshStandardMaterial color="#835330" roughness={0.9} />
+        <meshStandardMaterial color="#8f6342" roughness={0.9} />
       </mesh>
 
       <mesh castShadow position={[0, trunkHeight + 0.48, 0]}>
@@ -420,7 +464,7 @@ function Rock({ point, color }: { point: RockPoint; color: string }) {
   return (
     <mesh castShadow receiveShadow position={[point.x, y, point.z]}>
       <dodecahedronGeometry args={[point.size, 0]} />
-      <meshStandardMaterial color={color} roughness={0.84} metalness={0.11} />
+      <meshStandardMaterial color={color} roughness={0.9} metalness={0} flatShading />
     </mesh>
   );
 }
@@ -460,156 +504,6 @@ function ScenicRestSpotBench({ spot }: { spot: ScenicRestSpotDefinition }) {
   );
 }
 
-function buildFountainArcPoints(angle: number): FountainArcPoint[] {
-  const startRadius = 0.78;
-  const endRadius = CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.54;
-  const startY = 1.54;
-  const endY = 0.34;
-  const apexY = 1.96;
-  const samples = 7;
-  const startX = Math.cos(angle) * startRadius;
-  const startZ = Math.sin(angle) * startRadius;
-  const endX = Math.cos(angle) * endRadius;
-  const endZ = Math.sin(angle) * endRadius;
-
-  return new Array(samples).fill(0).map((_, index) => {
-    const t = index / (samples - 1);
-    const x = MathUtils.lerp(startX, endX, t);
-    const z = MathUtils.lerp(startZ, endZ, t);
-    const y = MathUtils.lerp(startY, endY, t) + Math.sin(t * Math.PI) * (apexY - startY);
-    return [x, y, z];
-  });
-}
-
-function CentralPlazaFountain() {
-  const centerY = getCentralPlazaTopHeight();
-  const arcPoints = useMemo(
-    () =>
-      new Array(6)
-        .fill(0)
-        .map((_, index) => buildFountainArcPoints((index / 6) * Math.PI * 2 + Math.PI / 6)),
-    [],
-  );
-
-  return (
-    <group position={[0, centerY + 0.02, 0]}>
-      <mesh castShadow receiveShadow position={[0, 0.16, 0]}>
-        <cylinderGeometry args={[CENTRAL_PLAZA_FOUNTAIN_RADIUS + 0.22, CENTRAL_PLAZA_FOUNTAIN_RADIUS + 0.28, 0.28, 48]} />
-        <meshStandardMaterial color="#cdb391" roughness={0.9} />
-      </mesh>
-
-      <mesh castShadow receiveShadow position={[0, 0.28, 0]}>
-        <cylinderGeometry args={[CENTRAL_PLAZA_FOUNTAIN_RADIUS, CENTRAL_PLAZA_FOUNTAIN_RADIUS + 0.04, 0.12, 48]} />
-        <meshStandardMaterial color="#ead2b0" roughness={0.84} />
-      </mesh>
-
-      <mesh position={[0, 0.31, 0]}>
-        <cylinderGeometry args={[CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.36, CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.36, 0.05, 40]} />
-        <meshStandardMaterial
-          color="#82bfd0"
-          roughness={0.18}
-          metalness={0.04}
-          emissive="#8ed7e5"
-          emissiveIntensity={0.18}
-          transparent
-          opacity={0.9}
-        />
-      </mesh>
-
-      <mesh castShadow receiveShadow position={[0, 0.72, 0]}>
-        <cylinderGeometry args={[0.46, 0.58, 0.78, 24]} />
-        <meshStandardMaterial color="#d8bf9c" roughness={0.86} />
-      </mesh>
-
-      <mesh castShadow receiveShadow position={[0, 1.08, 0]}>
-        <cylinderGeometry args={[0.98, 1.08, 0.18, 32]} />
-        <meshStandardMaterial color="#e8d1ad" roughness={0.82} />
-      </mesh>
-
-      <mesh position={[0, 1.13, 0]}>
-        <cylinderGeometry args={[0.72, 0.72, 0.04, 28]} />
-        <meshStandardMaterial
-          color="#9bd6e4"
-          roughness={0.14}
-          metalness={0.03}
-          emissive="#b8ebf4"
-          emissiveIntensity={0.2}
-          transparent
-          opacity={0.9}
-        />
-      </mesh>
-
-      <mesh castShadow receiveShadow position={[0, 1.48, 0]}>
-        <cylinderGeometry args={[0.18, 0.26, 0.64, 20]} />
-        <meshStandardMaterial color="#d7be9a" roughness={0.84} />
-      </mesh>
-
-      <mesh position={[0, 1.7, 0]}>
-        <cylinderGeometry args={[0.1, 0.12, 0.92, 16]} />
-        <meshStandardMaterial
-          color="#b9edf8"
-          roughness={0.1}
-          metalness={0.02}
-          emissive="#dff9ff"
-          emissiveIntensity={0.26}
-          transparent
-          opacity={0.78}
-        />
-      </mesh>
-
-      {arcPoints.map((points, index) => (
-        <Line key={`fountain-arc-${index}`} points={points} color="#d9f7ff" lineWidth={1.05} />
-      ))}
-
-      <Sparkles
-        count={18}
-        speed={0.18}
-        size={1.35}
-        color="#e7fbff"
-        opacity={0.34}
-        scale={[3.2, 1.8, 3.2]}
-        position={[0, 1.65, 0]}
-      />
-    </group>
-  );
-}
-
-function NeighborhoodHub() {
-  const centerY = getCentralPlazaTopHeight();
-  const plazaTopRadius = getCentralPlazaTopRadius();
-  const plazaOuterRadius = getCentralPlazaOuterRadius();
-
-  return (
-    <group>
-      <mesh receiveShadow position={[0, centerY - CENTRAL_PLAZA_FOUNDATION_DEPTH * 0.5, 0]}>
-        <cylinderGeometry
-          args={[
-            plazaOuterRadius + 0.4,
-            plazaOuterRadius + 1.4,
-            CENTRAL_PLAZA_FOUNDATION_DEPTH,
-            72,
-          ]}
-        />
-        <meshStandardMaterial color="#b69865" roughness={0.92} />
-      </mesh>
-
-      <mesh receiveShadow position={[0, centerY + 0.03, 0]}>
-        <cylinderGeometry args={[plazaTopRadius, plazaTopRadius, 0.08, 72]} />
-        <meshStandardMaterial color="#dec9a6" roughness={0.88} />
-      </mesh>
-
-      <mesh receiveShadow position={[0, centerY + 0.06, 0]}>
-        <cylinderGeometry
-          args={[CENTRAL_PLAZA_CENTER_PAD_RADIUS, CENTRAL_PLAZA_CENTER_PAD_RADIUS, 0.1, 48]}
-        />
-        <meshStandardMaterial color="#f2e1c1" roughness={0.82} />
-      </mesh>
-
-      <CentralPlazaFountain />
-    </group>
-  );
-}
-
 function PuffyCloud({ position, scale, tint }: { position: [number, number, number]; scale: number; tint: string }) {
   const sunwardX = SCENIC_FORWARD_XZ.x * 0.9;
   const sunwardZ = SCENIC_FORWARD_XZ.z * 0.9;
@@ -618,27 +512,27 @@ function PuffyCloud({ position, scale, tint }: { position: [number, number, numb
     <group position={position} scale={scale}>
       <mesh>
         <sphereGeometry args={[1.3, 18, 18]} />
-        <meshStandardMaterial color={tint} roughness={0.94} metalness={0.01} emissive="#ffe9d5" emissiveIntensity={0.04} />
+        <meshStandardMaterial color={tint} roughness={1} emissive="#ffd8cc" emissiveIntensity={0.55} />
       </mesh>
       <mesh position={[-1.12, -0.08, 0.25]}>
         <sphereGeometry args={[1, 16, 16]} />
-        <meshStandardMaterial color="#f7fbff" roughness={0.95} metalness={0.01} />
+        <meshStandardMaterial color={tint} roughness={1} emissive="#ffd8cc" emissiveIntensity={0.55} />
       </mesh>
       <mesh position={[1.08, -0.12, -0.18]}>
         <sphereGeometry args={[0.92, 16, 16]} />
-        <meshStandardMaterial color="#fffaf3" roughness={0.95} metalness={0.01} />
+        <meshStandardMaterial color={tint} roughness={1} emissive="#ffd8cc" emissiveIntensity={0.55} />
       </mesh>
       <mesh position={[0, -0.44, 0]}>
         <sphereGeometry args={[1.02, 16, 16]} />
-        <meshStandardMaterial color="#eff6ff" roughness={0.95} metalness={0.01} />
+        <meshStandardMaterial color={tint} roughness={1} emissive="#ffd8cc" emissiveIntensity={0.55} />
       </mesh>
       <mesh position={[sunwardX, 0.08, sunwardZ]}>
         <sphereGeometry args={[0.54, 14, 14]} />
-        <meshStandardMaterial color="#ffd8bb" roughness={0.9} emissive="#ffbc8a" emissiveIntensity={0.06} />
+        <meshStandardMaterial color={tint} roughness={1} emissive="#ffd8cc" emissiveIntensity={0.55} />
       </mesh>
       <mesh position={[-sunwardX * 0.8, -0.04, -sunwardZ * 0.8]}>
         <sphereGeometry args={[0.5, 14, 14]} />
-        <meshStandardMaterial color="#dce7f9" roughness={0.93} />
+        <meshStandardMaterial color={tint} roughness={1} emissive="#ffd8cc" emissiveIntensity={0.55} />
       </mesh>
     </group>
   );
@@ -680,6 +574,7 @@ function FlowerPatch({ point }: { point: ScatterPoint }) {
 export function WorldEnvironment() {
   const terrainGeometry = useMemo(() => buildTerrainGeometry(), []);
   const skyGroupRef = useRef<Group>(null);
+  const oceanMaterialRef = useRef<ShaderMaterial>(null);
   const sunsetLightPosition = useMemo<[number, number, number]>(
     () => [
       SCENIC_FORWARD_XZ.x * SCENIC_SUN_LIGHT_DISTANCE,
@@ -694,10 +589,10 @@ export function WorldEnvironment() {
   );
   const skyUniforms = useMemo(
     () => ({
-      uEdgeBlue: { value: new Color('#1f315d') },
-      uViolet: { value: new Color('#4a3d72') },
-      uMauve: { value: new Color('#76577b') },
-      uRose: { value: new Color('#d07d8f') },
+      uEdgeBlue: { value: new Color('#3d5aa6') },
+      uViolet: { value: new Color('#6c63b5') },
+      uMauve: { value: new Color('#a684b3') },
+      uRose: { value: new Color('#e99aa6') },
       uAmber: { value: new Color('#f3a34c') },
       uTangerine: { value: new Color('#f17e3b') },
       uGold: { value: new Color('#ffd15f') },
@@ -706,6 +601,16 @@ export function WorldEnvironment() {
       uSunDirection: { value: visibleSunDirection },
     }),
     [visibleSunDirection],
+  );
+  const oceanUniforms = useMemo(
+    () => ({
+      ...skyUniforms,
+      uTime: { value: 0 },
+      uShallow: { value: new Color('#5fd2cf') },
+      uDeep: { value: new Color('#2b8fb3') },
+      uFar: { value: new Color('#3f78b0') },
+    }),
+    [skyUniforms],
   );
   const sunReflectionUniforms = useMemo(
     () => ({
@@ -722,7 +627,8 @@ export function WorldEnvironment() {
     [],
   );
 
-  useFrame(({ camera }) => {
+  useFrame(({ camera, clock }) => {
+    if (oceanMaterialRef.current) oceanMaterialRef.current.uniforms.uTime!.value = clock.elapsedTime;
     const skyGroup = skyGroupRef.current;
     if (!skyGroup) {
       return;
@@ -810,8 +716,8 @@ export function WorldEnvironment() {
 
   return (
     <>
-      <color attach="background" args={['#201f49']} />
-      <fog attach="fog" args={['#6f5c7a', 98, 322]} />
+      <color attach="background" args={['#3d5aa6']} />
+      <fog attach="fog" args={['#d9b3b8', 150, 460]} />
 
       <group>
       <group ref={skyGroupRef}>
@@ -829,13 +735,14 @@ export function WorldEnvironment() {
         </mesh>
       </group>
 
-      <ambientLight intensity={0.34} color="#ffddc3" />
-      <hemisphereLight intensity={0.6} color="#ffbc8a" groundColor="#2f4a73" />
+      {/* Golden hour: a warm, not orange, key light; cool skylight fills the shadows with blue-violet. */}
+      <ambientLight intensity={0.18} color="#fff1e3" />
+      <hemisphereLight intensity={1.05} color="#c4d2ff" groundColor="#7d8a5a" />
       <directionalLight
         castShadow
-        intensity={1.08}
+        intensity={2.35}
         position={sunsetLightPosition}
-        color="#ff9b62"
+        color="#ffd2a1"
         shadow-mapSize-width={4096}
         shadow-mapSize-height={4096}
         shadow-bias={-0.00008}
@@ -847,15 +754,23 @@ export function WorldEnvironment() {
         shadow-camera-top={120}
         shadow-camera-bottom={-120}
       />
-      <directionalLight intensity={0.3} position={[-48, 30, -46]} color="#6d8cd9" />
+      <directionalLight intensity={0.45} position={[-48, 30, -46]} color="#9fb6ff" />
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL - 0.03, 0]}>
-        <planeGeometry args={[980, 980]} />
-        <meshStandardMaterial color="#5fcbe3" roughness={0.18} metalness={0.08} emissive="#2f86a5" emissiveIntensity={0.14} />
+        <planeGeometry args={[2400, 2400]} />
+        <shaderMaterial
+          ref={oceanMaterialRef}
+          vertexShader={OCEAN_VERTEX_SHADER}
+          fragmentShader={OCEAN_FRAGMENT_SHADER}
+          uniforms={oceanUniforms}
+          transparent
+          fog={false}
+          toneMapped={false}
+        />
       </mesh>
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL + 0.028, 0]}>
-        <planeGeometry args={[980, 980]} />
+        <planeGeometry args={[2400, 2400]} />
         <shaderMaterial
           vertexShader={SUNSET_REFLECTION_VERTEX_SHADER}
           fragmentShader={SUNSET_REFLECTION_FRAGMENT_SHADER}
@@ -869,7 +784,7 @@ export function WorldEnvironment() {
       </mesh>
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL - 0.7, 0]}>
-        <planeGeometry args={[1050, 1050]} />
+        <planeGeometry args={[2400, 2400]} />
         <meshStandardMaterial color="#2a8aa8" roughness={0.78} metalness={0.03} />
       </mesh>
 
@@ -880,7 +795,8 @@ export function WorldEnvironment() {
       <AmbientBirds />
       <AmbientCritters />
 
-      <NeighborhoodHub />
+      <CentralPlaza />
+      <IslandTrails />
 
       {TREE_POINTS.map((point, index) => (
         <StylizedTree key={`tree-${index}`} point={point} />
@@ -904,11 +820,11 @@ export function WorldEnvironment() {
       ))}
 
       {BOULDER_POINTS.map((point, index) => (
-        <Rock key={`boulder-${index}`} point={point} color="#82958f" />
+        <Rock key={`boulder-${index}`} point={point} color="#b9b2a6" />
       ))}
 
       {COASTAL_ROCK_POINTS.map((point, index) => (
-        <Rock key={`coastal-rock-${index}`} point={point} color="#869690" />
+        <Rock key={`coastal-rock-${index}`} point={point} color="#c2b8a8" />
       ))}
 
       {SCENIC_REST_SPOTS.map((spot) => (
@@ -920,12 +836,13 @@ export function WorldEnvironment() {
       ))}
       <LakeFaunaManager />
 
-      <PuffyCloud position={[-32, 23, -30]} scale={2.6} tint="#fff5ef" />
-      <PuffyCloud position={[4, 26, -44]} scale={2.2} tint="#f4f1ff" />
-      <PuffyCloud position={[38, 20, 30]} scale={2.4} tint="#fff7ef" />
-      <PuffyCloud position={[-12, 18, 42]} scale={2} tint="#f2f1ff" />
-      <PuffyCloud position={[52, 24, -18]} scale={2.5} tint="#fff9f2" />
-      <PuffyCloud position={[-48, 19, 16]} scale={2.1} tint="#f2f6ff" />
+      {/* Clouds sit in a ring around the island so they frame the horizon instead of covering the land. */}
+      <PuffyCloud position={[-96, 34, -70]} scale={4.2} tint="#fff6f1" />
+      <PuffyCloud position={[-20, 40, -120]} scale={3.6} tint="#f6f2ff" />
+      <PuffyCloud position={[80, 36, -96]} scale={4} tint="#fff7ef" />
+      <PuffyCloud position={[118, 31, 20]} scale={3.4} tint="#f4f1ff" />
+      <PuffyCloud position={[-128, 30, 48]} scale={3.8} tint="#fff3ec" />
+      <PuffyCloud position={[30, 38, 126]} scale={3.2} tint="#f3f5ff" />
 
       <Sparkles
         count={260}

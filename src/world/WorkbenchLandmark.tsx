@@ -2,6 +2,7 @@ import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
+import { DoubleSide, Shape } from 'three';
 import type { Group, MeshStandardMaterial } from 'three';
 
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -329,6 +330,67 @@ interface WorkbenchLandmarkProps {
   onSelect: (id: string) => void;
 }
 
+/**
+ * Every scene-owned bench keeps a permanent stone dais and a pennant in its category colour, so the bench ring
+ * reads as a set of destinations from across the plaza before any scene streams in.
+ */
+function BenchDais({ accent }: { accent: string }) {
+  // Compact plinth: the scene's own platform (radius ~4.2) covers it once the bench reveals.
+  return (
+    <group>
+      {/* Kept below the revealed platform's top (0.10) so scene props are never buried. */}
+      <mesh castShadow receiveShadow position={[0, 0.04, 0]}>
+        <cylinderGeometry args={[2.62, 2.74, 0.08, 48]} />
+        <meshStandardMaterial color="#f1e6cf" roughness={0.82} />
+      </mesh>
+      <mesh position={[0, 0.03, 0]}>
+        <cylinderGeometry args={[2.78, 2.8, 0.06, 48, 1, true]} />
+        <meshStandardMaterial color={accent} roughness={0.6} />
+      </mesh>
+    </group>
+  );
+}
+
+const PENNANT_POLE_HEIGHT = 4.4;
+
+function BenchPennant({ accent, seed }: { accent: string; seed: number }) {
+  const flagRef = useRef<Group>(null);
+
+  useFrame(({ clock }) => {
+    if (flagRef.current) {
+      flagRef.current.rotation.y = Math.sin(clock.elapsedTime * 1.6 + seed) * 0.22;
+    }
+  });
+
+  return (
+    <group position={[3.05, 0, -2.75]}>
+      <mesh castShadow position={[0, PENNANT_POLE_HEIGHT / 2, 0]}>
+        <cylinderGeometry args={[0.045, 0.06, PENNANT_POLE_HEIGHT, 8]} />
+        <meshStandardMaterial color="#f4ead6" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, PENNANT_POLE_HEIGHT + 0.08, 0]}>
+        <sphereGeometry args={[0.1, 12, 10]} />
+        <meshStandardMaterial color="#e2b34a" metalness={0.6} roughness={0.35} />
+      </mesh>
+      <group ref={flagRef} position={[0, PENNANT_POLE_HEIGHT - 0.45, 0]}>
+        <mesh castShadow position={[0.55, 0, 0]} rotation={[0, 0, 0]}>
+          <shapeGeometry args={[PENNANT_SHAPE]} />
+          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.35} roughness={0.7} side={DoubleSide} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+const PENNANT_SHAPE = (() => {
+  const shape = new Shape();
+  shape.moveTo(-0.55, 0.36);
+  shape.lineTo(0.75, 0.04);
+  shape.lineTo(-0.55, -0.32);
+  shape.closePath();
+  return shape;
+})();
+
 export function WorkbenchLandmark({
   workbench,
   isNearby,
@@ -424,13 +486,17 @@ export function WorkbenchLandmark({
           <meshStandardMaterial color={palette.base} roughness={0.52} metalness={0.18} />
         </mesh>
       ) : (
-        <mesh position={[0, 1.24, 0]}>
-          <boxGeometry args={[5.8, 2.8, 5.8]} />
-          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-        </mesh>
+        <>
+          <mesh position={[0, 1.24, 0]}>
+            <boxGeometry args={[5.8, 2.8, 5.8]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
+          <BenchDais accent={palette.accent} />
+          <BenchPennant accent={palette.accent} seed={workbench.definition.id.length} />
+        </>
       )}
 
-      <mesh position={[0, rendersKit ? 0.22 : 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, rendersKit ? 0.22 : 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <torusGeometry args={[ringRadius, rendersKit ? 0.08 : 0.055, 10, 48]} />
         <meshStandardMaterial
           ref={ringMaterialRef}

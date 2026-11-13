@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Group, MeshStandardMaterial } from 'three';
-import { CatmullRomCurve3, TubeGeometry, Vector3 } from 'three';
+import { CatmullRomCurve3, Color, TubeGeometry, Vector3 } from 'three';
 
 import type { ExperienceSceneProps } from '../../../src/types/experience';
 import {
@@ -372,6 +372,8 @@ export function RecruiterSceneShell({
   const ringMaterialRef = useRef<MeshStandardMaterial>(null);
   const glowMaterialRef = useRef<MeshStandardMaterial>(null);
   const presentationStateRef = useRef(presentationState);
+  // Light stone with a hint of the bench accent; the dark palette base read as a black disc on the plaza.
+  const platformColor = useMemo(() => new Color('#ece0c6').lerp(new Color(palette.accent), 0.1), [palette.accent]);
   const transitionElapsedMsRef = useRef(
     presentationState === 'visible' ? RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS : 0,
   );
@@ -438,7 +440,7 @@ export function RecruiterSceneShell({
                 48,
               ]}
             />
-            <meshStandardMaterial color={palette.base} roughness={0.86} metalness={0.08} />
+            <meshStandardMaterial color={platformColor} roughness={0.86} metalness={0.02} />
           </mesh>
           <mesh receiveShadow position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry
