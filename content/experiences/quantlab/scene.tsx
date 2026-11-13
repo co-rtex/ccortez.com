@@ -45,7 +45,10 @@ function Label({ position, children, show }: { position: [number, number, number
   if (!show) return null;
   return (
     <Html center position={position} distanceFactor={9}>
-      <span className="taskforge-label">{children}</span>
+      {/* The panel explains the scene in text; these labels are visual only. */}
+      <span className="taskforge-label" aria-hidden="true">
+        {children}
+      </span>
     </Html>
   );
 }
