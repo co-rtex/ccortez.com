@@ -1,14 +1,12 @@
-import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
-import { AdditiveBlending, DoubleSide, LatheGeometry, Vector2 } from 'three';
-import type { Group } from 'three';
+import { useMemo } from 'react';
+import { LatheGeometry, Vector2 } from 'three';
 
 import { LIGHTHOUSE } from '../islandPaths';
 import { getTerrainHeight } from '../terrain';
 
 /**
- * North-shore lighthouse at the end of the north trail. Cream tower with terracotta bands, a warm lantern and a
- * slow, faint beam: a second landmark that is visible from the plaza and gives the trail a destination.
+ * North-shore lighthouse at the end of the north trail. Cream tower with terracotta bands and a warm lantern: a
+ * second landmark that is visible from the plaza and gives the trail a destination.
  */
 
 const TOWER_HEIGHT = 7.4;
@@ -23,7 +21,6 @@ function towerRadiusAt(y: number): number {
 }
 
 export function Lighthouse() {
-  const beamRef = useRef<Group>(null);
   const groundY = getTerrainHeight(LIGHTHOUSE.x, LIGHTHOUSE.z);
   // Door faces the island centre, where the trail arrives.
   const facing = Math.atan2(-LIGHTHOUSE.x, -LIGHTHOUSE.z);
@@ -40,10 +37,6 @@ export function Lighthouse() {
       ),
     [],
   );
-
-  useFrame((_, delta) => {
-    if (beamRef.current) beamRef.current.rotation.y += delta * 0.35;
-  });
 
   const bands = [1.9, 3.9, 5.9];
 
@@ -104,21 +97,6 @@ export function Lighthouse() {
           <sphereGeometry args={[0.12, 16, 12]} />
           <meshStandardMaterial color={BRASS} metalness={0.8} roughness={0.25} />
         </mesh>
-        {/* A faint sweeping beam; additive and depth-write off so it never hides anything. */}
-        <group ref={beamRef} position={[0, 0.62, 0]}>
-          <mesh position={[0, 0, 7]} rotation={[Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[1.6, 14, 24, 1, true]} />
-            <meshBasicMaterial
-              color="#ffe2a6"
-              transparent
-              opacity={0.045}
-              blending={AdditiveBlending}
-              depthWrite={false}
-              side={DoubleSide}
-              toneMapped={false}
-            />
-          </mesh>
-        </group>
       </group>
     </group>
   );

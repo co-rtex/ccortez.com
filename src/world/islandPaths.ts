@@ -215,7 +215,7 @@ export const LIGHTHOUSE = (() => {
   const [endX, endZ] = northTrail.points[northTrail.points.length - 1]!;
   const length = Math.hypot(endX, endZ) || 1;
   // A little past the trail end, toward the coast, so the trail arrives at its door.
-  return { x: endX + (endX / length) * 2.6, z: endZ + (endZ / length) * 2.6, radius: 1.5 };
+  return { x: endX + (endX / length) * 2.0, z: endZ + (endZ / length) * 2.0, radius: 1.5 };
 })();
 
 /** Areas vegetation and rocks keep clear of. */

@@ -29,7 +29,7 @@ export function StartHereBeacon() {
   useFrame(({ clock }, delta) => {
     fade.current = Math.max(0, fade.current - (dismissed ? delta * 1.5 : 0));
     const pulse = 0.75 + Math.sin(clock.elapsedTime * 2.2) * 0.25;
-    if (columnRef.current) columnRef.current.opacity = 0.16 * pulse * fade.current;
+    if (columnRef.current) columnRef.current.opacity = 0.22 * pulse * fade.current;
     if (ringRef.current) ringRef.current.opacity = 0.5 * pulse * fade.current;
     if (groupRef.current) {
       groupRef.current.visible = fade.current > 0.01;
@@ -39,11 +39,12 @@ export function StartHereBeacon() {
 
   return (
     <group ref={groupRef} position={[START_HERE_ANCHOR.x, getCentralPlazaTopHeight(), START_HERE_ANCHOR.z]}>
-      <mesh position={[0, 4.2, 0]}>
-        <cylinderGeometry args={[0.55, 1.1, 8.4, 24, 1, true]} />
+      {/* Short enough that it never lines up with the lighthouse lamp from the spawn point. */}
+      <mesh position={[0, 2.6, 0]}>
+        <cylinderGeometry args={[0.7, 1.15, 5.2, 24, 1, true]} />
         <meshBasicMaterial
           ref={columnRef}
-          color="#ffd88a"
+          color="#ffb347"
           transparent
           opacity={0.16}
           blending={AdditiveBlending}
@@ -56,7 +57,7 @@ export function StartHereBeacon() {
         <ringGeometry args={[1.25, 1.45, 48]} />
         <meshBasicMaterial
           ref={ringRef}
-          color="#ffe1a0"
+          color="#ffc46b"
           transparent
           opacity={0.5}
           blending={AdditiveBlending}
