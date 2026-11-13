@@ -277,6 +277,17 @@ body {
   box-shadow: 0 0 0 3px rgba(255, 248, 233, 0.08);
 }
 
+/* Flagships (benches with a case study): the same warm rule as their name badges in the world. */
+.recruiter-map-marker--flagship .recruiter-map-marker__core,
+.recruiter-navigator__swatch--flagship {
+  box-shadow: 0 0 0 2px rgba(240, 190, 96, 0.95);
+}
+
+.recruiter-navigator__swatch--flagship {
+  background: transparent;
+  border: 2px solid rgba(18, 27, 31, 0.92);
+}
+
 .recruiter-map-marker--experience .recruiter-map-marker__core {
   background: var(--accent);
 }

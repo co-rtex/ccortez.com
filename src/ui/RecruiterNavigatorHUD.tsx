@@ -171,14 +171,14 @@ function RecruiterNavigatorContent({
           <button
             key={marker.id}
             type="button"
-            className={`recruiter-map-marker recruiter-map-marker--${marker.category} recruiter-map-marker--${marker.state}${openedIds.has(marker.id) ? ' recruiter-map-marker--opened' : ''}`}
+            className={`recruiter-map-marker recruiter-map-marker--${marker.category} recruiter-map-marker--${marker.state}${openedIds.has(marker.id) ? ' recruiter-map-marker--opened' : ''}${marker.featured ? ' recruiter-map-marker--flagship' : ''}`}
             style={{
               left: `${marker.xPercent}%`,
               top: `${marker.yPercent}%`,
             }}
             onClick={() => onWorkbenchOpen(marker.id)}
             disabled={!marker.canOpen}
-            aria-label={`${marker.canOpen ? 'Open' : 'Unavailable'} ${marker.title} (${marker.categoryLabel}${openedIds.has(marker.id) ? ', opened' : ''})`}
+            aria-label={`${marker.canOpen ? 'Open' : 'Unavailable'} ${marker.title} (${marker.categoryLabel}${marker.featured ? ', case study' : ''}${openedIds.has(marker.id) ? ', opened' : ''})`}
             title={marker.title}
           >
             <span className="recruiter-map-marker__core" />
@@ -202,6 +202,10 @@ function RecruiterNavigatorContent({
         <span className="recruiter-navigator__legend-item">
           <span className="recruiter-navigator__swatch recruiter-navigator__swatch--secondary" />
           More About Me
+        </span>
+        <span className="recruiter-navigator__legend-item">
+          <span className="recruiter-navigator__swatch recruiter-navigator__swatch--flagship" />
+          Case study
         </span>
       </div>
 

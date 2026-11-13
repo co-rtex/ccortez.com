@@ -459,6 +459,8 @@ export function WorkbenchLandmark({
   const titleBadgeRef = useRef<HTMLDivElement>(null);
   const showsTitleBadge = shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled);
   const panelOpen = useGameStore((state) => state.panelWorkbenchId !== null);
+  // The open panel already names its bench, and on phones this badge would sit under the guide toggle.
+  const isPanelBench = useGameStore((state) => state.panelWorkbenchId === workbench.definition.id);
   const showsPrompt = shouldShowWorkbenchProximityPrompt(workbench, isNearby) && !panelOpen;
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
   // Long-range flagship badges only where they fit: on a narrow screen the far ones sit at the edges, half cut off.
@@ -476,7 +478,9 @@ export function WorkbenchLandmark({
         playerPosition.z - workbench.placement.anchor.z,
       );
       // Start Here is the first destination, so its badge stays visible from anywhere on the plaza.
-      const opacity = (isStartHere ? 1 : getTitleBadgeOpacity(distance, isFlagship && wideViewport)).toFixed(2);
+      const opacity = (
+        isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, isFlagship && wideViewport)
+      ).toFixed(2);
       if (badge.style.opacity !== opacity) badge.style.opacity = opacity;
     }
 
