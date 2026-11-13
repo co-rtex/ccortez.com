@@ -268,8 +268,9 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
                 {chip.label}
               </span>
             ))}
-            {/* Flagships carry a live model further down the story; this jumps to it (on phones it is below the fold). */}
-            {isFlagshipWorkbench(workbench.definition.id) ? (
+            {/* Flagships carry a live model further down the story (below the fold on phones); this jumps to it, once the
+                story has loaded. */}
+            {isFlagshipWorkbench(workbench.definition.id) && activeStory ? (
               <button type="button" className="experience-panel__demo-jump" onClick={jumpToDemo}>
                 Try the live model
               </button>
