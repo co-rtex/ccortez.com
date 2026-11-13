@@ -8,7 +8,7 @@ files keep release records; this file holds priorities, art direction, active wo
 | Site | Repo / local dir | Production | Working branch |
 | --- | --- | --- | --- |
 | 3D game | `co-rtex/ccortez.com` · `~/Desktop/Projects/ccortez-dual-sprint` | https://game.ccortez.com (Pages from `main`, `5176c5b`) | `game/art-direction-pass` (pushed) |
-| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `c711b57`) |
+| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `aaf0b6a`) |
 
 `~/Desktop/Projects/ccortez.com` is the protected original checkout (read-only; 96 dirty paths at `825fe37`).
 Nothing merges to either `main` without Christian's approval.
@@ -71,8 +71,10 @@ Nothing merges to either `main` without Christian's approval.
 | `2f71846` | Phone bench panel opaque above the HUD; touch-aware "Pinch to zoom" hint | `.shots/m-panel` |
 | `72f056b` | Third-review fixes: guide folds while a panel is open, prompt hidden then; Start Here panel about Christian (verified wording) without repeated header/district; all-or-nothing bench labels; phone portfolio pill; irregular ocean highlights | `.shots/interact-panel`, `follow-mobile`; 154 tests |
 | `ab4d3aa` | Occluding foliage fades by alpha-to-coverage (no stipple) | `.shots/follow-grove`; M3 60 fps, p95 18.6 ms |
+| `306b561` | 700 instanced grass tufts in the meadows; empty chip row hidden on Start Here | `.shots/follow-grove2`; 155 tests |
+| `36d334c` | Lighthouse door sign linking to the written portfolio | `.shots/sign-lake` |
 
-Checkpoint A (before/after, drag to compare; refreshed at `16ae247`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
+Checkpoint A (before/after, drag to compare; refreshed at `36d334c`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
 Mobile (390×844) and no-WebGL fallbacks re-checked on the branch build: no overflow, portfolio links present, no
 page errors.
 
@@ -112,6 +114,17 @@ case studies. Agent-reported: `npm run check` clean, vitest 26/26, e2e 47 passed
 Lighthouse mobile 100/100/100/100 on home and TaskForge. Preview:
 https://portfolio-professional-21zb2sfr5-co-rtexs-projects.vercel.app (Vercel login). Trade-off: inlined CSS
 grows home HTML 178 → 348 KB raw (~57 KB compressed). `docs/CLAIMS_LEDGER.md` (`c711b57`) holds the audit.
+
+Pass 3 (`b2d8a06` … `aaf0b6a`, reviewed here; from the third independent review): "Recent roles" folded into
+Experience (hero rows link to the entries that carry the headline numbers), component names inside home figures
+from 768 px with aligned rows, current roles first then by end date, single 56 px phone header with a no-JS menu,
+simulator plays 20 ticks on scroll-in (never under reduced motion) and the stray rings are gone, one figure per
+case study, footer copy "a bench for each role and project". SSEC's home timeline shows "Supported 15+
+researchers." instead of repeating the summary (resume unchanged; `timelineHighlights`). Agent-reported: check
+clean, vitest 29/29, Playwright 50 passed + 2 viewport skips, Lighthouse mobile home 99/100/100/100 (LCP 0.8 s),
+TaskForge 100s. Preview: https://portfolio-professional-kkw3flklg-co-rtexs-projects.vercel.app (Vercel login).
+Open: phone Experience entries are long (stacked numbers); tall TaskForge/QuantLab drawings push facts below the
+fold at 1440; edge labels sit close to boxes.
 
 ## Claims audit (2026-11-13)
 
