@@ -9,9 +9,9 @@ export interface PlayerAvatarAppearance {
   irisColor: string;
   eyeColor: string;
   shirtColor: string;
-  undershirtColor: string;
-  jeansColor: string;
-  jeansFadeColor: string;
+  collarColor: string;
+  trousersColor: string;
+  trousersShadeColor: string;
   shoeColor: string;
   shoeSoleColor: string;
   headRadius: number;
@@ -51,20 +51,22 @@ const PLAYER_FACING_BLEND_RATE = 10;
 const PLAYER_WALK_CADENCE = Math.PI * 3.2;
 const PLAYER_RUN_CADENCE = Math.PI * 5.2;
 
+// The avatar's palette (mirrors scripts/generate-player-avatar.mjs: light-blue polo, khakis, off-white sneakers).
+// The head and eye measurements set the follow camera's look height and are kept as they were.
 export const PLAYER_AVATAR_APPEARANCE: PlayerAvatarAppearance = {
-  skinTone: '#d3a27f',
-  hairColor: '#4a3528',
-  hairHighlightColor: '#6b4d3b',
-  eyebrowColor: '#37261c',
-  eyeWhiteColor: '#f8f2ea',
-  irisColor: '#6a4734',
-  eyeColor: '#261a15',
-  shirtColor: '#20324f',
-  undershirtColor: '#6d737b',
-  jeansColor: '#6488be',
-  jeansFadeColor: '#88a8d0',
-  shoeColor: '#92979f',
-  shoeSoleColor: '#555b63',
+  skinTone: '#dcac8c',
+  hairColor: '#2a1a12',
+  hairHighlightColor: '#47301f',
+  eyebrowColor: '#2e1d14',
+  eyeWhiteColor: '#eee5da',
+  irisColor: '#2e1c13',
+  eyeColor: '#1d120c',
+  shirtColor: '#8fc0f7',
+  collarColor: '#7fb0ec',
+  trousersColor: '#cdb48c',
+  trousersShadeColor: '#b59d76',
+  shoeColor: '#e4e0d8',
+  shoeSoleColor: '#f0e9db',
   headRadius: 0.3,
   headCenterY: 1.07,
   eyeY: 1.09,

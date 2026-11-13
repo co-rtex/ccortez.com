@@ -52,9 +52,9 @@ const COLORS = {
   lash: '#1d120c',
   eyeWhite: '#eee5da',
   iris: '#2e1c13',
-  hair: '#2a1a12',
-  hairDeep: '#1b100b',
-  hairLight: '#47301f',
+  hair: '#3a2418',
+  hairDeep: '#2a1a11',
+  hairLight: '#5a3a26',
   polo: '#8fc0f7',
   poloShade: '#7eaee8',
   poloRib: '#7fb0ec',
@@ -78,7 +78,7 @@ const SOLE_DEPTH = 0.075;
 const TORSO_OFFSET = [0, 0.08, 0];
 const SHOULDER = [0.185, 0.405, -0.005];
 const ELBOW_Y = -0.29;
-const NECK_TOP = 0.495;
+const NECK_TOP = 0.478;
 
 // --------------------------------------------------------------------------------------------- materials ---
 // One flat-shaded material for everything (the island's faceted look). Smooth normals are still stored: the sun's
@@ -202,14 +202,14 @@ function addJoint(parent, name, position) {
 // ------------------------------------------------------------------------------------------------- head ---
 // Head-local space: origin at the head centre. A rounded oval: a touch narrower than deep, the jaw tapering to a
 // soft chin, fuller at the cheekbones, a slightly flattened face plane and a cranium that extends back.
-const HEAD = { rx: 0.099, ry: 0.122, rz: 0.118, centerY: 0.118 };
+const HEAD = { rx: 0.114, ry: 0.134, rz: 0.13, centerY: 0.122 };
 
 function headDeform(nx, ny, nz) {
   let x = nx * HEAD.rx;
   let y = ny * HEAD.ry;
   let z = nz * HEAD.rz;
   const jaw = smoothstep(0.05, -1, ny);
-  x *= 1 - 0.13 * jaw;
+  x *= 1 - 0.08 * jaw;
   z *= nz > 0 ? 1 - 0.05 * jaw : 1 - 0.3 * jaw;
   if (nz < 0 && ny > -0.3) z *= 1 + 0.1 * smoothstep(-0.3, 0.4, ny);
   x *= 1 + 0.1 * Math.exp(-(((ny + 0.2) / 0.32) ** 2)) * Math.max(nz, 0);
@@ -257,36 +257,30 @@ function buildHead(head) {
     });
   }
 
-  // Eyes: open, simplified almonds: sclera, a dark iris, an upper lash line; the lower lid curves up with the smile.
+  // Eyes: open almonds (sclera, dark iris, an upper lash line set high), brows gently arched.
   for (const side of [1, -1]) {
-    const [x, y, z] = onFace(side * 0.038, 0.006);
-    parts.add(ellipsoid(0.0155, 0.0098, 0.004, 14, 8), COLORS.eyeWhite, { position: [x, c + y, z - 0.0018] });
-    parts.add(ellipsoid(0.0092, 0.0092, 0.0026, 12, 8), COLORS.iris, { position: [x, c + y + 0.0004, z + 0.0008] });
-    parts.add(ellipsoid(0.0172, 0.0028, 0.0036, 12, 6), COLORS.lash, {
-      position: [x, c + y + 0.0092, z + 0.0004],
-      rotation: [0, 0, -side * 0.12],
-    });
-    // Brows: dark and full, nearly straight.
-    const [bx, by, bz] = onFace(side * 0.04, 0.034, 0.0015);
-    parts.add(ellipsoid(0.019, 0.0042, 0.0038, 12, 6), COLORS.brow, {
-      position: [bx, c + by, bz],
-      rotation: [0, -side * 0.15, -side * 0.06],
-    });
+    const [x, y, z] = onFace(side * 0.042, 0.008);
+    parts.add(ellipsoid(0.0185, 0.0128, 0.0045, 14, 8), COLORS.eyeWhite, { position: [x, c + y, z - 0.002] });
+    parts.add(ellipsoid(0.0115, 0.0118, 0.003, 12, 8), COLORS.iris, { position: [x, c + y - 0.0004, z + 0.0006] });
+    parts.add(ellipsoid(0.0195, 0.0028, 0.0038, 12, 6), COLORS.lash, { position: [x, c + y + 0.0118, z + 0.0002] });
+    const [bx, by, bz] = onFace(side * 0.044, 0.04, 0.0015);
+    const brow = new THREE.TorusGeometry(0.03, 0.0034, 5, 10, 1.0);
+    parts.add(brow, COLORS.brow, { position: [bx, c + by - 0.024, bz], rotation: [0, -side * 0.12, Math.PI / 2 - 0.5] });
   }
 
-  // Nose: small, the skin colour; the light does the work.
-  const [, ny, nz] = onFace(0, -0.022, 0);
-  parts.add(ellipsoid(0.0062, 0.015, 0.0062, 10, 8), COLORS.skin, { position: [0, c + ny + 0.005, nz] });
-  parts.add(ellipsoid(0.0085, 0.0062, 0.0052, 10, 8), COLORS.skin, { position: [0, c + ny - 0.006, nz + 0.0025] });
+  // Nose: small and soft.
+  const [, ny, nz] = onFace(0, -0.024, 0);
+  parts.add(ellipsoid(0.0048, 0.012, 0.0048, 8, 6), COLORS.skin, { position: [0, c + ny + 0.004, nz] });
+  parts.add(ellipsoid(0.0068, 0.005, 0.0042, 8, 6), COLORS.skin, { position: [0, c + ny - 0.005, nz + 0.0018] });
 
-  // A wide, open smile: a D shape with the upper teeth showing, cheeks lifted either side.
-  const [, my, mz] = onFace(0, -0.058, 0);
-  parts.add(ellipsoid(0.032, 0.0125, 0.0045, 16, 10), COLORS.mouth, { position: [0, c + my, mz - 0.0022], scale: [1, 1, 1] });
-  parts.add(ellipsoid(0.03, 0.0062, 0.0048, 16, 8), COLORS.teeth, { position: [0, c + my + 0.0058, mz - 0.0012] });
-  const lip = new THREE.TorusGeometry(0.033, 0.0026, 6, 20, Math.PI);
-  parts.add(lip, COLORS.lip, { position: [0, c + my + 0.0105, mz - 0.0016], rotation: [0, 0, Math.PI], scale: [1, 0.66, 1] });
-  // The upper lip line, straight across the top of the D.
-  parts.add(ellipsoid(0.031, 0.0018, 0.004, 14, 6), COLORS.skinShade, { position: [0, c + my + 0.0118, mz - 0.0008] });
+  // A friendly grin: a crescent showing the upper teeth, corners turned up.
+  const [, my, mz] = onFace(0, -0.062, 0);
+  const grin = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2); // lower half: a bowl
+  grin.scale(0.03, 0.012, 0.004);
+  parts.add(grin, COLORS.mouth, { position: [0, c + my + 0.006, mz - 0.0012] });
+  parts.add(ellipsoid(0.0265, 0.0045, 0.0042, 16, 6), COLORS.teeth, { position: [0, c + my + 0.0028, mz - 0.0004] });
+  const lip = new THREE.TorusGeometry(0.031, 0.0022, 5, 18, Math.PI);
+  parts.add(lip, COLORS.lip, { position: [0, c + my + 0.0062, mz - 0.0012], rotation: [0, 0, Math.PI], scale: [1, 0.45, 1] });
   parts.build(head, 'HeadShape');
 
   buildHair(head);
@@ -316,7 +310,7 @@ function hairCap() {
     const bump = 1 + 0.35 * (hash(Math.round(nx * 7) * 13 + Math.round(ny * 7) * 7 + Math.round(nz * 7) * 3) - 0.5);
     // Thicker on top (volume), thin at the short sides and nape; uncovered vertices sink inside the head.
     const top = smoothstep(0.1, 0.95, ny);
-    const thickness = covered ? (0.006 + 0.022 * top) * bump : -0.014;
+    const thickness = covered ? (0.005 + 0.016 * top) * bump : -0.014;
     const len = Math.hypot(hx, hy, hz);
     const k = (len + thickness) / len;
     p.setXYZ(i, hx * k, hy * k, hz * k);
@@ -365,10 +359,10 @@ function buildHair(head) {
   // reads as a compact wavy mop with volume on top rather than spikes.
   let seed = 10;
   const rows = [
-    { ny: 0.96, count: 3, size: 0.04, spread: 1.6 },
-    { ny: 0.82, count: 6, size: 0.04, spread: 3.3 },
-    { ny: 0.64, count: 7, size: 0.037, spread: 4.6 },
-    { ny: 0.44, count: 6, size: 0.031, spread: 5.4 },
+    { ny: 0.95, count: 3, size: 0.04, spread: 1.6 },
+    { ny: 0.8, count: 6, size: 0.04, spread: 3.3 },
+    { ny: 0.62, count: 7, size: 0.036, spread: 4.4 },
+    { ny: 0.44, count: 6, size: 0.028, spread: 5.0 },
   ];
   for (const row of rows) {
     for (let i = 0; i < row.count; i += 1) {
@@ -377,7 +371,7 @@ function buildHair(head) {
       // Fuller on top and at the front, tighter at the sides and back.
       const sideness = Math.abs(Math.sin(theta));
       const size = row.size * (1 - 0.3 * sideness * (1 - row.ny)) * (0.85 + 0.3 * hash(seed + 1));
-      const [x, y, z] = scalp(theta, row.ny, -0.016 + size * 0.2);
+      const [x, y, z] = scalp(theta, row.ny, -0.024 + size * 0.15 - 0.012 * Math.abs(Math.sin(theta)));
       parts.add(clump(size, seed), COLORS.hair, {
         position: [x, c + y, z],
         rotation: [-0.6 + (1 - row.ny) * 0.5, theta, (hash(seed + 2) - 0.5) * 0.6],
@@ -387,10 +381,10 @@ function buildHair(head) {
   }
 
   // Fringe: five soft curls falling forward over the upper forehead, just above the brows.
-  [-0.06, -0.03, 0.0, 0.03, 0.058].forEach((x, index) => {
-    const [fx, fy, fz] = onFace(x, 0.066 - Math.abs(x) * 0.18, 0.012);
+  [-0.072, -0.048, -0.022, 0.004, 0.03, 0.054, 0.076].forEach((x, index) => {
+    const [fx, fy, fz] = onFace(x, 0.066 - Math.abs(x) * 0.2 - (index % 2) * 0.01, 0.012);
     const size = 0.026 + 0.005 * hash(200 + index);
-    parts.add(clump(size, 200 + index, 1.25), COLORS.hair, {
+    parts.add(clump(size, 200 + index, 1.45), COLORS.hair, {
       position: [fx, c + fy, fz],
       rotation: [0.5, 0, (index - 2) * 0.2],
       order: 'YXZ',
@@ -406,10 +400,9 @@ function buildTorso(torso) {
   parts.add(
     lathe(
       [
-        [0.0, -0.132],
-        [0.158, -0.132],
-        [0.164, -0.118],
-        [0.157, -0.09],
+        [0.152, -0.132],
+        [0.162, -0.124],
+        [0.158, -0.09],
         [0.152, 0.0],
         [0.15, 0.08],
         [0.157, 0.19],
@@ -420,24 +413,24 @@ function buildTorso(torso) {
         [0.1, 0.468],
         [0.062, 0.48],
       ],
-      { segments: 22, depth: 0.66 },
+      { segments: 14, depth: 0.66 },
     ),
     COLORS.polo,
   );
   // Neck.
-  parts.add(capsule(0.05, 0.035, 12), COLORS.skin, { position: [0, 0.49, 0.0] });
+  parts.add(capsule(0.052, 0.02, 10), COLORS.skin, { position: [0, 0.478, 0.0] });
   // Collar: a band standing around the neck, open at the front, and a fold-down that rests on the shoulders.
   const opening = 0.38;
   // Closed profiles (a band with thickness), so no inside faces show and single-sided rendering is enough.
   parts.add(
     lathe(
       [
-        [0.06, 0.462],
-        [0.063, 0.49],
-        [0.068, 0.498],
-        [0.067, 0.49],
-        [0.065, 0.464],
-        [0.06, 0.462],
+        [0.052, 0.462],
+        [0.054, 0.484],
+        [0.06, 0.492],
+        [0.06, 0.484],
+        [0.058, 0.464],
+        [0.052, 0.462],
       ],
       { segments: 20, phiStart: opening, phiLength: Math.PI * 2 - opening * 2 },
     ),
@@ -446,13 +439,13 @@ function buildTorso(torso) {
   parts.add(
     lathe(
       [
-        [0.068, 0.5],
-        [0.086, 0.49],
-        [0.102, 0.474],
-        [0.099, 0.468],
-        [0.084, 0.483],
-        [0.068, 0.494],
-        [0.068, 0.5],
+        [0.058, 0.494],
+        [0.078, 0.484],
+        [0.096, 0.468],
+        [0.093, 0.462],
+        [0.076, 0.477],
+        [0.058, 0.488],
+        [0.058, 0.494],
       ],
       { segments: 20, phiStart: opening * 0.6, phiLength: Math.PI * 2 - opening * 1.2 },
     ),
@@ -486,18 +479,18 @@ function buildArm(torso, side) {
     lathe(
       [
         [0.0, 0.05],
-        [0.032, 0.045],
-        [0.054, 0.022],
-        [0.063, -0.01],
-        [0.065, -0.05],
-        [0.063, -0.122],
+        [0.03, 0.045],
+        [0.05, 0.022],
+        [0.057, -0.01],
+        [0.058, -0.05],
+        [0.056, -0.122],
         [0.0, -0.125],
       ],
-      { segments: 16, depth: 0.92 },
+      { segments: 10, depth: 0.92 },
     ),
     COLORS.polo,
   );
-  upper.add(lathe([[0.0, -0.118], [0.0655, -0.12], [0.0665, -0.15], [0.058, -0.154], [0.0, -0.155]], { segments: 16, depth: 0.92 }), COLORS.poloRib);
+  upper.add(lathe([[0.0, -0.118], [0.0585, -0.12], [0.0595, -0.15], [0.052, -0.154], [0.0, -0.155]], { segments: 10, depth: 0.92 }), COLORS.poloRib);
   // Upper arm below the sleeve: slim, slightly tapering.
   upper.add(lathe([[0.048, -0.12], [0.047, -0.2], [0.042, -0.29], [0.041, -0.33]], { segments: 14 }), COLORS.skin);
   upper.build(arm, `Arm_${suffix}_Sleeve`);
@@ -527,12 +520,12 @@ function buildHips(hips) {
   parts.add(
     lathe(
       [
-        [0.0, -0.09],
-        [0.1, -0.09],
-        [0.138, -0.06],
-        [0.146, -0.02],
-        [0.142, 0.04],
-        [0.12, 0.08],
+        [0.0, -0.05],
+        [0.09, -0.05],
+        [0.128, -0.03],
+        [0.136, 0.0],
+        [0.132, 0.04],
+        [0.11, 0.08],
       ],
       { segments: 20, depth: 0.68 },
     ),
@@ -552,12 +545,12 @@ function buildLeg(hips, side) {
         [0.0, 0.07],
         [0.084, 0.06],
         [0.09, 0.0],
-        [0.09, -0.12],
-        [0.086, -0.28],
-        [0.0785, -0.38],
+        [0.088, -0.12],
+        [0.084, -0.24],
+        [0.082, -0.38],
         [0.0, -0.381],
       ],
-      { segments: 16, depth: 0.95 },
+      { segments: 10, depth: 0.95 },
     ),
     COLORS.khaki,
   );
@@ -568,20 +561,22 @@ function buildLeg(hips, side) {
   const lower = new PartSet();
   // Knee: a sphere a little inside the trouser radius at the joint, so it fills the gap when the knee bends and
   // stays hidden when the leg is straight (thigh and calf shells meet edge to edge at the same radius).
-  lower.add(ellipsoid(0.072, 0.072, 0.068, 16, 10), COLORS.khaki);
+  lower.add(ellipsoid(0.076, 0.076, 0.072, 10, 8), COLORS.khaki);
+  // A soft fold ring at the knee: a believable crease that also hides where the two shells meet.
+  lower.add(lathe([[0.0, 0.016], [0.0855, 0.014], [0.087, 0.0], [0.0855, -0.014], [0.0, -0.016]], { segments: 10, depth: 0.95 }), COLORS.khaki);
   lower.add(
     lathe(
       [
         [0.0, 0.001],
-        [0.0785, 0.0],
-        [0.0785, -0.06],
-        [0.077, -0.2],
+        [0.082, 0.0],
+        [0.081, -0.06],
+        [0.078, -0.2],
         [0.078, -0.3],
         [0.081, -0.345],
         [0.083, -0.362],
         [0.0, -0.364],
       ],
-      { segments: 16, depth: 0.95 },
+      { segments: 10, depth: 0.95 },
     ),
     COLORS.khaki,
   );
@@ -592,7 +587,7 @@ function buildLeg(hips, side) {
   const shoe = new PartSet();
   // Cream rubber sole band: a rounded footprint, heel behind the ankle, toe well forward.
   const outline = new THREE.Shape();
-  outline.absellipse(0, 0.072, 0.052, 0.142, 0, Math.PI * 2, false, 0);
+  outline.absellipse(0, 0.072, 0.05, 0.133, 0, Math.PI * 2, false, 0);
   const sole = new THREE.ExtrudeGeometry(outline, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.003, bevelSegments: 1, curveSegments: 18 });
   sole.rotateX(Math.PI / 2);
   shoe.add(sole, COLORS.sole, { position: [0, -SOLE_DEPTH + 0.033, 0] });
@@ -613,7 +608,7 @@ function buildLeg(hips, side) {
   // Rubber toe cap.
   shoe.add(ellipsoid(0.045, 0.016, 0.024, 12, 6), COLORS.sole, { position: [0, -SOLE_DEPTH + 0.036, 0.172] });
   // Grey lace panel lying on the instep.
-  shoe.add(ellipsoid(0.024, 0.005, 0.055, 10, 4), COLORS.canvasShade, { position: [0, -SOLE_DEPTH + 0.083, 0.09], rotation: [-0.34, 0, 0] });
+  shoe.add(ellipsoid(0.021, 0.006, 0.042, 10, 6), COLORS.canvasShade, { position: [0, -SOLE_DEPTH + 0.074, 0.095], rotation: [-0.3, 0, 0] });
   shoe.build(foot, `Foot_${suffix}_Sneaker`);
   return { upper: thigh, calf, foot };
 }
@@ -739,7 +734,7 @@ function gaitPose(phase, gait) {
     hips: [0, -gait.hipYaw * swingL, gait.hipRoll * Math.sin(phase * TAU * 2 + Math.PI / 2) * 0.5],
     hipsX: 0,
     torso: [gait.lean, gait.hipYaw * 1.6 * swingL, 0],
-    head: [-gait.lean * 0.7 + 0.02 * Math.cos(phase * TAU * 2), -gait.hipYaw * 0.6 * swingL, 0],
+    head: [-gait.lean * 0.45 + 0.015 * Math.cos(phase * TAU * 2), -gait.hipYaw * 0.6 * swingL, 0],
     // Arms swing opposite their own side's leg; elbows bend more on the forward swing.
     armL: [gait.arm * swingL - gait.armBase, 0, ARM_OUT + 0.02],
     armR: [-gait.arm * swingL - gait.armBase, 0, -ARM_OUT - 0.02],
@@ -759,7 +754,7 @@ function gaitPose(phase, gait) {
 const WALK = {
   stance: 0.6,
   swing: 0.42,
-  kneeStance: 0.16,
+  kneeStance: 0.07,
   kneeSwing: 0.72,
   toeOff: 0.32,
   lean: 0.05,
@@ -782,10 +777,10 @@ const RUN = {
   lean: 0.24,
   hipYaw: 0.08,
   hipRoll: 0.035,
-  arm: 0.55,
-  armBase: 0.05,
-  elbow: 1.05,
-  elbowSwing: 0.25,
+  arm: 0.32,
+  armBase: 0.02,
+  elbow: 1.0,
+  elbowSwing: 0.12,
   bounce: 0.06,
   stanceWidth: 0.04,
 };

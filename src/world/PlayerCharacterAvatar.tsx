@@ -6,7 +6,7 @@ import { LoopRepeat, Mesh } from 'three';
 import type { AnimationAction, Group } from 'three';
 
 import { readAvatarInspectFixture } from './avatarInspect';
-import { type PlayerLocomotionState } from './playerAvatar';
+import { PLAYER_AVATAR_APPEARANCE, type PlayerLocomotionState } from './playerAvatar';
 import {
   PLAYER_AVATAR_ANIMATION_CROSSFADE_SECONDS,
   PLAYER_AVATAR_MODEL_PATH,
@@ -154,19 +154,25 @@ function PlayerAvatarFallback({ locomotionRef, visible }: PlayerAvatarProps) {
     root.rotation.y = locomotionRef.current.facingYaw;
   });
 
+  // A simple stand-in while the model loads (or if it fails): the same outfit colours and height, standing on the
+  // ground (the player group sits 0.82 m up).
   return (
     <group ref={rootRef} visible={visible}>
-      <mesh castShadow position={[0, 1.02, 0.02]}>
-        <capsuleGeometry args={[0.16, 0.46, 6, 10]} />
-        <meshStandardMaterial color="#20324f" roughness={0.8} />
+      <mesh castShadow position={[0, -0.42, 0]}>
+        <capsuleGeometry args={[0.12, 0.6, 6, 10]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.trousersColor} roughness={0.85} flatShading />
       </mesh>
-      <mesh castShadow position={[0, 1.38, 0.03]}>
-        <sphereGeometry args={[0.24, 12, 10]} />
-        <meshStandardMaterial color="#d1a17d" roughness={0.85} />
+      <mesh castShadow position={[0, 0.27, 0]}>
+        <capsuleGeometry args={[0.17, 0.34, 6, 10]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.shirtColor} roughness={0.85} flatShading />
       </mesh>
-      <mesh castShadow position={[0, 1.53, -0.02]} scale={[0.9, 0.55, 0.62]}>
-        <sphereGeometry args={[0.2, 10, 8]} />
-        <meshStandardMaterial color="#3f2b22" roughness={0.9} />
+      <mesh castShadow position={[0, 0.74, 0.01]}>
+        <sphereGeometry args={[0.12, 12, 10]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.skinTone} roughness={0.85} flatShading />
+      </mesh>
+      <mesh castShadow position={[0, 0.82, -0.01]} scale={[1.05, 0.6, 1.05]}>
+        <sphereGeometry args={[0.125, 10, 8]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.hairColor} roughness={0.9} flatShading />
       </mesh>
     </group>
   );
