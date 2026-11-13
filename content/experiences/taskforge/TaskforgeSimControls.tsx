@@ -35,7 +35,6 @@ export function TaskforgeSimControls() {
               if (worker.alive && !settled) crash(worker.id);
             }}
             aria-disabled={!worker.alive || settled}
-            aria-label={`Crash worker ${worker.id}${worker.jobId ? `, holding job ${worker.jobId}` : ''}`}
           >
             {worker.alive ? `Crash w${worker.id}` : `w${worker.id} restarting`}
           </button>
@@ -47,11 +46,19 @@ export function TaskforgeSimControls() {
       <p className="taskforge-sim__status">
         Tick {sim.tick}: {succeeded} of {sim.jobs.length} succeeded{dead ? `, ${dead} dead-lettered` : ''}
       </p>
-      <p className="taskforge-sim__event" aria-live="polite">
+      {/* The run moves on its own every tick, so this line is not a live region; the crash trace is. */}
+      <p className="taskforge-sim__event">
         {latest ? latest.text : 'Workers are pulling the first jobs.'}
       </p>
       {trace ? (
         <section className="taskforge-sim__trace" aria-labelledby="taskforge-trace-title">
+          {/* Announces each new step of the crashed job's story (a handful per crash), not every tick. */}
+          <p className="visually-hidden" aria-live="polite">
+            {(() => {
+              const done = trace.steps.filter((traceStep) => traceStep.tick !== null).at(-1);
+              return done ? `Job ${trace.jobId}: ${done.title}.` : '';
+            })()}
+          </p>
           <h4 id="taskforge-trace-title">What happened to job {trace.jobId}</h4>
           <ol>
             {trace.steps.map((traceStep) => (

@@ -1,5 +1,5 @@
 import { bestAsk, bestBid, bookHash } from '../../../src/sim/orderBookSim';
-import { useEnginexBook } from '../../../src/sim/enginexBookStore';
+import { REPLAY_SHOWN_TICKS, useEnginexBook } from '../../../src/sim/enginexBookStore';
 
 /**
  * Controls for the EngineX workbench's toy order book, in the details panel: send a market order through the
@@ -9,10 +9,12 @@ import { useEnginexBook } from '../../../src/sim/enginexBookStore';
 export function EnginexBookControls() {
   const sim = useEnginexBook((state) => state.sim);
   const replay = useEnginexBook((state) => state.replay);
+  const announcement = useEnginexBook((state) => state.announcement);
   const market = useEnginexBook((state) => state.market);
   const replayJournal = useEnginexBook((state) => state.replayJournal);
   const bid = bestBid(sim);
   const ask = bestAsk(sim);
+  const showReplay = replay !== null && sim.tick - replay.atTick < REPLAY_SHOWN_TICKS;
 
   return (
     <section className="taskforge-sim" aria-labelledby="enginex-book-title">
@@ -37,12 +39,16 @@ export function EnginexBookControls() {
         Best bid {bid ?? 'none'}, best ask {ask ?? 'none'}: journal {sim.journal.length} orders, {sim.trades.length}{' '}
         fills, state {bookHash(sim)}
       </p>
-      <p className="taskforge-sim__event" aria-live="polite">
-        {replay
+      {/* The book moves every tick, so this line is not a live region; only the visitor's own actions are announced. */}
+      <p className="taskforge-sim__event">
+        {showReplay && replay
           ? `Replayed ${replay.entries} journal entries into an empty book: state ${replay.hash}, ${
               replay.matches ? 'the same as the live book at that point.' : 'not the same as the live book.'
             }`
           : sim.lastEvent}
+      </p>
+      <p className="visually-hidden" aria-live="polite">
+        {announcement}
       </p>
       <ul className="taskforge-sim__legend" aria-label="Colours in the diorama">
         <li><span style={{ background: '#3f9e6e' }} /> bids (buy orders)</li>

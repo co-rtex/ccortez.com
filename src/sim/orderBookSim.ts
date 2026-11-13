@@ -111,10 +111,12 @@ export function restingLots(levels: Level[]): number {
   return levels.reduce((sum, level) => sum + level.orders.reduce((inner, order) => inner + order.qty, 0), 0);
 }
 
-/** Queue an order for the sequencer (a visitor's market order goes to the front of the inbox's arrivals). */
+/**
+ * Queue a visitor's order for the sequencer. It goes to the head of the line, so it is the next order sequenced;
+ * if the line is full, the newest waiting arrival is dropped to make room.
+ */
 export function submit(sim: BookSim, order: IncomingOrder): BookSim {
-  if (sim.inbox.length >= INBOX_LIMIT + 2) return sim;
-  return { ...sim, inbox: [...sim.inbox, order] };
+  return { ...sim, inbox: [order, ...sim.inbox].slice(0, INBOX_LIMIT + 1) };
 }
 
 export function marketOrder(side: Side, qty: number): IncomingOrder {

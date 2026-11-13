@@ -69,7 +69,8 @@ function jobTarget(job: Job, index: Map<number, number>, sim: Sim): [number, num
     case 'succeeded':
       return grid(DONE.x, DONE.z, 0.1);
     case 'dead_letter':
-      return [DEAD.x + ((slot % 2) - 0.5) * SPACING, 0.12 + Math.floor(slot / 2) * (JOB + 0.01), DEAD.z];
+      // Stacked on the bin's lid (the bin is 0.26 tall), so even the first dead-lettered job is visible.
+      return [DEAD.x + ((slot % 2) - 0.5) * SPACING, 0.26 + JOB / 2 + Math.floor(slot / 2) * (JOB + 0.01), DEAD.z];
     case 'running': {
       const pod = PODS[(job.workerId ?? 1) - 1] ?? PODS[0]!;
       // A crashed worker drops its job beside it; the lease still claims it until the reconciler takes it back.

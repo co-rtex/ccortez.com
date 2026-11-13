@@ -27,4 +27,12 @@ describe('EngineX bench order book store', () => {
     expect(replay.matches).toBe(true);
     expect(replay.entries).toBe(useEnginexBook.getState().sim.journal.length);
   });
+
+  it('puts a market order at the head of the line and announces what it did once sequenced', () => {
+    useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS * 5);
+    useEnginexBook.getState().market('sell');
+    expect(useEnginexBook.getState().sim.inbox[0]).toMatchObject({ side: 'sell', market: true });
+    useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS);
+    expect(useEnginexBook.getState().announcement).toMatch(/market sell 3/);
+  });
 });
