@@ -128,9 +128,30 @@ fold at 1440; edge labels sit close to boxes.
 
 ## Claims audit (2026-11-13)
 
-A read-only audit compared every claim on both sites with the repositories. Four game-bench corrections were
-applied (`4d8eecd`). The ledger and the remaining decisions are kept in the private professional repository
-(`docs/CLAIMS_LEDGER.md`), not here.
+A read-only audit compared every claim on both sites with the repositories. Corrections applied where evidence
+was decisive (`4d8eecd`, `572d82b` here; `a9ccf81` on the professional site, resume PDF regenerated). The ledger,
+open questions and an exposure note are kept in the private professional repository (`docs/CLAIMS_LEDGER.md`).
+A short-lived earlier version of this section (commits `21c92a2`, `e68c138`, removed in `a1016ab`) listed claim
+discrepancies; it held no employer/research confidential data, contact details or source code, and remains in
+this branch's history because purging it needs a force-push.
+
+## Performance investigation (2026-11-13, M3, Chrome/Metal, uncapped: vsync and frame cap off, DPR 2)
+
+`?perf=` switches (`ea06a69`) remove one system at a time. First pass (machine idle):
+
+| Config | Spawn median / p95 ms | Overview median / p95 ms |
+| --- | --- | --- |
+| current | 11.8 / 13.6 | 18.1 / 34.7 |
+| no shadows | 4.9 / 9.1 | 6.6 / 8.8 |
+| no bench scenes | 6.5 / 13.1 | 6.6 / 12.7 |
+| no vegetation | 12.9 / 31.7 | 17.0 / 34.7 |
+| DPR 1 | 8.0 / 10.9 | 12.6 / 14.9 |
+
+Shadow-map size (2048), the shadow filter (basic vs PCF) and removing prop shadow casters did not help, so the
+cost is the per-frame shadow pass over the many bench-scene meshes rather than sampling or map resolution;
+vegetation (instanced) is cheap. Later runs were noisy because a second build/test job shared the machine;
+re-measure on an idle machine before changing defaults. Candidates: shadow pass every other frame (static sun),
+merging bench-scene props, capping DPR at 1.5. With vsync on, the M3 holds 60 fps in all measured views.
 
 ## Open decisions for Christian
 
