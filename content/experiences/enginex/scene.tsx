@@ -33,6 +33,7 @@ const palette = {
 const LOT = 0.105;
 const LOT_STEP = 0.12;
 const MAX_LOTS_SHOWN = 8;
+const OVERFLOW_COLOR = new Color('#f0b44c');
 const LEVELS = MAX_PRICE - MIN_PRICE + 1;
 const LADDER_Z = -0.32;
 const levelY = (price: number): number => 0.17 + (price - MIN_PRICE) * 0.135;
@@ -83,6 +84,16 @@ function placeSide(
         instance += 1;
       }
     });
+    // A deeper level than the ladder shows gets a small flat marker past its last cube, so it is not undercounted.
+    const total = level.orders.reduce((sum, order) => sum + order.qty, 0);
+    if (total > MAX_LOTS_SHOWN) {
+      dummy.position.set(direction * (0.13 + MAX_LOTS_SHOWN * LOT_STEP - 0.02), levelY(level.price), LADDER_Z);
+      dummy.scale.set(0.03, LOT, LOT);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(instance, dummy.matrix);
+      mesh.setColorAt(instance, OVERFLOW_COLOR);
+      instance += 1;
+    }
   }
   dummy.scale.setScalar(0);
   dummy.updateMatrix();
@@ -234,11 +245,11 @@ export default function EnginexScene(props: ExperienceSceneProps) {
         </RevealStage>
 
         <RevealStage stage={3}>
-          <instancedMesh ref={bidsRef} args={[undefined, undefined, LEVELS * MAX_LOTS_SHOWN]} castShadow frustumCulled={false}>
+          <instancedMesh ref={bidsRef} args={[undefined, undefined, LEVELS * (MAX_LOTS_SHOWN + 1)]} castShadow frustumCulled={false}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial roughness={0.55} />
           </instancedMesh>
-          <instancedMesh ref={asksRef} args={[undefined, undefined, LEVELS * MAX_LOTS_SHOWN]} castShadow frustumCulled={false}>
+          <instancedMesh ref={asksRef} args={[undefined, undefined, LEVELS * (MAX_LOTS_SHOWN + 1)]} castShadow frustumCulled={false}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial roughness={0.55} />
           </instancedMesh>

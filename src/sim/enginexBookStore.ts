@@ -75,12 +75,11 @@ export const useEnginexBook = create<EnginexBookState>((set, get) => ({
     const replayed = replayJournal(sim.journal);
     const hash = bookHash(replayed);
     const replay = { entries: sim.journal.length, hash, matches: hash === bookHash(sim), atTick: sim.tick };
-    set({
-      replay,
-      announcement: `Replayed ${replay.entries} journal entries into an empty book: state ${hash}, ${
-        replay.matches ? 'the same as the live book.' : 'not the same as the live book.'
-      }`,
-    });
+    const text = `Replayed ${replay.entries} journal entries into an empty book: state ${hash}, ${
+      replay.matches ? 'the same as the live book.' : 'not the same as the live book.'
+    }`;
+    // A repeated replay in the same state would give the same text, which a live region does not re-announce.
+    set({ replay, announcement: text === get().announcement ? `${text} (again)` : text });
   },
   restart: () => set({ sim: createBook(get().sim.seed + 1), pending: 0, replay: null, announcement: '' }),
 }));
