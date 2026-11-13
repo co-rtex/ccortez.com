@@ -1,15 +1,20 @@
 import { useFrame } from '@react-three/fiber';
 import { useMemo } from 'react';
 import { Vector3 } from 'three';
+import type { PerspectiveCamera } from 'three';
+
+import { getFollowLookAhead } from './followCamera';
 
 import { useGameStore } from '../state/gameStore';
 import { PLAYER_CAMERA_LOOK_HEIGHT } from './playerAvatar';
 import { SCENIC_FORWARD_XZ } from './scenic';
 import { getRestSpotSeatAnchor, getScenicRestSpotById } from './restSpots';
 
-const followOffset = new Vector3(0, 15, 15);
+// A lower, forward-looking follow camera: the horizon, sky and distant landmarks stay in frame while the
+// player sits in the lower third. The yaw is still fixed (the camera never orbits).
+const followOffset = new Vector3(0, 9.6, 14.6);
 const editorFocusOffset = new Vector3(0, 11.5, 11.5);
-const lookOffset = new Vector3(0, PLAYER_CAMERA_LOOK_HEIGHT, 0);
+const lookOffset = new Vector3(0, PLAYER_CAMERA_LOOK_HEIGHT + 0.3, -6.2);
 const DEFAULT_CAMERA_BLEND_SPEED = 6;
 
 export function CameraRig(): null {
@@ -65,6 +70,7 @@ export function CameraRig(): null {
     }
 
     targetPosition.set(state.playerPosition.x, state.playerPosition.y, state.playerPosition.z).add(followOffset);
+    lookOffset.z = getFollowLookAhead((camera as PerspectiveCamera).aspect ?? 1.6);
     lookTarget.set(state.playerPosition.x, state.playerPosition.y, state.playerPosition.z).add(lookOffset);
 
     const interpolation = 1 - Math.exp(-blendSpeed * delta);
