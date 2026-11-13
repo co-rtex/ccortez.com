@@ -12,10 +12,10 @@ export const PLAZA_FLOOR_COLORS = {
   stoneLight: '#f1e3c4',
   stoneDark: '#dcc59c',
   mortar: '#c9ae88',
-  terracotta: '#d4825a',
-  terracottaDark: '#b9643f',
-  lawnLight: '#93cc63',
-  lawnDark: '#6cab4c',
+  terracotta: '#d98a5f',
+  terracottaDark: '#c4714c',
+  lawnLight: '#9ccc58',
+  lawnDark: '#6fa94a',
   kerb: '#c7ac83',
 } as const;
 
@@ -115,10 +115,10 @@ vec3 plazaAlbedo(vec2 xz) {
 
   // Court: paving with a terracotta eight-point compass and a banded rim.
   vec3 court = polarPaving(r, a, 0.82, 1.05, wear);
-  float star = abs(cos(a * 4.0));
-  float starRadius = mix(3.6, 7.6, pow(star, 6.0));
+  float star = abs(cos((a - 0.3927) * 4.0));
+  float starRadius = mix(3.6, uCourt - 1.4, pow(star, 6.0));
   float inStar = (1.0 - smoothstep(starRadius - aa, starRadius + aa, r)) * smoothstep(3.0 - aa, 3.0 + aa, r);
-  float starSide = step(0.0, sin(a * 8.0));
+  float starSide = step(0.0, sin((a - 0.3927) * 8.0));
   court = mix(court, mix(uTerracotta, uTerracottaDark, starSide) * (0.95 + wear * 0.08), inStar * 0.88);
   float band = smoothstep(uCourt - 0.75 - aa, uCourt - 0.75 + aa, r) * (1.0 - smoothstep(uCourt - 0.35 - aa, uCourt - 0.35 + aa, r));
   court = mix(court, uTerracotta * (0.92 + wear * 0.1), band);

@@ -66,10 +66,12 @@ export const WORLD_WATER_BODIES: WaterBodyDefinition[] = [
   },
 ];
 
+// South of the fountain on the south spoke: the follow camera sits south of the player, so the first frame
+// looks north across the fountain and armillary toward the Start Here bench.
 export const PLAYER_START: WorldAnchor = {
   x: 0,
   y: 0.8,
-  z: -12,
+  z: 11.5,
 };
 
 const MAX_LAKE_RADIUS_FACTOR = 1.2;

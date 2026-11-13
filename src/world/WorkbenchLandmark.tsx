@@ -2,7 +2,7 @@ import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
-import { DoubleSide, Shape } from 'three';
+import { Color, DoubleSide, Shape } from 'three';
 import type { Group, MeshStandardMaterial } from 'three';
 
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -335,16 +335,17 @@ interface WorkbenchLandmarkProps {
  * reads as a set of destinations from across the plaza before any scene streams in.
  */
 function BenchDais({ accent }: { accent: string }) {
-  // Compact plinth: the scene's own platform (radius ~4.2) covers it once the bench reveals.
+  // Compact plinth tinted with the category colour (the guide's legend: orange experiences, blue projects).
+  // Kept below the revealed platform's top (0.10) so scene props are never buried.
+  const top = useMemo(() => new Color('#f6ead2').lerp(new Color(accent), 0.32), [accent]);
   return (
     <group>
-      {/* Kept below the revealed platform's top (0.10) so scene props are never buried. */}
       <mesh castShadow receiveShadow position={[0, 0.04, 0]}>
         <cylinderGeometry args={[2.62, 2.74, 0.08, 48]} />
-        <meshStandardMaterial color="#f1e6cf" roughness={0.82} />
+        <meshStandardMaterial color={top} roughness={0.8} />
       </mesh>
       <mesh position={[0, 0.03, 0]}>
-        <cylinderGeometry args={[2.78, 2.8, 0.06, 48, 1, true]} />
+        <cylinderGeometry args={[2.8, 2.84, 0.07, 48, 1, true]} />
         <meshStandardMaterial color={accent} roughness={0.6} />
       </mesh>
     </group>
@@ -491,8 +492,8 @@ export function WorkbenchLandmark({
             <boxGeometry args={[5.8, 2.8, 5.8]} />
             <meshBasicMaterial transparent opacity={0} depthWrite={false} />
           </mesh>
-          <BenchDais accent={palette.accent} />
-          <BenchPennant accent={palette.accent} seed={workbench.definition.id.length} />
+          <BenchDais accent={indicatorColor} />
+          <BenchPennant accent={indicatorColor} seed={workbench.definition.id.length} />
         </>
       )}
 

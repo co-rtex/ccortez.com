@@ -15,13 +15,13 @@ import { CENTRAL_PLAZA_FOUNTAIN_RADIUS } from '../hub';
 const STONE = '#efe1c4';
 const STONE_SHADE = '#d8c29b';
 const TERRACOTTA = '#cf7c55';
-const BRASS = '#d9a441';
+const BRASS = '#d4a24c';
 
 const BASIN_OUTER = CENTRAL_PLAZA_FOUNTAIN_RADIUS + 0.2;
 const BASIN_WATER_Y = 0.46;
 const BOWL_Y = 1.62;
 const BOWL_RADIUS = 1.05;
-const ARMILLARY_Y = 4.55;
+const ARMILLARY_Y = 4.4;
 
 function lathe(points: Array<[number, number]>, segments = 56): LatheGeometry {
   return new LatheGeometry(points.map(([x, y]) => new Vector2(x, y)), segments);
@@ -92,27 +92,27 @@ function Armillary() {
     <group position={[0, ARMILLARY_Y, 0]}>
       <group ref={outerRef}>
         <mesh castShadow rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[1.02, 0.055, 12, 64]} />
+          <torusGeometry args={[0.78, 0.045, 12, 64]} />
           <meshStandardMaterial color={BRASS} metalness={0.75} roughness={0.32} />
         </mesh>
         <mesh castShadow>
-          <torusGeometry args={[1.02, 0.055, 12, 64]} />
+          <torusGeometry args={[0.78, 0.045, 12, 64]} />
           <meshStandardMaterial color={BRASS} metalness={0.75} roughness={0.32} />
         </mesh>
         <group ref={innerRef}>
           <mesh castShadow rotation={[Math.PI / 2 - 0.41, 0, 0]}>
-            <torusGeometry args={[0.84, 0.075, 12, 64]} />
+            <torusGeometry args={[0.64, 0.06, 12, 64]} />
             <meshStandardMaterial color={TERRACOTTA} metalness={0.2} roughness={0.5} />
           </mesh>
         </group>
         <mesh rotation={[0, 0, 0.41]}>
-          <cylinderGeometry args={[0.025, 0.025, 2.6, 8]} />
+          <cylinderGeometry args={[0.022, 0.022, 2.0, 8]} />
           <meshStandardMaterial color={BRASS} metalness={0.75} roughness={0.32} />
         </mesh>
       </group>
       <mesh>
-        <sphereGeometry args={[0.34, 32, 24]} />
-        <meshStandardMaterial color="#ffd27a" emissive="#ffb347" emissiveIntensity={1.6} toneMapped={false} />
+        <sphereGeometry args={[0.2, 24, 18]} />
+        <meshStandardMaterial color={BRASS} metalness={0.8} roughness={0.25} />
       </mesh>
     </group>
   );
@@ -212,7 +212,6 @@ export function PlazaFountain({ y }: { y: number }) {
       <Armillary />
 
       <Sparkles count={26} speed={0.3} size={2.2} color="#f2feff" opacity={0.5} scale={[4.6, 1.2, 4.6]} position={[0, 0.9, 0]} />
-      <pointLight position={[0, ARMILLARY_Y, 0]} color="#ffbe6b" intensity={6} distance={14} decay={1.6} />
-    </group>
+          </group>
   );
 }

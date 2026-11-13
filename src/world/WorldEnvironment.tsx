@@ -17,14 +17,9 @@ import {
 import type { ShaderMaterial } from 'three';
 
 import { WORLD_BOUNDS, WORLD_WATER_BODIES } from './constants';
-import {
-  BOULDER_POINTS,
-  BUSH_POINTS,
-  COASTAL_ROCK_POINTS,
-  FLOWER_POINTS,
-  TREE_POINTS,
-} from './biome';
+import { BOULDER_POINTS, COASTAL_ROCK_POINTS, TREE_POINTS } from './biome';
 import { CentralPlaza } from './plaza/CentralPlaza';
+import { InstancedVegetation } from './vegetation/InstancedVegetation';
 import { IslandTrails } from './plaza/IslandTrails';
 import {
   OCEAN_LEVEL,
@@ -48,7 +43,6 @@ import { LakeFaunaManager } from './LakeFaunaManager';
 import { planeXYToWorldXZ, worldXZToPlaneXY } from './renderSpace';
 
 import type { WaterBodyDefinition } from './constants';
-import type { RockPoint, ScatterPoint } from './biome';
 import type { ScenicRestSpotDefinition } from './restSpots';
 
 function buildTerrainGeometry(): PlaneGeometry {
@@ -423,52 +417,6 @@ function StylizedWater({ body }: { body: WaterBodyDefinition }) {
   );
 }
 
-function StylizedTree({ point }: { point: ScatterPoint }) {
-  const trunkHeight = 2.2 + ((point.seed * 0.09) % 1.02);
-  const canopyRadius = 1.02 + ((point.seed * 0.04) % 0.45);
-  const y = getTerrainHeight(point.x, point.z);
-
-  return (
-    <group position={[point.x, y, point.z]}>
-      <mesh castShadow position={[0, trunkHeight * 0.5, 0]}>
-        <cylinderGeometry args={[0.16, 0.26, trunkHeight, 12]} />
-        <meshStandardMaterial color="#8f6342" roughness={0.9} />
-      </mesh>
-
-      <mesh castShadow position={[0, trunkHeight + 0.48, 0]}>
-        <sphereGeometry args={[canopyRadius, 18, 18]} />
-        <meshStandardMaterial color="#68be72" roughness={0.74} />
-      </mesh>
-
-      <mesh castShadow position={[0.42, trunkHeight + 0.2, 0.25]}>
-        <sphereGeometry args={[canopyRadius * 0.74, 16, 16]} />
-        <meshStandardMaterial color="#5aae69" roughness={0.76} />
-      </mesh>
-
-      <mesh castShadow position={[-0.36, trunkHeight + 0.1, -0.2]}>
-        <sphereGeometry args={[canopyRadius * 0.68, 16, 16]} />
-        <meshStandardMaterial color="#60b66f" roughness={0.76} />
-      </mesh>
-
-      <mesh castShadow position={[-0.02, trunkHeight + 0.86, 0.1]}>
-        <sphereGeometry args={[canopyRadius * 0.42, 14, 14]} />
-        <meshStandardMaterial color="#76cc7d" roughness={0.72} />
-      </mesh>
-    </group>
-  );
-}
-
-function Rock({ point, color }: { point: RockPoint; color: string }) {
-  const y = getTerrainHeight(point.x, point.z) + point.size;
-
-  return (
-    <mesh castShadow receiveShadow position={[point.x, y, point.z]}>
-      <dodecahedronGeometry args={[point.size, 0]} />
-      <meshStandardMaterial color={color} roughness={0.9} metalness={0} flatShading />
-    </mesh>
-  );
-}
-
 function ScenicRestSpotBench({ spot }: { spot: ScenicRestSpotDefinition }) {
   const y = getTerrainHeight(spot.seat.x, spot.seat.z);
 
@@ -509,7 +457,8 @@ function PuffyCloud({ position, scale, tint }: { position: [number, number, numb
   const sunwardZ = SCENIC_FORWARD_XZ.z * 0.9;
 
   return (
-    <group position={position} scale={scale}>
+    // Flattened and widened so distant clouds read as soft banks rather than balls.
+    <group position={position} scale={[scale * 1.7, scale * 0.62, scale * 1.1]}>
       <mesh>
         <sphereGeometry args={[1.3, 18, 18]} />
         <meshStandardMaterial color={tint} roughness={1} emissive="#ffd8cc" emissiveIntensity={0.55} />
@@ -538,39 +487,6 @@ function PuffyCloud({ position, scale, tint }: { position: [number, number, numb
   );
 }
 
-function FlowerPatch({ point }: { point: ScatterPoint }) {
-  const y = getTerrainHeight(point.x, point.z);
-  const petalColors = ['#ff9fc7', '#ffd875', '#bda8ff', '#ffb687', '#8bd5ff'];
-
-  return (
-    <group position={[point.x, y + 0.04, point.z]}>
-      {new Array(6).fill(0).map((_, index) => {
-        const angle = ((Math.PI * 2) / 6) * index + point.seed;
-        const radius = 0.3 + (index % 2) * 0.09;
-        const px = Math.cos(angle) * radius;
-        const pz = Math.sin(angle) * radius;
-        const color = petalColors[(index + Math.floor(point.seed * 10)) % petalColors.length] ?? '#ffd875';
-
-        return (
-          <mesh key={`petal-${index}`} castShadow position={[px, 0.07, pz]}>
-            <sphereGeometry args={[0.13, 10, 10]} />
-            <meshStandardMaterial color={color} roughness={0.54} metalness={0.03} emissive={color} emissiveIntensity={0.03} />
-          </mesh>
-        );
-      })}
-
-      <mesh position={[0, 0.1, 0]}>
-        <cylinderGeometry args={[0.02, 0.03, 0.2, 8]} />
-        <meshStandardMaterial color="#679a4e" roughness={0.8} />
-      </mesh>
-      <mesh castShadow position={[0, 0.1, 0]}>
-        <sphereGeometry args={[0.1, 10, 10]} />
-        <meshStandardMaterial color="#fff1c9" roughness={0.58} metalness={0.02} emissive="#ffdba0" emissiveIntensity={0.04} />
-      </mesh>
-    </group>
-  );
-}
-
 export function WorldEnvironment() {
   const terrainGeometry = useMemo(() => buildTerrainGeometry(), []);
   const skyGroupRef = useRef<Group>(null);
@@ -589,9 +505,9 @@ export function WorldEnvironment() {
   );
   const skyUniforms = useMemo(
     () => ({
-      uEdgeBlue: { value: new Color('#3d5aa6') },
-      uViolet: { value: new Color('#6c63b5') },
-      uMauve: { value: new Color('#a684b3') },
+      uEdgeBlue: { value: new Color('#7f93d6') },
+      uViolet: { value: new Color('#a59ad8') },
+      uMauve: { value: new Color('#d5a3be') },
       uRose: { value: new Color('#e99aa6') },
       uAmber: { value: new Color('#f3a34c') },
       uTangerine: { value: new Color('#f17e3b') },
@@ -716,8 +632,8 @@ export function WorldEnvironment() {
 
   return (
     <>
-      <color attach="background" args={['#3d5aa6']} />
-      <fog attach="fog" args={['#d9b3b8', 150, 460]} />
+      <color attach="background" args={['#7f93d6']} />
+      <fog attach="fog" args={['#f0c9a8', 150, 460]} />
 
       <group>
       <group ref={skyGroupRef}>
@@ -737,7 +653,7 @@ export function WorldEnvironment() {
 
       {/* Golden hour: a warm, not orange, key light; cool skylight fills the shadows with blue-violet. */}
       <ambientLight intensity={0.18} color="#fff1e3" />
-      <hemisphereLight intensity={1.05} color="#c4d2ff" groundColor="#7d8a5a" />
+      <hemisphereLight intensity={1.05} color="#c3c0f2" groundColor="#7d8a5a" />
       <directionalLight
         castShadow
         intensity={2.35}
@@ -798,34 +714,7 @@ export function WorldEnvironment() {
       <CentralPlaza />
       <IslandTrails />
 
-      {TREE_POINTS.map((point, index) => (
-        <StylizedTree key={`tree-${index}`} point={point} />
-      ))}
-
-      {BUSH_POINTS.map((point, index) => (
-        <group key={`bush-${index}`} position={[point.x, getTerrainHeight(point.x, point.z), point.z]}>
-          <mesh castShadow position={[0, 0.38, 0]}>
-            <sphereGeometry args={[0.66, 16, 16]} />
-            <meshStandardMaterial color="#6bb26f" roughness={0.8} />
-          </mesh>
-          <mesh castShadow position={[0.42, 0.3, -0.18]}>
-            <sphereGeometry args={[0.42, 14, 14]} />
-            <meshStandardMaterial color="#62a969" roughness={0.82} />
-          </mesh>
-        </group>
-      ))}
-
-      {FLOWER_POINTS.map((point, index) => (
-        <FlowerPatch key={`flower-${index}`} point={point} />
-      ))}
-
-      {BOULDER_POINTS.map((point, index) => (
-        <Rock key={`boulder-${index}`} point={point} color="#b9b2a6" />
-      ))}
-
-      {COASTAL_ROCK_POINTS.map((point, index) => (
-        <Rock key={`coastal-rock-${index}`} point={point} color="#c2b8a8" />
-      ))}
+      <InstancedVegetation />
 
       {SCENIC_REST_SPOTS.map((spot) => (
         <ScenicRestSpotBench key={spot.id} spot={spot} />
@@ -837,11 +726,11 @@ export function WorldEnvironment() {
       <LakeFaunaManager />
 
       {/* Clouds sit in a ring around the island so they frame the horizon instead of covering the land. */}
-      <PuffyCloud position={[-96, 34, -70]} scale={4.2} tint="#fff6f1" />
+      <PuffyCloud position={[-60, 30, 110]} scale={4.2} tint="#fff6f1" />
       <PuffyCloud position={[-20, 40, -120]} scale={3.6} tint="#f6f2ff" />
       <PuffyCloud position={[80, 36, -96]} scale={4} tint="#fff7ef" />
       <PuffyCloud position={[118, 31, 20]} scale={3.4} tint="#f4f1ff" />
-      <PuffyCloud position={[-128, 30, 48]} scale={3.8} tint="#fff3ec" />
+      <PuffyCloud position={[96, 30, 84]} scale={3.8} tint="#fff3ec" />
       <PuffyCloud position={[30, 38, 126]} scale={3.2} tint="#f3f5ff" />
 
       <Sparkles

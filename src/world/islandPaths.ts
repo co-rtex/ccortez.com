@@ -163,12 +163,12 @@ export const PATH_NETWORK_XZ: Array<Array<[number, number]>> = [
   ...ISLAND_TRAILS.map((trail) => trail.points),
 ];
 
-/** Lamp posts flank each spoke where it leaves the court and where it meets the promenade. */
+/** Lamp posts flank each spoke where it leaves the court. */
 export const PLAZA_LAMP_POSITIONS: Array<[number, number]> = PLAZA_PATH_SPOKES.flatMap((spoke) => {
   const forward: [number, number] = [-Math.sin(spoke.angle), -Math.cos(spoke.angle)];
   const side: [number, number] = [forward[1], -forward[0]];
   const offset = spoke.width / 2 + 0.75;
-  return [PLAZA_RADII.court + 0.9, PLAZA_RADII.lawnOuter - 0.9].flatMap((radius) =>
+  return [PLAZA_RADII.court + 0.9].flatMap((radius) =>
     [-1, 1].map((sign): [number, number] => [
       forward[0] * radius + side[0] * offset * sign,
       forward[1] * radius + side[1] * offset * sign,
@@ -177,3 +177,32 @@ export const PLAZA_LAMP_POSITIONS: Array<[number, number]> = PLAZA_PATH_SPOKES.f
 });
 
 export const PLAZA_LAMP_COLLIDER_RADIUS = 0.2;
+
+export interface PlazaFlowerBed {
+  x: number;
+  z: number;
+  /** Rotation about Y so the bed's long axis follows the ring. */
+  rotationY: number;
+  length: number;
+  width: number;
+}
+
+/** Lawn wedges (mid-angles between spokes) used by the district markers; flower beds take the others. */
+export const PLAZA_DISTRICT_MARKER_ANGLES = { work: 1.82, projects: -1.82 } as const;
+export const PLAZA_DISTRICT_MARKER_RADIUS = 14.2;
+
+export const PLAZA_FLOWER_BEDS: PlazaFlowerBed[] = [0.85, -0.85, 2.81, -2.81].map((angle) => {
+  const [x, z] = plazaPoint(angle, 15.6);
+  // Tangent to the ring: perpendicular to the radial direction.
+  return { x, z, rotationY: angle + Math.PI / 2, length: 4.4, width: 1.5 };
+});
+
+/** Circle colliders approximating each bed (three along its length). */
+export const PLAZA_FLOWER_BED_COLLIDERS: Array<{ x: number; z: number; radius: number }> = PLAZA_FLOWER_BEDS.flatMap(
+  (bed) =>
+    [-1.4, 0, 1.4].map((offset) => ({
+      x: bed.x + Math.sin(bed.rotationY) * offset,
+      z: bed.z + Math.cos(bed.rotationY) * offset,
+      radius: 0.85,
+    })),
+);
