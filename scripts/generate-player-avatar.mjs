@@ -63,7 +63,7 @@ const COLORS = {
   khakiShade: '#b59d76',
   canvas: '#e4e0d8',
   canvasShade: '#bdb9b0',
-  sole: '#f0e9db',
+  sole: '#ece6da',
   laces: '#ece9e2',
 };
 
@@ -263,24 +263,29 @@ function buildHead(head) {
     parts.add(ellipsoid(0.0185, 0.0128, 0.0045, 14, 8), COLORS.eyeWhite, { position: [x, c + y, z - 0.002] });
     parts.add(ellipsoid(0.0115, 0.0118, 0.003, 12, 8), COLORS.iris, { position: [x, c + y - 0.0004, z + 0.0006] });
     parts.add(ellipsoid(0.0195, 0.0028, 0.0038, 12, 6), COLORS.lash, { position: [x, c + y + 0.0118, z + 0.0002] });
-    const [bx, by, bz] = onFace(side * 0.044, 0.04, 0.0015);
-    const brow = new THREE.TorusGeometry(0.03, 0.0034, 5, 10, 1.0);
-    parts.add(brow, COLORS.brow, { position: [bx, c + by - 0.024, bz], rotation: [0, -side * 0.12, Math.PI / 2 - 0.5] });
+    // Brows: flat and relaxed, the inner ends lifted a touch (a scowl tilts them the other way).
+    const [bx, by, bz] = onFace(side * 0.044, 0.045, 0.0015);
+    parts.add(ellipsoid(0.02, 0.0032, 0.0035, 12, 6), COLORS.brow, { position: [bx, c + by, bz], rotation: [0, -side * 0.14, -side * 0.09] });
   }
 
   // Nose: small and soft.
   const [, ny, nz] = onFace(0, -0.024, 0);
-  parts.add(ellipsoid(0.0048, 0.012, 0.0048, 8, 6), COLORS.skin, { position: [0, c + ny + 0.004, nz] });
-  parts.add(ellipsoid(0.0068, 0.005, 0.0042, 8, 6), COLORS.skin, { position: [0, c + ny - 0.005, nz + 0.0018] });
+  parts.add(ellipsoid(0.0038, 0.01, 0.0038, 8, 6), COLORS.skin, { position: [0, c + ny + 0.004, nz - 0.0004] });
+  parts.add(ellipsoid(0.0056, 0.004, 0.0034, 8, 6), COLORS.skin, { position: [0, c + ny - 0.004, nz + 0.0012] });
 
-  // A friendly grin: a crescent showing the upper teeth, corners turned up.
-  const [, my, mz] = onFace(0, -0.062, 0);
-  const grin = new THREE.SphereGeometry(1, 16, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2); // lower half: a bowl
-  grin.scale(0.03, 0.012, 0.004);
-  parts.add(grin, COLORS.mouth, { position: [0, c + my + 0.006, mz - 0.0012] });
-  parts.add(ellipsoid(0.0265, 0.0045, 0.0042, 16, 6), COLORS.teeth, { position: [0, c + my + 0.0028, mz - 0.0004] });
-  const lip = new THREE.TorusGeometry(0.031, 0.0022, 5, 18, Math.PI);
-  parts.add(lip, COLORS.lip, { position: [0, c + my + 0.0062, mz - 0.0012], rotation: [0, 0, Math.PI], scale: [1, 0.45, 1] });
+  // A friendly grin: a wide, shallow crescent with a band of upper teeth and corners turned up.
+  const [, my, mz] = onFace(0, -0.06, 0);
+  const grin = new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2); // lower half: a bowl
+  grin.scale(0.036, 0.0095, 0.004);
+  parts.add(grin, COLORS.mouth, { position: [0, c + my + 0.005, mz - 0.0012] });
+  parts.add(ellipsoid(0.031, 0.0042, 0.0042, 16, 6), COLORS.teeth, { position: [0, c + my + 0.0026, mz - 0.0004] });
+  for (const side of [1, -1]) {
+    // Corners lifting into the cheeks.
+    parts.add(ellipsoid(0.007, 0.0022, 0.003, 8, 4), COLORS.skinShade, {
+      position: [side * 0.037, c + my + 0.0078, mz - 0.0016],
+      rotation: [0, 0, side * 0.75],
+    });
+  }
   parts.build(head, 'HeadShape');
 
   buildHair(head);
@@ -295,7 +300,7 @@ function hairlineY(theta) {
   const a = Math.abs(theta);
   if (a < 0.75) return 0.42;
   if (a < 1.75) return 0.42 - (a - 0.75) * 0.4; // past the temples to just above the ears (short sides)
-  return 0.02 - (a - 1.75) * 0.5; // lower at the back, to the nape
+  return 0.02 - (a - 1.75) * 0.5 + 0.06 * Math.sin(theta * 9); // lower at the back, to an uneven nape
 }
 
 function hairCap() {
@@ -359,8 +364,8 @@ function buildHair(head) {
   // reads as a compact wavy mop with volume on top rather than spikes.
   let seed = 10;
   const rows = [
-    { ny: 0.95, count: 3, size: 0.04, spread: 1.6 },
-    { ny: 0.8, count: 6, size: 0.04, spread: 3.3 },
+    { ny: 0.95, count: 3, size: 0.034, spread: 1.6 },
+    { ny: 0.8, count: 6, size: 0.036, spread: 3.3 },
     { ny: 0.62, count: 7, size: 0.036, spread: 4.4 },
     { ny: 0.44, count: 6, size: 0.028, spread: 5.0 },
   ];
@@ -382,9 +387,9 @@ function buildHair(head) {
 
   // Fringe: five soft curls falling forward over the upper forehead, just above the brows.
   [-0.072, -0.048, -0.022, 0.004, 0.03, 0.054, 0.076].forEach((x, index) => {
-    const [fx, fy, fz] = onFace(x, 0.066 - Math.abs(x) * 0.2 - (index % 2) * 0.01, 0.012);
+    const [fx, fy, fz] = onFace(x, 0.074 - Math.abs(x) * 0.2 - (index % 2) * 0.01, 0.012);
     const size = 0.026 + 0.005 * hash(200 + index);
-    parts.add(clump(size, 200 + index, 1.45), COLORS.hair, {
+    parts.add(clump(size, 200 + index, 1.5), COLORS.hair, {
       position: [fx, c + fy, fz],
       rotation: [0.5, 0, (index - 2) * 0.2],
       order: 'YXZ',
@@ -562,8 +567,7 @@ function buildLeg(hips, side) {
   // Knee: a sphere a little inside the trouser radius at the joint, so it fills the gap when the knee bends and
   // stays hidden when the leg is straight (thigh and calf shells meet edge to edge at the same radius).
   lower.add(ellipsoid(0.076, 0.076, 0.072, 10, 8), COLORS.khaki);
-  // A soft fold ring at the knee: a believable crease that also hides where the two shells meet.
-  lower.add(lathe([[0.0, 0.016], [0.0855, 0.014], [0.087, 0.0], [0.0855, -0.014], [0.0, -0.016]], { segments: 10, depth: 0.95 }), COLORS.khaki);
+
   lower.add(
     lathe(
       [
@@ -587,10 +591,10 @@ function buildLeg(hips, side) {
   const shoe = new PartSet();
   // Cream rubber sole band: a rounded footprint, heel behind the ankle, toe well forward.
   const outline = new THREE.Shape();
-  outline.absellipse(0, 0.072, 0.05, 0.133, 0, Math.PI * 2, false, 0);
-  const sole = new THREE.ExtrudeGeometry(outline, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.003, bevelSegments: 1, curveSegments: 18 });
+  outline.absellipse(0, 0.072, 0.047, 0.126, 0, Math.PI * 2, false, 0);
+  const sole = new THREE.ExtrudeGeometry(outline, { depth: 0.024, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.003, bevelSegments: 1, curveSegments: 18 });
   sole.rotateX(Math.PI / 2);
-  shoe.add(sole, COLORS.sole, { position: [0, -SOLE_DEPTH + 0.033, 0] });
+  shoe.add(sole, COLORS.sole, { position: [0, -SOLE_DEPTH + 0.027, 0] });
   // Canvas upper: low, rounded at the toe, with a defined, near-vertical heel.
   const upperShell = new THREE.SphereGeometry(1, 16, 10);
   const sp = upperShell.getAttribute('position');
@@ -598,15 +602,15 @@ function buildLeg(hips, side) {
     const x = sp.getX(i);
     let y = sp.getY(i);
     let z = sp.getZ(i);
-    if (y < 0) y *= 0.1;
+    if (y < 0) y *= 0.4; // the upper's lower edge wraps down over the sole's sides
     if (z < -0.55) z = -0.55 - (z + 0.55) * 0.35; // squared-off heel
     const toeDrop = smoothstep(0.15, 1, z) * 0.45;
     const heelRise = 1 + 0.45 * smoothstep(0.2, -0.6, z); // higher at the heel and ankle collar
     sp.setXYZ(i, x * 0.051, (y - toeDrop * Math.max(y, 0)) * 0.064 * (y > 0 ? heelRise : 1), z * 0.128);
   }
-  shoe.add(upperShell, COLORS.canvas, { position: [0, -SOLE_DEPTH + 0.031, 0.072] });
+  shoe.add(upperShell, COLORS.canvas, { position: [0, -SOLE_DEPTH + 0.04, 0.072] });
   // Rubber toe cap.
-  shoe.add(ellipsoid(0.045, 0.016, 0.024, 12, 6), COLORS.sole, { position: [0, -SOLE_DEPTH + 0.036, 0.172] });
+  shoe.add(ellipsoid(0.044, 0.016, 0.024, 12, 6), COLORS.sole, { position: [0, -SOLE_DEPTH + 0.034, 0.17] });
   // Grey lace panel lying on the instep.
   shoe.add(ellipsoid(0.021, 0.006, 0.042, 10, 6), COLORS.canvasShade, { position: [0, -SOLE_DEPTH + 0.074, 0.095], rotation: [-0.3, 0, 0] });
   shoe.build(foot, `Foot_${suffix}_Sneaker`);
