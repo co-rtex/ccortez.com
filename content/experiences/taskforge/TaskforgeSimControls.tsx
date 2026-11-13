@@ -23,8 +23,8 @@ export function TaskforgeSimControls() {
     <section className="taskforge-sim" aria-labelledby="taskforge-sim-title">
       <h4 id="taskforge-sim-title">Crash a worker</h4>
       <p>
-        The bench is running a toy model of TaskForge&apos;s rules (the same deterministic simulation as the homepage of
-        ccortez.com, not the real system). Crash a worker that is holding a job: its heartbeats stop, the lease ring
+        The bench is running a toy model of TaskForge&apos;s rules (the same deterministic simulation as the homepage and
+        the TaskForge case study on ccortez.com, not the real system). Crash a worker that is holding a job: its heartbeats stop, the lease ring
         runs down, and the reconciler gives the job to another worker.
       </p>
       <div className="taskforge-sim__buttons">
