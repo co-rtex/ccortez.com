@@ -1740,9 +1740,9 @@ body {
   border: 0;
 }
 
-/* Phones: the details panel is a bottom sheet, so the bench stays in view above it while its controls are used
-   (the camera shifts the view up to centre the bench in the uncovered part). */
-@media (max-width: 700px) {
+/* Phones and portrait tablets: the details panel is a bottom sheet, so the bench stays in view above it while its
+   controls are used (the camera shifts the view up to centre the bench in the uncovered part). */
+@media (max-width: 700px), (max-width: 1024px) and (orientation: portrait) {
   .experience-panel {
     top: auto;
     bottom: 0;
@@ -1756,5 +1756,12 @@ body {
 
   .experience-panel--open {
     transform: translateY(0);
+  }
+}
+
+/* Landscape phones and small tablets: a side panel that leaves the left part of the screen to the bench. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .experience-panel {
+    width: min(430px, 55vw);
   }
 }
