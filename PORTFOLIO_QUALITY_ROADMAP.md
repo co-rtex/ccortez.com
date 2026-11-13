@@ -260,7 +260,12 @@ prop shadow casters did not help, while updating the shadow map every other fram
 | 30 Hz shadows (default) | 10.1–10.4 / 13.3–15.7 | 15.3–15.9 / 20.6–33.3 |
 | no shadows (reference) | 5.1 / 8.7 | 6.5 / 7.4 |
 
-Remaining: the overview p95 still spikes when the whole bench ring is on screen (~1,160 draw calls); merging each
+Re-measured after the flagship pass (2026-11-13, same setup, two runs): spawn median 6.4–7.0 ms, p95 12.3–12.7 ms
+(518 draw calls); overview median 11.7–11.8 ms, p95 24.0–26.1 ms (1,026 draw calls). The four flagship dioramas
+are instanced and replaced multi-mesh desks; other commits on the branch also changed since the table above, so
+this is a measurement of the branch, not of the pass alone.
+
+Remaining: the overview p95 still spikes when the whole bench ring is on screen (~1,160 draw calls then, 1,026 now); merging each
 bench scene's static props into a few meshes is the next lever. With vsync on, the M3 holds 60 fps everywhere
 measured. All figures are from one Apple M3 in Chrome; no phone GPU has been measured.
 
