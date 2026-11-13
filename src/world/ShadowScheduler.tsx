@@ -3,25 +3,26 @@ import { useEffect, useRef } from 'react';
 
 import { hasPerfFlag } from './perfFlags';
 
-/** Experimental: re-render the shadow map every other frame (the sun never moves). */
+/** Experimental (`?perf=shadowhalf`): re-render the shadow map every other frame (the sun never moves). */
 export function ShadowScheduler(): null {
-  const gl = useThree((state) => state.gl);
+  const getState = useThree((state) => state.get);
   const frame = useRef(0);
   const enabled = hasPerfFlag('shadowhalf');
 
   useEffect(() => {
     if (!enabled) return;
-    gl.shadowMap.autoUpdate = false;
-    gl.shadowMap.needsUpdate = true;
+    const { shadowMap } = getState().gl;
+    shadowMap.autoUpdate = false;
+    shadowMap.needsUpdate = true;
     return () => {
-      gl.shadowMap.autoUpdate = true;
+      shadowMap.autoUpdate = true;
     };
-  }, [enabled, gl]);
+  }, [enabled, getState]);
 
-  useFrame(() => {
+  useFrame((state) => {
     if (!enabled) return;
     frame.current += 1;
-    if (frame.current % 2 === 0) gl.shadowMap.needsUpdate = true;
+    if (frame.current % 2 === 0) state.gl.shadowMap.needsUpdate = true;
   });
 
   return null;
