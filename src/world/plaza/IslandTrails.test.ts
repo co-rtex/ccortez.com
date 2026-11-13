@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ISLAND_TRAILS } from '../islandPaths';
-import { buildTrailGeometry } from './IslandTrails';
+import { buildTrailGeometry } from './trailGeometry';
 
 describe('island trail geometry', () => {
   it('faces upward so the ribbon is not back-face culled from above', () => {
