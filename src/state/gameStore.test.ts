@@ -76,4 +76,11 @@ describe('game store camera state', () => {
     expect(useGameStore.getState().cameraMode).toBe('follow');
     expect(useGameStore.getState().playerMode).toBe('exploring');
   });
+
+  it('numbers each fast-travel request, so the same destination twice is still two requests', () => {
+    const before = useGameStore.getState().travelRequest?.serial ?? 0;
+    useGameStore.getState().requestTravel({ x: 1, z: 2, facingYaw: 0.5 });
+    useGameStore.getState().requestTravel({ x: 1, z: 2, facingYaw: 0.5 });
+    expect(useGameStore.getState().travelRequest).toEqual({ x: 1, z: 2, facingYaw: 0.5, serial: before + 2 });
+  });
 });

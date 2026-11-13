@@ -270,4 +270,35 @@ describe('summarizeOpenedProgress', () => {
   it('starts at zero', () => {
     expect(summarizeOpenedProgress(markers, [])).toEqual({ opened: 0, total: 3 });
   });
+
+  it('tags only flagships (benches with a case study) as featured and lists them first in their section', () => {
+    const data = deriveRecruiterNavigatorData(
+      [
+        createWorkbenchRecord({
+          id: 'anchor-project',
+          title: 'Anchor Project',
+          priorityTier: 'anchor',
+          linkedType: 'project',
+          x: 0,
+          z: -3,
+        }),
+        createWorkbenchRecord({
+          id: 'taskforge',
+          title: 'TaskForge',
+          priorityTier: 'anchor',
+          linkedType: 'project',
+          x: 4,
+          z: -3,
+        }),
+      ],
+      { x: 0, y: 0, z: 0 },
+      null,
+      null,
+    );
+    const projects = data.shortlistSections.flatMap((section) => section.entries);
+    expect(projects.map((entry) => [entry.id, entry.featured])).toEqual([
+      ['taskforge', true],
+      ['anchor-project', false],
+    ]);
+  });
 });
