@@ -558,7 +558,8 @@ export function WorldEnvironment() {
         shadow-camera-top={120}
         shadow-camera-bottom={-120}
       />
-      <directionalLight intensity={0.45} position={[-48, 30, -46]} color="#9fb6ff" />
+      {/* Cool fill from opposite the sun so faces turned away from it (the west benches) are not lost in shadow. */}
+      <directionalLight intensity={0.85} position={[96, 38, -46]} color="#c4cbff" />
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, OCEAN_LEVEL - 0.03, 0]}>
         <planeGeometry args={[2400, 2400]} />

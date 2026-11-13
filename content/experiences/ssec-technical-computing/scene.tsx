@@ -144,22 +144,22 @@ function DeskMonitor({
     <group ref={groupRef} position={position} rotation={rotation}>
       <mesh castShadow position={[0, 0, -0.02]}>
         <boxGeometry args={[1.02, 0.62, 0.08]} />
-        <meshStandardMaterial color="#2c3139" roughness={0.35} metalness={0.5} />
+        <meshStandardMaterial color="#5d5e60" roughness={0.35} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[0, -0.36, -0.01]}>
         <boxGeometry args={[0.12, 0.42, 0.08]} />
-        <meshStandardMaterial color="#848f99" roughness={0.32} metalness={0.44} />
+        <meshStandardMaterial color="#848f99" roughness={0.32} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[0, -0.56, 0.04]}>
         <boxGeometry args={[0.38, 0.05, 0.26]} />
-        <meshStandardMaterial color="#56606c" roughness={0.35} metalness={0.28} />
+        <meshStandardMaterial color="#56606c" roughness={0.35} metalness={0.12} />
       </mesh>
 
       <mesh position={[0, 0, 0.025]}>
         <boxGeometry args={[0.92, 0.52, 0.03]} />
         <meshStandardMaterial
           ref={screenMaterialRef}
-          color={variant === 'tickets' ? '#173437' : '#152639'}
+          color={variant === 'tickets' ? '#4e605f' : '#4d5760'}
           emissive={variant === 'tickets' ? '#4cc6c1' : '#7fbaff'}
           emissiveIntensity={0.6}
           roughness={0.2}
@@ -273,17 +273,17 @@ function RackCabinet({
     <group position={position} rotation={rotation}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={[0.98, 2.36, 0.96]} />
-        <meshStandardMaterial color="#20252b" roughness={0.42} metalness={0.55} />
+        <meshStandardMaterial color="#8d959e" roughness={0.6} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[0, 0.02, 0.45]}>
         <boxGeometry args={[0.88, 2.18, 0.06]} />
         <meshStandardMaterial
           ref={doorMaterialRef}
-          color="#2b3340"
+          color="#a1aab4"
           emissive="#68cbd4"
           emissiveIntensity={0.12}
           roughness={0.24}
-          metalness={0.22}
+          metalness={0.12}
         />
       </mesh>
       {slotLayout.map((slot, index) => (
@@ -303,13 +303,13 @@ function RackCabinet({
           </mesh>
           <mesh position={[slot.x, slot.y - 0.1, 0.47]}>
             <boxGeometry args={[0.2, 0.06, 0.01]} />
-            <meshStandardMaterial color="#6a7480" roughness={0.42} metalness={0.3} />
+            <meshStandardMaterial color="#6a7480" roughness={0.42} metalness={0.12} />
           </mesh>
         </group>
       ))}
       <mesh position={[0, -1.02, 0]}>
         <boxGeometry args={[1.08, 0.18, 1.02]} />
-        <meshStandardMaterial color="#313943" roughness={0.46} metalness={0.34} />
+        <meshStandardMaterial color="#6d7681" roughness={0.6} metalness={0.12} />
       </mesh>
     </group>
   );
@@ -362,23 +362,23 @@ function OrbitCraft({
     <group ref={groupRef}>
       <mesh castShadow rotation={[0, 0, Math.PI * 0.5]}>
         <cylinderGeometry args={[0.11, 0.15, 0.64, 14]} />
-        <meshStandardMaterial color="#d8dde5" roughness={0.28} metalness={0.46} />
+        <meshStandardMaterial color="#d8dde5" roughness={0.28} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[0.24, 0.03, 0]}>
         <sphereGeometry args={[0.12, 14, 14]} />
-        <meshStandardMaterial color="#f0b470" roughness={0.32} metalness={0.16} />
+        <meshStandardMaterial color="#f0b470" roughness={0.32} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[-0.22, 0, 0]}>
         <coneGeometry args={[0.11, 0.18, 10]} />
-        <meshStandardMaterial color="#8d97a6" roughness={0.28} metalness={0.42} />
+        <meshStandardMaterial color="#8d97a6" roughness={0.28} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[0, 0, 0.26]}>
         <boxGeometry args={[0.44, 0.03, 0.18]} />
-        <meshStandardMaterial color="#5e6a78" roughness={0.38} metalness={0.35} />
+        <meshStandardMaterial color="#5e6a78" roughness={0.38} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[0, 0, -0.26]}>
         <boxGeometry args={[0.44, 0.03, 0.18]} />
-        <meshStandardMaterial color="#5e6a78" roughness={0.38} metalness={0.35} />
+        <meshStandardMaterial color="#5e6a78" roughness={0.38} metalness={0.12} />
       </mesh>
       <mesh position={[-0.3, 0, 0]}>
         <sphereGeometry args={[0.07, 12, 12]} />
@@ -521,7 +521,7 @@ function AccessBadge({ isNearby, isFocused }: { isNearby: boolean; isFocused: bo
       </mesh>
       <mesh position={[0, 0.05, 0.03]}>
         <torusGeometry args={[0.06, 0.016, 8, 16]} />
-        <meshStandardMaterial color="#f6f3ea" roughness={0.18} metalness={0.18} />
+        <meshStandardMaterial color="#f6f3ea" roughness={0.18} metalness={0.12} />
       </mesh>
       <mesh position={[0, -0.1, 0.03]}>
         <boxGeometry args={[0.16, 0.05, 0.01]} />
@@ -557,15 +557,15 @@ function StylizedOperator({ isNearby, isFocused }: { isNearby: boolean; isFocuse
     <group ref={groupRef} position={[0.02, 0.28, 0.68]}>
       <mesh castShadow position={[0, 0.3, 0.02]}>
         <boxGeometry args={[0.7, 0.1, 0.7]} />
-        <meshStandardMaterial color="#46505a" roughness={0.56} metalness={0.22} />
+        <meshStandardMaterial color="#46505a" roughness={0.56} metalness={0.12} />
       </mesh>
       <mesh castShadow position={[0, 0.58, -0.08]}>
         <boxGeometry args={[0.48, 0.52, 0.22]} />
-        <meshStandardMaterial color="#2d3c48" roughness={0.62} />
+        <meshStandardMaterial color="#5e666b" roughness={0.62} />
       </mesh>
       <mesh castShadow position={[0, 0.06, -0.18]}>
         <boxGeometry args={[0.12, 0.58, 0.12]} />
-        <meshStandardMaterial color="#46505a" roughness={0.58} metalness={0.18} />
+        <meshStandardMaterial color="#46505a" roughness={0.58} metalness={0.12} />
       </mesh>
 
       <mesh castShadow position={[0, 1.18, -0.02]}>
@@ -582,11 +582,11 @@ function StylizedOperator({ isNearby, isFocused }: { isNearby: boolean; isFocuse
       </mesh>
       <mesh castShadow position={[-0.12, 0.64, 0.16]} rotation={[1.28, 0.06, 0.12]}>
         <cylinderGeometry args={[0.08, 0.08, 0.54, 12]} />
-        <meshStandardMaterial color="#2d3c48" roughness={0.7} />
+        <meshStandardMaterial color="#5e666b" roughness={0.7} />
       </mesh>
       <mesh castShadow position={[0.14, 0.64, 0.16]} rotation={[1.24, -0.08, -0.12]}>
         <cylinderGeometry args={[0.08, 0.08, 0.54, 12]} />
-        <meshStandardMaterial color="#2d3c48" roughness={0.7} />
+        <meshStandardMaterial color="#5e666b" roughness={0.7} />
       </mesh>
 
       <group ref={headRef} position={[0, 1.62, -0.08]}>
@@ -596,15 +596,15 @@ function StylizedOperator({ isNearby, isFocused }: { isNearby: boolean; isFocuse
         </mesh>
         <mesh castShadow position={[0, 0.05, -0.02]}>
           <sphereGeometry args={[0.22, 20, 20]} />
-          <meshStandardMaterial color="#2f2a2b" roughness={0.82} />
+          <meshStandardMaterial color="#5f5956" roughness={0.82} />
         </mesh>
         <mesh position={[-0.07, -0.02, 0.18]}>
           <sphereGeometry args={[0.02, 8, 8]} />
-          <meshStandardMaterial color="#1d2124" emissive="#1d2124" emissiveIntensity={0.2} />
+          <meshStandardMaterial color="#525352" emissive="#525352" emissiveIntensity={0.2} />
         </mesh>
         <mesh position={[0.07, -0.02, 0.18]}>
           <sphereGeometry args={[0.02, 8, 8]} />
-          <meshStandardMaterial color="#1d2124" emissive="#1d2124" emissiveIntensity={0.2} />
+          <meshStandardMaterial color="#525352" emissive="#525352" emissiveIntensity={0.2} />
         </mesh>
       </group>
     </group>
@@ -689,17 +689,17 @@ export default function SsecTechnicalComputingScene({
         <group ref={floorGroupRef}>
           <mesh receiveShadow position={[0, 0.04, -0.1]}>
             <boxGeometry args={SSEC_PLATFORM_OUTER_SIZE} />
-            <meshStandardMaterial color="#37414a" roughness={0.54} metalness={0.18} />
+            <meshStandardMaterial color="#b9b2a4" roughness={0.8} metalness={0.02} />
           </mesh>
           <mesh receiveShadow position={[0, 0.08, -0.1]}>
             <boxGeometry args={SSEC_PLATFORM_INNER_SIZE} />
             <meshStandardMaterial
               ref={deskGlowRef}
-              color="#485560"
+              color="#d3cbbb"
               emissive="#efaa58"
               emissiveIntensity={0.18}
               roughness={0.42}
-              metalness={0.18}
+              metalness={0.12}
             />
           </mesh>
         </group>
@@ -711,7 +711,7 @@ export default function SsecTechnicalComputingScene({
           </mesh>
           <mesh castShadow position={[0, 0.92, -0.28]}>
             <boxGeometry args={[2.0, 0.72, 0.12]} />
-            <meshStandardMaterial color="#2a3138" roughness={0.38} metalness={0.35} />
+            <meshStandardMaterial color="#5c5e60" roughness={0.38} metalness={0.12} />
           </mesh>
           {[
             [-0.9, 0.24, -0.26],
@@ -721,7 +721,7 @@ export default function SsecTechnicalComputingScene({
           ].map((leg) => (
             <mesh key={leg.join(',')} castShadow position={leg as [number, number, number]}>
               <boxGeometry args={[0.12, 0.48, 0.12]} />
-              <meshStandardMaterial color="#d6dbe0" roughness={0.34} metalness={0.38} />
+              <meshStandardMaterial color="#d6dbe0" roughness={0.34} metalness={0.12} />
             </mesh>
           ))}
           <DeskMonitor
@@ -742,7 +742,7 @@ export default function SsecTechnicalComputingScene({
           />
           <mesh castShadow position={[0.82, 0.58, 0.18]}>
             <boxGeometry args={[0.52, 0.2, 0.46]} />
-            <meshStandardMaterial color="#2a2f36" roughness={0.4} metalness={0.5} />
+            <meshStandardMaterial color="#5c5d5e" roughness={0.4} metalness={0.12} />
           </mesh>
           {[-0.12, 0, 0.12].map((x, index) => (
             <mesh key={x} position={[0.82 + x, 0.6, 0.43]}>
@@ -756,11 +756,11 @@ export default function SsecTechnicalComputingScene({
           ))}
           <mesh castShadow position={[0.08, 0.56, 0.28]}>
             <boxGeometry args={[0.82, 0.025, 0.22]} />
-            <meshStandardMaterial color="#232a31" roughness={0.58} />
+            <meshStandardMaterial color="#57595b" roughness={0.58} />
           </mesh>
           <mesh castShadow position={[0.54, 0.56, 0.28]}>
             <cylinderGeometry args={[0.045, 0.045, 0.04, 14]} />
-            <meshStandardMaterial color="#d0d5db" roughness={0.28} metalness={0.22} />
+            <meshStandardMaterial color="#d0d5db" roughness={0.28} metalness={0.12} />
           </mesh>
           <AccessBadge isNearby={isNearby} isFocused={isFocused} />
           <StylizedOperator isNearby={isNearby} isFocused={isFocused} />

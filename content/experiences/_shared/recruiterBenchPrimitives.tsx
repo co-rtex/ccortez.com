@@ -9,7 +9,7 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
-import type { Group, MeshStandardMaterial } from 'three';
+import type { Group, Mesh, MeshStandardMaterial } from 'three';
 import { CatmullRomCurve3, Color, TubeGeometry, Vector3 } from 'three';
 
 import type { ExperienceSceneProps } from '../../../src/types/experience';
@@ -359,7 +359,13 @@ interface SceneShellProps extends ExperienceSceneProps {
   children: ReactNode;
 }
 
+/** Dark palette bases read as black holes in the golden-hour light; lift them toward a warm stone grey. */
+function liftedBase(base: string): string {
+  return `#${new Color(base).lerp(new Color('#cfc8bc'), 0.38).getHexString()}`;
+}
+
 export const RECRUITER_SCENE_CONTENT_SCALE = 1.3;
+const MAX_SCENE_METALNESS = 0.12;
 
 export function RecruiterSceneShell({
   anchor,
@@ -371,6 +377,17 @@ export function RecruiterSceneShell({
   children,
 }: SceneShellProps) {
   const platformGroupRef = useRef<Group>(null);
+  const contentGroupRef = useRef<Group>(null);
+
+  // There is no environment map to reflect, so metallic props render near-black; cap metalness once mounted.
+  useEffect(() => {
+    contentGroupRef.current?.traverse((object) => {
+      const material = (object as Mesh).material as MeshStandardMaterial | MeshStandardMaterial[] | undefined;
+      for (const entry of Array.isArray(material) ? material : material ? [material] : []) {
+        if ('metalness' in entry && entry.metalness > MAX_SCENE_METALNESS) entry.metalness = MAX_SCENE_METALNESS;
+      }
+    });
+  }, []);
   const ringMaterialRef = useRef<MeshStandardMaterial>(null);
   const glowMaterialRef = useRef<MeshStandardMaterial>(null);
   const presentationStateRef = useRef(presentationState);
@@ -475,7 +492,9 @@ export function RecruiterSceneShell({
           </mesh>
         </group>
         {/* Scene props were authored small for the 4.2 m platform; scale them so a bench reads from the plaza. */}
-        <group scale={RECRUITER_SCENE_CONTENT_SCALE}>{children}</group>
+        <group ref={contentGroupRef} scale={RECRUITER_SCENE_CONTENT_SCALE}>
+          {children}
+        </group>
       </group>
     </RecruiterSceneRevealContext.Provider>
   );
@@ -516,11 +535,11 @@ export function DeskUnit({
       ))}
       <mesh castShadow position={[drawerX, 0.28, 0.12]}>
         <boxGeometry args={[0.4, 0.46, 0.6]} />
-        <meshStandardMaterial color={palette.base} roughness={0.42} metalness={0.24} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.42} metalness={0.24} />
       </mesh>
       <mesh castShadow position={[0, 0.52, 0.28]}>
         <boxGeometry args={[0.76, 0.03, 0.24]} />
-        <meshStandardMaterial color="#1c2630" roughness={0.52} />
+        <meshStandardMaterial color="#3b4552" roughness={0.52} />
       </mesh>
       <mesh castShadow position={[0.54, 0.52, 0.24]}>
         <boxGeometry args={[0.18, 0.03, 0.14]} />
@@ -559,11 +578,11 @@ export function SeatedFigure({
       </mesh>
       <mesh castShadow position={[0.09, 0.15, 0.04]} rotation={[0.95, 0.1, 0.1]}>
         <capsuleGeometry args={[0.055, 0.36, 6, 10]} />
-        <meshStandardMaterial color="#2a3138" roughness={0.72} />
+        <meshStandardMaterial color="#3e4a5a" roughness={0.72} />
       </mesh>
       <mesh castShadow position={[-0.09, 0.15, 0.04]} rotation={[0.95, -0.1, -0.1]}>
         <capsuleGeometry args={[0.055, 0.36, 6, 10]} />
-        <meshStandardMaterial color="#2a3138" roughness={0.72} />
+        <meshStandardMaterial color="#3e4a5a" roughness={0.72} />
       </mesh>
       <mesh castShadow position={[0, 0.32, -0.28]}>
         <boxGeometry args={[0.4, 0.36, 0.4]} />
@@ -687,11 +706,11 @@ export function ServerRack({
     <group position={position} rotation={rotation}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={[0.92, 2.24, 0.82]} />
-        <meshStandardMaterial color="#22282e" roughness={0.42} metalness={0.5} />
+        <meshStandardMaterial color="#56606c" roughness={0.45} metalness={0.3} />
       </mesh>
       <mesh castShadow position={[0, 0.04, 0.38]}>
         <boxGeometry args={[0.78, 2.04, 0.05]} />
-        <meshStandardMaterial color="#2d3641" roughness={0.26} metalness={0.2} />
+        <meshStandardMaterial color="#6a7685" roughness={0.3} metalness={0.2} />
       </mesh>
       {Array.from({ length: 10 }, (_, index) => {
         const y = 0.82 - index * 0.18;
@@ -969,7 +988,7 @@ export function PrinterUnit({
     <group position={position}>
       <mesh castShadow>
         <boxGeometry args={[0.62, 0.28, 0.54]} />
-        <meshStandardMaterial color={palette.base} roughness={0.46} metalness={0.22} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.46} metalness={0.22} />
       </mesh>
       <group ref={paperRef} position={[0, 0.12, 0]}>
         <mesh castShadow>
@@ -1087,7 +1106,7 @@ export function KioskStand({
     <group position={position}>
       <mesh castShadow>
         <boxGeometry args={[0.92, 1.42, 0.76]} />
-        <meshStandardMaterial color={palette.base} roughness={0.4} metalness={0.22} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.4} metalness={0.22} />
       </mesh>
       <DisplayPanel
         position={[0, 0.34, 0.38]}
@@ -1133,7 +1152,7 @@ export function HologramPitch({
     <group position={position}>
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[0.8, 0.88, 0.2, 24]} />
-        <meshStandardMaterial color={palette.base} roughness={0.48} metalness={0.2} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.48} metalness={0.2} />
       </mesh>
       <mesh position={[0, 0.2, 0]}>
         <boxGeometry args={[1.1, 0.02, 0.72]} />
