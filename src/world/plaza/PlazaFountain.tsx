@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react';
 import { Color, DoubleSide, LatheGeometry, QuadraticBezierCurve3, TubeGeometry, Vector2, Vector3 } from 'three';
 import type { Group, ShaderMaterial } from 'three';
 
+import { prefersReducedMotion } from '../reducedMotion';
 import { CENTRAL_PLAZA_FOUNTAIN_RADIUS } from '../hub';
 
 /**
@@ -84,6 +85,7 @@ function Armillary() {
   const innerRef = useRef<Group>(null);
 
   useFrame((_, delta) => {
+    if (prefersReducedMotion()) return;
     if (outerRef.current) outerRef.current.rotation.y += delta * 0.18;
     if (innerRef.current) innerRef.current.rotation.x += delta * 0.32;
   });

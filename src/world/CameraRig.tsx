@@ -4,6 +4,7 @@ import { Vector3 } from 'three';
 import type { PerspectiveCamera } from 'three';
 
 import { getFollowLookAhead } from './followCamera';
+import { prefersReducedMotion } from './reducedMotion';
 
 import { useGameStore } from '../state/gameStore';
 import { PLAYER_CAMERA_LOOK_HEIGHT } from './playerAvatar';
@@ -62,7 +63,8 @@ export function CameraRig(): null {
           targetPosition.z + SCENIC_FORWARD_XZ.z * activeRestSpot.scenicCamera.lookDistance,
         );
 
-        const interpolation = 1 - Math.exp(-blendSpeed * delta);
+        // Reduced motion: sit down with a cut rather than a slow camera glide to the seat.
+        const interpolation = prefersReducedMotion() ? 1 : 1 - Math.exp(-blendSpeed * delta);
         camera.position.lerp(targetPosition, interpolation);
         camera.lookAt(lookTarget);
         return;

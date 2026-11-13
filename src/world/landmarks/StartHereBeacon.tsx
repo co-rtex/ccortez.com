@@ -5,6 +5,7 @@ import type { Group, MeshBasicMaterial } from 'three';
 
 import { useGameStore } from '../../state/gameStore';
 import { START_HERE_ANCHOR, START_HERE_WORKBENCH_ID } from '../hub';
+import { prefersReducedMotion } from '../reducedMotion';
 import { getCentralPlazaTopHeight } from '../terrain';
 
 /**
@@ -28,12 +29,14 @@ export function StartHereBeacon() {
 
   useFrame(({ clock }, delta) => {
     fade.current = Math.max(0, fade.current - (dismissed ? delta * 1.5 : 0));
-    const pulse = 0.75 + Math.sin(clock.elapsedTime * 2.2) * 0.25;
+    // Reduced motion: a steady glow, no pulse or spin (the fade-out after Start Here opens is kept).
+    const still = prefersReducedMotion();
+    const pulse = still ? 0.85 : 0.75 + Math.sin(clock.elapsedTime * 2.2) * 0.25;
     if (columnRef.current) columnRef.current.opacity = 0.22 * pulse * fade.current;
     if (ringRef.current) ringRef.current.opacity = 0.5 * pulse * fade.current;
     if (groupRef.current) {
       groupRef.current.visible = fade.current > 0.01;
-      groupRef.current.rotation.y = clock.elapsedTime * 0.4;
+      if (!still) groupRef.current.rotation.y = clock.elapsedTime * 0.4;
     }
   });
 

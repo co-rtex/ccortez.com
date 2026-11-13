@@ -5,6 +5,7 @@ import type { ReactElement } from 'react';
 import { Vector3 } from 'three';
 
 import { useGameStore } from '../state/gameStore';
+import { prefersReducedMotion } from './reducedMotion';
 import {
   WORKBENCH_INSPECT_MAX_DISTANCE,
   WORKBENCH_INSPECT_MAX_POLAR_ANGLE,
@@ -83,7 +84,10 @@ export function WorkbenchInspectCamera({
     const progress = transitionProgressRef.current;
 
     if (progress < 1) {
-      const nextProgress = Math.min(1, progress + delta / WORKBENCH_INSPECT_TRANSITION_SECONDS);
+      // Reduced motion: cut straight to the inspect view instead of flying the camera there.
+      const nextProgress = prefersReducedMotion()
+        ? 1
+        : Math.min(1, progress + delta / WORKBENCH_INSPECT_TRANSITION_SECONDS);
       const easedProgress = 1 - Math.pow(1 - nextProgress, 3);
       transitionProgressRef.current = nextProgress;
 

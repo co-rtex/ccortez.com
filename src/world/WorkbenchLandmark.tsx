@@ -6,6 +6,7 @@ import { Color, DoubleSide, Shape } from 'three';
 import type { Group, MeshStandardMaterial } from 'three';
 
 import { useGameStore } from '../state/gameStore';
+import { prefersReducedMotion } from './reducedMotion';
 import { START_HERE_WORKBENCH_ID } from './hub';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
@@ -361,7 +362,7 @@ function BenchPennant({ accent, seed }: { accent: string; seed: number }) {
   const flagRef = useRef<Group>(null);
 
   useFrame(({ clock }) => {
-    if (flagRef.current) {
+    if (flagRef.current && !prefersReducedMotion()) {
       flagRef.current.rotation.y = Math.sin(clock.elapsedTime * 1.6 + seed) * 0.22;
     }
   });
@@ -451,7 +452,7 @@ export function WorkbenchLandmark({
     }
 
     const hero = heroRef.current;
-    if (hero) {
+    if (hero && !prefersReducedMotion()) {
       const style = workbench.definition.visualRecipe.animationStyle ?? 'still';
       if (style === 'soft-orbit') {
         hero.rotation.y = clock.elapsedTime * 0.45;
