@@ -147,7 +147,11 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
     const twin = workbenchId
       ? document.querySelector<HTMLElement>(`[data-workbench-id="${CSS.escape(workbenchId)}"]`)
       : null;
-    twin?.focus({ preventScroll: true });
+    // The guide may have folded away (it collapses after a bench is opened from it); then its show button is the
+    // nearest control to where the visitor was, rather than leaving focus on the page body.
+    (twin ?? document.querySelector<HTMLElement>('.recruiter-navigator__visibility-button--show'))?.focus({
+      preventScroll: true,
+    });
   }, [panelWorkbenchId]);
 
   useEffect(() => {

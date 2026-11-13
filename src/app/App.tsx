@@ -3,6 +3,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { bootstrapExperienceRegistry } from '../content/loader';
 import { getAllExperiences } from '../content/registry';
 import { useGameStore } from '../state/gameStore';
+import { getBenchStandPoint, shouldTravelToBench } from '../world/benchTravel';
 import { WorkbenchEditorOverlay } from '../ui/WorkbenchEditorOverlay';
 import { WorkbenchPanel } from '../ui/WorkbenchPanel';
 import { WorkbenchPrompt } from '../ui/WorkbenchPrompt';
@@ -101,6 +102,7 @@ export default function App() {
   const panelWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
   const openWorkbenchPanel = useGameStore((state) => state.openWorkbenchPanel);
   const closeWorkbenchPanel = useGameStore((state) => state.closeWorkbenchPanel);
+  const requestTravel = useGameStore((state) => state.requestTravel);
 
   const allWorkbenchRecords = useMemo(
     () =>
@@ -427,6 +429,21 @@ export default function App() {
     openWorkbenchPanel(activeSelectedWorkbenchId);
   }
 
+
+  // Opening a bench from the guide is fast travel: the player moves to the bench's front too, so closing the
+  // panel leaves them at the bench rather than wherever they had been standing.
+  const openWorkbenchFromGuide = (workbenchId: string): void => {
+    const record = visibleWorkbenchRecords.find((candidate) => candidate.definition.id === workbenchId);
+    const { playerPosition: player, playerMode: mode } = useGameStore.getState();
+    if (record && shouldTravelToBench(player, record.placement.anchor)) {
+      if (mode === 'seated') exitSeatedMode();
+      requestTravel(
+        getBenchStandPoint(record.placement.anchor, record.placement.rotationY, record.interactionRadius),
+      );
+    }
+    openWorkbenchPanel(workbenchId);
+  };
+
   return (
     <main className={appClassName}>
       {webglSupported ? (
@@ -462,7 +479,7 @@ export default function App() {
             activeWorkbenchId={panelWorkbenchId}
             nearbyWorkbenchId={nearbyWorkbenchId}
             mobileLiteMode={mobileLiteMode}
-            onWorkbenchOpen={openWorkbenchPanel}
+            onWorkbenchOpen={openWorkbenchFromGuide}
           />
         ) : null}
 

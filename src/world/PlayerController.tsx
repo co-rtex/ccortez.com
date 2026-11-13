@@ -91,6 +91,8 @@ export function PlayerController() {
   const playerMode = useGameStore((state) => state.playerMode);
   const cameraMode = useGameStore((state) => state.cameraMode);
   const activeRestSpotId = useGameStore((state) => state.activeRestSpotId);
+  const travelRequest = useGameStore((state) => state.travelRequest);
+  const handledTravelSerialRef = useRef(0);
   const [keyboardMode, setKeyboardMode] = useState(getDefaultKeyboardMode);
   const debugWaterMode = useMemo(
     () =>
@@ -212,6 +214,21 @@ export function PlayerController() {
     }
     previousPlayerModeRef.current = 'exploring';
     previousActiveRestSpotIdRef.current = activeRestSpotId;
+
+    // Fast travel (opening a bench from the guide): jump to the requested stand point, facing the bench.
+    if (travelRequest && travelRequest.serial !== handledTravelSerialRef.current) {
+      handledTravelSerialRef.current = travelRequest.serial;
+      const destination = isPointWalkable(travelRequest.x, travelRequest.z, PLAYER_COLLISION_RADIUS)
+        ? { x: travelRequest.x, z: travelRequest.z }
+        : findNearestWalkablePoint(travelRequest.x, travelRequest.z, PLAYER_COLLISION_RADIUS);
+      if (destination) {
+        currentPosition.x = destination.x;
+        currentPosition.z = destination.z;
+        currentPosition.y = getTerrainHeight(destination.x, destination.z) + 0.82;
+        lastSafePositionRef.current = { x: destination.x, z: destination.z };
+        locomotionRef.current = createInitialPlayerLocomotionState(travelRequest.facingYaw);
+      }
+    }
 
     if (!isPointWalkable(currentPosition.x, currentPosition.z, PLAYER_COLLISION_RADIUS)) {
       const recoveredPosition =

@@ -58,6 +58,10 @@ export function OverworldScene({
       ),
     [workbenches],
   );
+  const benchAnchors = useMemo(
+    () => new Map(workbenches.map((workbench) => [workbench.definition.id, workbench.placement.anchor])),
+    [workbenches],
+  );
   const selectedWorkbench =
     selectedWorkbenchId
       ? workbenches.find((workbench) => workbench.definition.id === selectedWorkbenchId) ?? null
@@ -102,7 +106,7 @@ export function OverworldScene({
       <WorldEnvironment />
       <PlayerController />
       <FootstepDust />
-      <CameraRig />
+      <CameraRig benchAnchors={benchAnchors} />
       <DevShotCamera />
       <WorkbenchInspectCamera workbenches={workbenches} />
       <WorkbenchDirector workbenches={workbenches} />
