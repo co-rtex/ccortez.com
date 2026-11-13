@@ -153,6 +153,19 @@ Done (each commit verified with lint, types, unit tests, build and GPU screensho
 - Accessibility: axe (WCAG 2.2 A/AA) clean at spawn and in the TaskForge and EngineX panels; focus returns to the
   guide's show button when the guide has folded; crash buttons keep focus when they become unavailable.
 
+- Later in the pass: guide minimap rings the flagships and an open bench hides its own badge (`b2a67ec`); Start
+  Here points first-time visitors at the four live benches; second review round (`3ddca86`):
+  panels run their model on a real-time fallback clock when no scene drives it (no WebGL showed dead buttons),
+  EngineX market orders join the back of the sequencer's line (FIFO, as the bench claims) and a full line says
+  so, QuantLab honours reduced motion and announces a visitor's run when drawn, LiDAR points sit outside the
+  cones; portrait tablets get the bottom sheet and landscape phones a half-width panel (`c55eac0`); the mobile
+  banner hides while a panel is open and bench labels shrink on short screens (`9443ca9`); LiDAR panel note
+  (`84c4dfa`); QuantLab copy says a re-run matches by construction (`52f1578`).
+- Verified end to end (scripted, GPU): first frame 1.84 s at 1366×768; guide → Start Here → Escape (focus back on
+  the guide entry) → TaskForge (travel, crash, trace) → close (prompt up at the bench) → walk; no console errors;
+  61 fps with a panel open. Uncapped at the north ring the four live benches cost ~0.2 ms a frame (5.6 vs 5.4 ms
+  median with bench scenes off).
+
 ## Known issues / next candidates (ranked)
 
 1. Bench dioramas: the four flagships are live models. Next: the 14 other benches still share the desk kit;
