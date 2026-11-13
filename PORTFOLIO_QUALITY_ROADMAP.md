@@ -8,7 +8,7 @@ files keep release records; this file holds priorities, art direction, active wo
 | Site | Repo / local dir | Production | Working branch |
 | --- | --- | --- | --- |
 | 3D game | `co-rtex/ccortez.com` · `~/Desktop/Projects/ccortez-dual-sprint` | https://game.ccortez.com (Pages from `main`, `5176c5b`) | `game/art-direction-pass` (pushed) |
-| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `b1825a5`) |
+| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `58342a9`) |
 
 `~/Desktop/Projects/ccortez.com` is the protected original checkout (read-only; 96 dirty paths at `825fe37`).
 Nothing merges to either `main` without Christian's approval.
@@ -77,6 +77,10 @@ Nothing merges to either `main` without Christian's approval.
 | `5833f40` | Fingerposts where each trail leaves the plaza, naming its destination | `.shots/signs-lake`; 156 tests |
 | `0c43cc8` | "Workbench" used consistently for stations; How to play mentions signposts | |
 | `04de5af` | 30 Hz shadow updates + adaptive pixel ratio (see Performance) | uncapped spawn p95 33 → 13–16 ms |
+| `158e4c1` | Code-review fixes: adaptive DPR falls back to 1x after flip-flops; guide never auto-folds with focus inside and returns focus to its Show button after Hide; panel fold resets when a panel closes | 156 tests; Lighthouse a11y/BP/SEO 100 desktop + mobile |
+| `72f3857` | Canopy-fade shader and its test mirror share constants | |
+| `db25804` | "Rerun reproducibly" instead of "rerun byte for byte" (claims ledger L8), as on the professional site (`58342a9`) | |
+| `c3dbb8f` | Start Here badge just above its board, off the lighthouse | `.shots/follow-spawn` (cropped) |
 | `1d4f817` | Dock lanterns stand on posts (cap no longer reads as a floating rock) | `.shots/dock5-lake` |
 | `9c68604` | Fourth-review fixes: even per-puff canopy fade, guide folds after the first walk, no District chip, no rotate hint on phones, fingerposts face the plaza, lighthouse window disc removed and sign at the door, matching phone pills, banner auto-hides | `.shots/signs2-lake`, `follow-grove`; 156 tests |
 
@@ -185,6 +189,15 @@ prop shadow casters did not help, while updating the shadow map every other fram
 Remaining: the overview p95 still spikes when the whole bench ring is on screen (~1,160 draw calls); merging each
 bench scene's static props into a few meshes is the next lever. With vsync on, the M3 holds 60 fps everywhere
 measured. All figures are from one Apple M3 in Chrome; no phone GPU has been measured.
+
+## Pending full browser verification (storage-limited session, 2026-11-13)
+
+Free disk was 15–17 GiB, so screenshot batches and new tooling were paused. Not yet verified visually:
+- Keyboard flow of the recruiter guide after the focus fixes (`158e4c1`): Hide → focus on Show; walking with focus
+  inside the guide does not fold it.
+- Adaptive DPR fallback on a GPU that cannot hold the frame rate (needs a slower device).
+- Resume PDF page 1 spare space (no PDF renderer installed; installing poppler was avoided).
+- Real phone GPU performance and touch interaction.
 
 ## Open decisions for Christian
 
