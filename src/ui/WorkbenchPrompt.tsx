@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useGameStore } from '../state/gameStore';
 import { getScenicRestSpotById } from '../world/restSpots';
@@ -17,6 +17,16 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode }: 
   const activeRestSpotId = useGameStore((state) => state.activeRestSpotId);
   const nearbyRestSpotId = useGameStore((state) => state.nearbyRestSpotId);
   const nearbyWorkbenchId = useGameStore((state) => state.nearbyWorkbenchId);
+
+  // The idle hint only teaches the controls; once the visitor has walked a few metres it gets out of the way.
+  const [hasWalked, setHasWalked] = useState(false);
+  useEffect(() => {
+    let origin: { x: number; z: number } | null = null;
+    return useGameStore.subscribe((state) => {
+      origin ??= { x: state.playerPosition.x, z: state.playerPosition.z };
+      if (Math.hypot(state.playerPosition.x - origin.x, state.playerPosition.z - origin.z) > 3) setHasWalked(true);
+    });
+  }, []);
 
   const nearbyWorkbench = useMemo(
     () => workbenches.find((workbench) => workbench.definition.id === nearbyWorkbenchId),
@@ -48,14 +58,14 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode }: 
   }
 
   if (!nearbyWorkbench) {
+    // Mobile-lite already shows its own banner, and the guide says where to start.
+    if (hasWalked || (mobileLiteMode && !editorEnabled)) return null;
     return (
       <div className="prompt-card prompt-card--idle">
         <p>
           {editorEnabled
             ? 'Move with WASD. Hold Shift to run. Explore the island and open workbenches when a prompt appears.'
-            : mobileLiteMode
-              ? 'Start with the center plaza welcome bench, or open the recruiter guide to jump between highlights.'
-              : 'Begin at the center plaza Start Here bench, then use the recruiter guide to jump into experiences and projects or explore with WASD.'}
+            : 'Walk with WASD or the arrow keys, hold Shift to run, and press E at a bench to open it.'}
         </p>
       </div>
     );
