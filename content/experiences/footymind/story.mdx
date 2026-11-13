@@ -1,8 +1,8 @@
 ## FootyMind
 
-FootyMind is a sports analytics application built around the full modeling loop: feature engineering, model training, and validation across different seasons so results do not collapse under distribution shift.
+FootyMind is a sports analytics application built around the full modeling loop: feature engineering, model training, and validation on held-out matches so results are judged on data the model has not seen.
 
-I engineered features from historical match data and trained classification pipelines with scikit-learn. I then evaluated season-over-season performance to understand whether the model generalized or was simply overfitting to one dataset slice.
+I engineered features from historical match data and trained classification pipelines with scikit-learn. I then compared models by log loss on a held-out validation set to check whether they generalized or were simply overfitting.
 
 That evaluation work was important because sports data can be noisy, context-sensitive, and easy to over-interpret. The project pushed me to think about model discipline, not just accuracy snapshots.
 

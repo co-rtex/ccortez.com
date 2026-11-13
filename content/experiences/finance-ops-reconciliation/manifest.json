@@ -10,19 +10,16 @@
     "roleLabel": "Reconciliation Automation Pipeline",
     "organization": "Personal Project",
     "dateRange": "2026",
-    "summary": "Built an auditable reconciliation workflow, demonstrated on synthetic data, that aligns multi-source records, enforces schemas, and reports exceptions.",
+    "summary": "Built an auditable ledger-to-bank reconciliation, demonstrated on synthetic data, that standardizes fields, matches records and reports exceptions.",
     "impactBullets": [
-      "Built reconciliation pipelines across multi-source datasets that match records and surface exceptions for review.",
-      "Generated audit-trail reports with schema enforcement, validation checks, and traceability logging.",
-      "Structured the workflow to make exceptions visible while keeping the core process repeatable and reliable."
+      "Standardized ledger and bank fields, then matched records exactly before falling back to conservative rules.",
+      "Produced exception and summary reports so every unmatched or ambiguous record is visible for review.",
+      "Kept the workflow repeatable on synthetic data so results can be rerun and checked."
     ],
     "techStack": [
       "Python",
-      "Pandas",
-      "SQL",
-      "PostgreSQL",
-      "Data Validation",
-      "Audit Logging"
+      "pandas",
+      "Data Validation"
     ]
   }
 }

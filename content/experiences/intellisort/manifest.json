@@ -10,18 +10,17 @@
     "roleLabel": "Algorithm Visualizer & Performance Tool",
     "organization": "Personal Project",
     "dateRange": "2026",
-    "summary": "Built an interactive learning and performance-analysis tool that compares sorting algorithms visually while estimating runtime behavior from input characteristics.",
+    "summary": "Built a step-by-step sorting visualizer that compares runtime, comparisons and swaps across input distributions, with a model that predicts complexity class and runtime.",
     "impactBullets": [
-      "Developed React visualizations comparing sorting algorithms, time complexity, and performance across inputs.",
-      "Trained a lightweight ML model to estimate runtime behavior from input size and structural characteristics.",
-      "Connected algorithm education with predictive analysis instead of stopping at a static visual demo."
+      "Built Next.js visualizations comparing sorting algorithms step by step across input distributions.",
+      "Trained a scikit-learn model, served through FastAPI, that predicts complexity class and runtime from input characteristics.",
+      "Connected algorithm education with predictive analysis instead of a static visual demo."
     ],
     "techStack": [
-      "React",
-      "JavaScript",
-      "Machine Learning",
-      "Algorithm Analysis",
-      "Visualization"
+      "Next.js",
+      "FastAPI",
+      "scikit-learn",
+      "D3"
     ]
   }
 }
