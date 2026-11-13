@@ -8,7 +8,7 @@ files keep release records; this file holds priorities, art direction, active wo
 | Site | Repo / local dir | Production | Working branch |
 | --- | --- | --- | --- |
 | 3D game | `co-rtex/ccortez.com` · `~/Desktop/Projects/ccortez-dual-sprint` | https://game.ccortez.com (Pages from `main`, `5176c5b`) | `game/art-direction-pass` (pushed) |
-| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `608d21a`) |
+| Professional | `co-rtex/portfolio-professional` · `~/Desktop/Projects/portfolio-professional` | https://ccortez.com (Vercel from `main`, `b01f4dd`) | `site/visual-identity` (pushed, `b1825a5`) |
 
 `~/Desktop/Projects/ccortez.com` is the protected original checkout (read-only; 96 dirty paths at `825fe37`).
 Nothing merges to either `main` without Christian's approval.
@@ -77,6 +77,7 @@ Nothing merges to either `main` without Christian's approval.
 | `5833f40` | Fingerposts where each trail leaves the plaza, naming its destination | `.shots/signs-lake`; 156 tests |
 | `0c43cc8` | "Workbench" used consistently for stations; How to play mentions signposts | |
 | `04de5af` | 30 Hz shadow updates + adaptive pixel ratio (see Performance) | uncapped spawn p95 33 → 13–16 ms |
+| `1d4f817` | Dock lanterns stand on posts (cap no longer reads as a floating rock) | `.shots/dock5-lake` |
 | `9c68604` | Fourth-review fixes: even per-puff canopy fade, guide folds after the first walk, no District chip, no rotate hint on phones, fingerposts face the plaza, lighthouse window disc removed and sign at the door, matching phone pills, banner auto-hides | `.shots/signs2-lake`, `follow-grove`; 156 tests |
 
 Checkpoint A (before/after, drag to compare; refreshed at `36d334c`): https://claude.ai/artifact/5VQrS8arZbb5EYhRXqNAxa (private).
@@ -139,6 +140,16 @@ vitest 30/30, Playwright 51 + 3 viewport skips, Lighthouse mobile home 99/100/10
 footer says "workbench" like the game. Preview: https://portfolio-professional-9p0yzgii8-co-rtexs-projects.vercel.app
 (Vercel login; a newer one builds from `608d21a`). Open: at 1366×768 the facts sit just below the fold; four-column
 drawings have ~10.6 px edge labels at 1024.
+
+Pass 5 (`1f343d6` … `b1825a5`, from the fourth review; spot-checked here, `caseStudies.ts` diff verified as a pure
+reorder): TaskForge (public repo, recorded benchmarks) leads, EngineX second; hero buttons "See projects" +
+"Resume" with the PDF as a text link; simulator Play/Step in the card header (Play 812 → 179 px at 1366×768);
+home timeline drops bullets that repeat a strip number (resume keeps all; unit-tested); phone case-study figure
+becomes a vertical list of named steps; resume bullets ≤ 68ch, 20 px/600 headings, muted links (6.5:1); top-aligned
+case-study headers; en dashes in dates. Check clean, vitest 39/39, Playwright 57 + 5 viewport skips, Lighthouse
+mobile home 99/100/100/100, TaskForge 100s. Preview: https://portfolio-professional-53uu23vbm-co-rtexs-projects.vercel.app
+(Vercel login). Open: phone case-study opening is taller with the step list; the resume keeps EngineX first so the
+PDF is unchanged in order; PDF page 1 has spare space at the bottom.
 
 ## Claims audit (2026-11-13)
 
