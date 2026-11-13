@@ -10,11 +10,12 @@ export function getWorkbenchFacingCenterRotationY(x: number, z: number): number 
 }
 
 export const START_HERE_WORKBENCH_ID = 'about-me-overview';
-export const CENTRAL_PLAZA_CENTER_PAD_RADIUS = 6.4;
+// The paved court around the fountain; Start Here sits on it, clear of the fountain basin.
+export const CENTRAL_PLAZA_CENTER_PAD_RADIUS = 9.4;
 export const CENTRAL_PLAZA_FOUNTAIN_RADIUS = 2.35;
 export const START_HERE_ANCHOR = {
   x: 0,
-  z: -4.3,
+  z: -7.1,
 } as const;
 export const START_HERE_PLACEMENT_TOLERANCE = 0.28;
 export const START_HERE_ROTATION_Y = getWorkbenchFacingCenterRotationY(

@@ -1,5 +1,6 @@
 import { PUBLISHED_WORKBENCH_PLAZA_METRICS } from '../../content/workbenches/layout';
 import { WORLD_WATER_BODIES } from './constants';
+import { CENTRAL_PLAZA_CENTER_PAD_RADIUS } from './hub';
 import { getIslandDistanceNormalized, getLakeDistance, isPointWalkable } from './terrain';
 import { SCENIC_FORWARD_XZ } from './scenic';
 
@@ -31,8 +32,8 @@ const SLOT_COUNT = metrics.perimeterWorkbenchCount + 1;
 const SLOT_ANGLE = (Math.PI * 2) / SLOT_COUNT;
 
 export const PLAZA_RADII = {
-  /** Paved court around the fountain. */
-  court: 9.4,
+  /** Paved court around the fountain (the reserved Start Here pad). */
+  court: CENTRAL_PLAZA_CENTER_PAD_RADIUS,
   /** Lawns run from the court to the promenade. */
   lawnOuter: metrics.perimeterRadius - 4.6,
   /** Paved promenade that carries the bench ring. */
