@@ -1,6 +1,10 @@
-import { useMemo } from 'react';
+import { Html } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
 import { LatheGeometry, Vector2 } from 'three';
 
+import { PROFESSIONAL_SITE_URL } from '../../app/siteLinks';
+import { useGameStore } from '../../state/gameStore';
 import { LIGHTHOUSE } from '../islandPaths';
 import { getTerrainHeight } from '../terrain';
 
@@ -18,6 +22,34 @@ const BRASS = '#d4a24c';
 
 function towerRadiusAt(y: number): number {
   return BASE_RADIUS + (TOP_RADIUS - BASE_RADIUS) * (y / TOWER_HEIGHT);
+}
+
+const SIGN_RANGE = 9;
+
+/** A small sign at the door, shown when the visitor arrives: the lighthouse points to the written portfolio. */
+function DoorSign() {
+  const ref = useRef<HTMLDivElement>(null);
+  useFrame(() => {
+    const element = ref.current;
+    if (!element) return;
+    const { playerPosition } = useGameStore.getState();
+    const near = Math.hypot(playerPosition.x - LIGHTHOUSE.x, playerPosition.z - LIGHTHOUSE.z) < SIGN_RANGE;
+    const opacity = near ? '1' : '0';
+    if (element.style.opacity !== opacity) {
+      element.style.opacity = opacity;
+      element.style.pointerEvents = near ? 'auto' : 'none';
+    }
+  });
+  return (
+    <Html center position={[0, 2.6, BASE_RADIUS + 0.4]}>
+      <div ref={ref} className="landmark-sign" style={{ opacity: 0, pointerEvents: 'none' }}>
+        <span className="landmark-sign__title">North-shore lighthouse</span>
+        <a className="landmark-sign__link" href={PROFESSIONAL_SITE_URL} target="_blank" rel="noreferrer">
+          Read the portfolio &amp; resume
+        </a>
+      </div>
+    </Html>
+  );
 }
 
 export function Lighthouse() {
@@ -58,6 +90,7 @@ export function Lighthouse() {
           </mesh>
         );
       })}
+      <DoorSign />
       {/* Door and a round window, on the trail side. */}
       <mesh position={[0, 1.15, BASE_RADIUS - 0.02]}>
         <boxGeometry args={[0.7, 1.3, 0.12]} />

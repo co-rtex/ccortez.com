@@ -1435,3 +1435,33 @@ body {
 .experience-panel__meta[hidden] {
   display: none;
 }
+
+.landmark-sign {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: center;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  background: rgba(20, 31, 37, 0.86);
+  border: 1px solid rgba(255, 224, 171, 0.6);
+  color: #f8ead2;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 8px 20px rgba(13, 22, 29, 0.36);
+}
+
+.landmark-sign__title {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.landmark-sign__link {
+  color: #ffd27a;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.landmark-sign__link:focus-visible {
+  outline: 2px solid #ffd27a;
+  outline-offset: 3px;
+}
