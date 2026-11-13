@@ -161,6 +161,12 @@ Done (each commit verified with lint, types, unit tests, build and GPU screensho
   cones; portrait tablets get the bottom sheet and landscape phones a half-width panel (`c55eac0`); the mobile
   banner hides while a panel is open and bench labels shrink on short screens (`9443ca9`); LiDAR panel note
   (`84c4dfa`); QuantLab copy says a re-run matches by construction (`52f1578`).
+- Visual critique (independent, from screenshots), fixed: no focus box on the panel title; legend hues that were
+  hard to tell apart (LiDAR blues, QuantLab mauve/grey, EngineX orange/yellow) now differ; TaskForge "succeeded"
+  label over the done pallet; QuantLab worker screen and printed manifest; EngineX flow chevrons; readable
+  in-scene labels on phones; panel headings in order with no repeated title under Story (`a956f75`, `695d83a`,
+  `6ae4bd1`, `588ee4f`, `86a6aa6`). Not acted on: the spawn camera framing (lighthouse at centre, the ring a thin
+  band) and flagpoles crossing dioramas; both are wider art-direction changes for a later pass.
 - Verified end to end (scripted, GPU): first frame 1.84 s at 1366×768; guide → Start Here → Escape (focus back on
   the guide entry) → TaskForge (travel, crash, trace) → close (prompt up at the bench) → walk; no console errors;
   61 fps with a panel open. Uncapped at the north ring the four live benches cost ~0.2 ms a frame (5.6 vs 5.4 ms
