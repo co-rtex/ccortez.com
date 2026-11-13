@@ -15,7 +15,7 @@
       "Built a single-sequencer matching engine with O(1) cancels, partial fills, idempotent request IDs, and SHA-256 state hashing; local matching-core benchmarks reach 8.2M commands/s at 417 ns p99.9.",
       "Added a CRC32C-framed write-ahead journal; in durable mode an order is acknowledged only after fdatasync, with deterministic replay, torn-tail repair, and corruption refusal.",
       "Built a multithreaded TCP server with bounded queues, group commit for durable mode, and gap-free snapshot resync (85.7K req/s in memory with 8 local clients).",
-      "Tested with 151 GoogleTest cases, 100-seed property tests against a reference model, fork/SIGKILL crash tests, and ASan/TSan CI."
+      "Tested with 280 GoogleTest tests (v1.0.0), 100-seed property tests against a reference model, fork/SIGKILL crash tests, and ASan/TSan CI."
     ],
     "techStack": [
       "C++20",
