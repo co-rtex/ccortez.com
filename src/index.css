@@ -141,6 +141,11 @@ body {
   font-weight: 700;
 }
 
+.recruiter-navigator__counts .recruiter-navigator__progress {
+  background: rgba(241, 195, 127, 0.2);
+  color: #fbe3bb;
+}
+
 .recruiter-navigator__visibility-button {
   appearance: none;
   border: 1px solid rgba(244, 226, 191, 0.24);
@@ -286,6 +291,11 @@ body {
 
 .recruiter-map-marker--secondary .recruiter-map-marker__core {
   background: var(--secondary-accent);
+}
+
+/* Opened this visit: a dark centre dot, so the marker keeps its category colour and contrast. */
+.recruiter-map-marker--opened .recruiter-map-marker__core {
+  background-image: radial-gradient(circle, rgba(18, 27, 31, 0.92) 0 2.5px, transparent 3px);
 }
 
 .recruiter-map-marker--nearby .recruiter-map-marker__core,

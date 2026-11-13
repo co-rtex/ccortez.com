@@ -13,6 +13,7 @@ function resetGameStore(): void {
     activeRestSpotId: null,
     nearbyWorkbenchId: null,
     panelWorkbenchId: null,
+    openedWorkbenchIds: [],
     loadedSceneIds: [],
     scenePresentationById: {},
     collisionFeedbackEvent: null,
@@ -38,6 +39,19 @@ describe('game store camera state', () => {
     expect(useGameStore.getState().cameraMode).toBe('follow');
     expect(useGameStore.getState().panelWorkbenchId).toBeNull();
     expect(useGameStore.getState().inspectedWorkbenchId).toBeNull();
+  });
+
+  it('remembers each opened workbench once, in the order first opened', () => {
+    resetGameStore();
+    const store = useGameStore.getState();
+
+    store.openWorkbenchPanel('bench-2');
+    store.closeWorkbenchPanel();
+    store.openWorkbenchPanel('bench-1');
+    store.closeWorkbenchPanel();
+    store.openWorkbenchPanel('bench-2');
+
+    expect(useGameStore.getState().openedWorkbenchIds).toEqual(['bench-2', 'bench-1']);
   });
 
   it('returns to editor focus when a focused editor target was active before inspect mode', () => {

@@ -4,6 +4,7 @@ import { useGameStore } from '../state/gameStore';
 
 import {
   deriveRecruiterNavigatorData,
+  summarizeOpenedProgress,
   type RecruiterShortlistSection,
   type RecruiterMapMarker,
   type RecruiterStartEntry,
@@ -40,11 +41,14 @@ interface RecruiterNavigatorContentProps {
   };
   onWorkbenchOpen: (workbenchId: string) => void;
   onHide?: () => void;
+  openedIds: ReadonlySet<string>;
+  progress: { opened: number; total: number };
 }
 
 function renderShortlistSection(
   section: RecruiterShortlistSection,
   onWorkbenchOpen: (workbenchId: string) => void,
+  openedIds: ReadonlySet<string>,
 ) {
   return (
     <section key={section.id} className="recruiter-navigator__section">
@@ -61,13 +65,14 @@ function renderShortlistSection(
             <button
               key={entry.id}
               type="button"
-              className={`recruiter-navigator__item recruiter-navigator__item--${entry.category} recruiter-navigator__item--${entry.state}`}
+              className={`recruiter-navigator__item recruiter-navigator__item--${entry.category} recruiter-navigator__item--${entry.state}${openedIds.has(entry.id) ? ' recruiter-navigator__item--opened' : ''}`}
               onClick={() => onWorkbenchOpen(entry.id)}
             >
               <span className="recruiter-navigator__item-title">{entry.title}</span>
               <span className="recruiter-navigator__item-meta">
                 {entry.featured ? 'Featured • ' : ''}
                 {entry.districtLabel}
+                {openedIds.has(entry.id) ? ' • Opened' : ''}
               </span>
             </button>
           ))}
@@ -85,6 +90,8 @@ function RecruiterNavigatorContent({
   playerMarker,
   onWorkbenchOpen,
   onHide,
+  openedIds,
+  progress,
 }: RecruiterNavigatorContentProps) {
   return (
     <>
@@ -111,6 +118,11 @@ function RecruiterNavigatorContent({
           <span>{counts.start} start</span>
           <span>{counts.experience} experiences</span>
           <span>{counts.project} projects</span>
+          {progress.opened > 0 ? (
+            <span className="recruiter-navigator__progress">
+              {progress.opened} of {progress.total} opened
+            </span>
+          ) : null}
         </div>
       </header>
 
@@ -135,7 +147,10 @@ function RecruiterNavigatorContent({
             onClick={() => onWorkbenchOpen(startEntry.id)}
           >
             <span className="recruiter-navigator__item-title">{startEntry.title}</span>
-            <span className="recruiter-navigator__item-meta">{startEntry.districtLabel}</span>
+            <span className="recruiter-navigator__item-meta">
+              {startEntry.districtLabel}
+              {openedIds.has(startEntry.id) ? ' • Opened' : ''}
+            </span>
           </button>
         </section>
       ) : null}
@@ -154,14 +169,14 @@ function RecruiterNavigatorContent({
           <button
             key={marker.id}
             type="button"
-            className={`recruiter-map-marker recruiter-map-marker--${marker.category} recruiter-map-marker--${marker.state}`}
+            className={`recruiter-map-marker recruiter-map-marker--${marker.category} recruiter-map-marker--${marker.state}${openedIds.has(marker.id) ? ' recruiter-map-marker--opened' : ''}`}
             style={{
               left: `${marker.xPercent}%`,
               top: `${marker.yPercent}%`,
             }}
             onClick={() => onWorkbenchOpen(marker.id)}
             disabled={!marker.canOpen}
-            aria-label={`${marker.canOpen ? 'Open' : 'Unavailable'} ${marker.title} (${marker.categoryLabel})`}
+            aria-label={`${marker.canOpen ? 'Open' : 'Unavailable'} ${marker.title} (${marker.categoryLabel}${openedIds.has(marker.id) ? ', opened' : ''})`}
             title={marker.title}
           >
             <span className="recruiter-map-marker__core" />
@@ -189,7 +204,7 @@ function RecruiterNavigatorContent({
       </div>
 
       <div className="recruiter-navigator__sections">
-        {sections.map((section) => renderShortlistSection(section, onWorkbenchOpen))}
+        {sections.map((section) => renderShortlistSection(section, onWorkbenchOpen, openedIds))}
       </div>
     </>
   );
@@ -236,6 +251,8 @@ export function RecruiterNavigatorHUD({
       showButtonRef.current?.focus();
     }
   }, [isHidden]);
+  const openedWorkbenchIds = useGameStore((state) => state.openedWorkbenchIds);
+  const openedIds = useMemo(() => new Set(openedWorkbenchIds), [openedWorkbenchIds]);
   const foldedForPanel = foldWhilePanelOpen && activeWorkbenchId !== null && shownForPanelId !== activeWorkbenchId;
   const data = useMemo(
     () => deriveRecruiterNavigatorData(workbenches, playerPosition, activeWorkbenchId, nearbyWorkbenchId),
@@ -246,6 +263,8 @@ export function RecruiterNavigatorHUD({
     return null;
   }
 
+  const progress = summarizeOpenedProgress(data.markers, openedWorkbenchIds);
+
   const content = (
     <RecruiterNavigatorContent
       counts={data.counts}
@@ -254,6 +273,8 @@ export function RecruiterNavigatorHUD({
       sections={data.shortlistSections}
       playerMarker={data.playerMarker}
       onWorkbenchOpen={onWorkbenchOpen}
+      openedIds={openedIds}
+      progress={progress}
     />
   );
 
@@ -294,6 +315,8 @@ export function RecruiterNavigatorHUD({
         sections={data.shortlistSections}
         playerMarker={data.playerMarker}
         onWorkbenchOpen={onWorkbenchOpen}
+        openedIds={openedIds}
+        progress={progress}
         onHide={() => {
           focusShowButtonRef.current = true;
           setIsHidden(true);

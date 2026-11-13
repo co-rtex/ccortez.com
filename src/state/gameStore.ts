@@ -25,6 +25,8 @@ interface GameStore {
   activeRestSpotId: string | null;
   nearbyWorkbenchId: string | null;
   panelWorkbenchId: string | null;
+  /** Workbenches whose panel the visitor has opened this visit, in first-opened order. */
+  openedWorkbenchIds: string[];
   loadedSceneIds: string[];
   scenePresentationById: WorkbenchScenePresentationMap;
   collisionFeedbackEvent: CollisionFeedbackEvent | null;
@@ -81,6 +83,7 @@ export const useGameStore = create<GameStore>((set) => ({
   activeRestSpotId: null,
   nearbyWorkbenchId: null,
   panelWorkbenchId: null,
+  openedWorkbenchIds: [],
   loadedSceneIds: [],
   scenePresentationById: {},
   collisionFeedbackEvent: null,
@@ -187,6 +190,9 @@ export const useGameStore = create<GameStore>((set) => ({
         panelWorkbenchId: id,
         inspectedWorkbenchId: id,
         cameraMode: 'workbench-inspect',
+        openedWorkbenchIds: state.openedWorkbenchIds.includes(id)
+          ? state.openedWorkbenchIds
+          : [...state.openedWorkbenchIds, id],
       };
     });
   },

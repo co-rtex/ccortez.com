@@ -293,3 +293,16 @@ export function deriveRecruiterNavigatorData(
     counts,
   };
 }
+
+/** How many of the workbenches the guide can open the visitor has opened so far this visit. */
+export function summarizeOpenedProgress(
+  markers: readonly Pick<RecruiterMapMarker, 'id' | 'canOpen'>[],
+  openedIds: readonly string[],
+): { opened: number; total: number } {
+  const openable = markers.filter((marker) => marker.canOpen);
+  const opened = new Set(openedIds);
+  return {
+    opened: openable.filter((marker) => opened.has(marker.id)).length,
+    total: openable.length,
+  };
+}

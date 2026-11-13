@@ -4,6 +4,7 @@ import {
   START_HERE_LOCATION_LABEL,
   deriveRecruiterNavigatorData,
   resolveRecruiterNavigatorCategory,
+  summarizeOpenedProgress,
 } from './recruiterNavigator';
 import { START_HERE_WORKBENCH_ID } from '../world/hub';
 
@@ -251,5 +252,22 @@ describe('recruiter navigator data', () => {
     expect(data.playerMarker.xPercent).toBeLessThan(rightMarker?.xPercent ?? 100);
     expect(leftMarker?.state).toBe('nearby');
     expect(rightMarker?.state).toBe('active');
+  });
+});
+
+describe('summarizeOpenedProgress', () => {
+  const markers = [
+    { id: 'start', canOpen: true },
+    { id: 'a', canOpen: true },
+    { id: 'b', canOpen: true },
+    { id: 'draft', canOpen: false },
+  ];
+
+  it('counts only openable workbenches the visitor has opened', () => {
+    expect(summarizeOpenedProgress(markers, ['a', 'draft', 'not-on-map'])).toEqual({ opened: 1, total: 3 });
+  });
+
+  it('starts at zero', () => {
+    expect(summarizeOpenedProgress(markers, [])).toEqual({ opened: 0, total: 3 });
   });
 });
