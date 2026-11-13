@@ -19,13 +19,13 @@ export function QuantlabRunControls() {
     <section className="taskforge-sim" aria-labelledby="quantlab-run-title">
       <h3 id="quantlab-run-title">Re-run a backtest</h3>
       <p>
-        The bench runs a toy backtest on synthetic prices (the ideas QuantLab is built on, not its code). Each dataset
-        version is immutable and each result carries a manifest, so re-running the same version must reproduce the
-        result exactly, while another version gives a different one.
+        The bench runs a toy backtest on synthetic prices (the ideas QuantLab is built on, not its code). Dataset
+        versions never change and the rule only reads past prices, so re-running a version reproduces its manifest by
+        construction, while another version gives a different one.
       </p>
       <div className="taskforge-sim__buttons">
         <button type="button" onClick={() => queue('rerun')}>
-          Re-run the same manifest
+          Re-run on dataset v{run.result.version}
         </button>
         <button type="button" className="taskforge-sim__restart" onClick={() => queue('next-version')}>
           Run on the next dataset version
