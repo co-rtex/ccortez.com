@@ -171,6 +171,9 @@ Done (each commit verified with lint, types, unit tests, build and GPU screensho
 - Last items: flagship panels have "Try the live model", which jumps to the demo (below the fold on phones)
   (`b4cdbfa`); `npm run check:shared-sim` compares the bench models with the professional site's copies (all four
   match) (`ab05d4b`); the fallback clock's decision is a pure, tested function (`3dbc46d`). Tests: 242 passing.
+- Also verified: under reduced motion QuantLab shows a finished run at once and nothing starts by itself, TaskForge
+  runs with snapped motion; axe clean on all four flagship panels and Start Here; fast travel lands on walkable
+  ground inside the radius for every published bench (unit test); CI `verify` green on the branch.
 - Verified end to end (scripted, GPU): first frame 1.84 s at 1366×768; guide → Start Here → Escape (focus back on
   the guide entry) → TaskForge (travel, crash, trace) → close (prompt up at the bench) → walk; no console errors;
   61 fps with a panel open. Uncapped at the north ring the four live benches cost ~0.2 ms a frame (5.6 vs 5.4 ms
