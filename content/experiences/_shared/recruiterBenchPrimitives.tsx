@@ -359,6 +359,8 @@ interface SceneShellProps extends ExperienceSceneProps {
   children: ReactNode;
 }
 
+export const RECRUITER_SCENE_CONTENT_SCALE = 1.3;
+
 export function RecruiterSceneShell({
   anchor,
   rotationY,
@@ -472,7 +474,8 @@ export function RecruiterSceneShell({
             />
           </mesh>
         </group>
-        {children}
+        {/* Scene props were authored small for the 4.2 m platform; scale them so a bench reads from the plaza. */}
+        <group scale={RECRUITER_SCENE_CONTENT_SCALE}>{children}</group>
       </group>
     </RecruiterSceneRevealContext.Provider>
   );

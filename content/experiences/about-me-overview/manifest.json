@@ -4,6 +4,7 @@
   "title": "Start Here",
   "type": "experience",
   "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "scene.tsx",
   "status": "published",
   "recruiterCard": {
     "roleLabel": "Software Engineer Portfolio Overview",
