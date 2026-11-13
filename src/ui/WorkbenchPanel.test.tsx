@@ -180,3 +180,11 @@ describe('LinkedWorkbenchContent', () => {
     expect(flattened).not.toContain('Mode:');
   });
 });
+
+describe('inspect hint wording', () => {
+  it('says pinch on touch screens and scroll elsewhere', async () => {
+    const { getWorkbenchInspectHint } = await import('./workbenchPanelHints');
+    expect(getWorkbenchInspectHint(true)).toContain('Pinch');
+    expect(getWorkbenchInspectHint(false)).toContain('Scroll');
+  });
+});

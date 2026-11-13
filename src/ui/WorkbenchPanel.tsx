@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useGameStore } from '../state/gameStore';
-import { WORKBENCH_INSPECT_HINT, shouldShowWorkbenchInspectHint } from './workbenchPanelHints';
+import { getWorkbenchInspectHint, shouldShowWorkbenchInspectHint } from './workbenchPanelHints';
 
 import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
@@ -185,7 +185,11 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
       <section className="experience-panel__content">
         {!workbench ? <p>Nothing selected yet.</p> : null}
         {shouldShowWorkbenchInspectHint(cameraMode, workbench) ? (
-          <p className="experience-panel__inspect-hint">{WORKBENCH_INSPECT_HINT}</p>
+          <p className="experience-panel__inspect-hint">
+            {getWorkbenchInspectHint(
+              typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true,
+            )}
+          </p>
         ) : null}
         {workbench?.definition.contentMode === 'linked' ? (
           <LinkedWorkbenchContent

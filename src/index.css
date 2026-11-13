@@ -1121,6 +1121,9 @@ body {
 
   .experience-panel {
     width: 100vw;
+    /* Opaque and above the HUD so the guide never shows through the panel on phones. */
+    background: rgb(245, 239, 225);
+    z-index: 40;
   }
 
   .workbench-editor {
