@@ -253,6 +253,23 @@ instant rollback, then revert the game's squash commit. DNS is unchanged through
 5. Loading: confirm the boot → scene hand-off on a cold cache; the dev server loses its WebGL context under React
    StrictMode (dev-only; production renders).
 
+## Release-candidate mission (2026-11-14, from 00:13:01 EST)
+
+Audit: no P0. Fixed: landscape-phone banner covered the avatar (`93deb93`); SSEC story rendered an h1 in the panel
+(`93deb93`). Independent visual review (A), acted on: flagships render and are named on phones (`1e8e006`, draw calls
+170 -> 187 portrait, 373 -> 449 landscape, M3 at DPR 3; not a real phone); tour in the case studies' order with
+numbered badges (`a6258a5`); warm-stone trays/boards and EngineX scene comments matching EngineX (`dd45966`);
+Quant Signal calibration board and LLM Research Agent documents instead of a stand-in figure (`fa90d9d`); landscape
+badges no longer overlap (`7da46fc`). A portrait arrival vista was tried twice and reverted. Feature freeze 00:34.
+Independent technical review (B), acted on: FootyMind/IntelliSort dated 2025 from their public commits, TaskForge
+fault-run wording, TaskForge live region always present (`8776df1`); Pages deploy lints and tests on Node 22 with
+npm ci (`7133e77`); release runbook rewritten (`3778031`); bench/slug mapping pinned by tests (`42d148e`).
+Journeys verified on branch builds pointed at each other: recruiter (12 steps, desktop and phone), game visitor
+(keyboard, E/Esc, tour, demos, guide fast travel, deep link + refresh, Back; normal and reduced motion), cross-site
+round trip. axe: 0 violations on spawn and 11 panels. Draft PR: co-rtex/ccortez.com#4 (squash-merge).
+Open for Christian (ledger): FridgeFinder stack, LLM Research Agent and other game-only benches with no source,
+Wisconsin DNR "Present".
+
 ## Professional site
 
 `site/visual-identity` (`9251889`, `19c11b6`, `b815935`), done by a dedicated agent and reviewed here:
