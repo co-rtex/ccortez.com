@@ -2146,3 +2146,18 @@ body {
     padding: 0.3rem 0.8rem;
   }
 }
+
+/* Landscape phones: the four flagship badges share a short, wide view and overlapped at full size. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .landmark-tooltip--title {
+    font-size: 0.64rem;
+    padding: 0.2rem 0.45rem;
+  }
+
+  .landmark-tooltip__stop {
+    width: 0.95rem;
+    height: 0.95rem;
+    margin-right: 0.3rem;
+    font-size: 0.6rem;
+  }
+}
