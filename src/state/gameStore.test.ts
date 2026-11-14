@@ -13,6 +13,7 @@ function resetGameStore(): void {
     activeRestSpotId: null,
     nearbyWorkbenchId: null,
     panelWorkbenchId: null,
+    openedWorkbenchIds: [],
     loadedSceneIds: [],
     scenePresentationById: {},
     collisionFeedbackEvent: null,
@@ -40,6 +41,19 @@ describe('game store camera state', () => {
     expect(useGameStore.getState().inspectedWorkbenchId).toBeNull();
   });
 
+  it('remembers each opened workbench once, in the order first opened', () => {
+    resetGameStore();
+    const store = useGameStore.getState();
+
+    store.openWorkbenchPanel('bench-2');
+    store.closeWorkbenchPanel();
+    store.openWorkbenchPanel('bench-1');
+    store.closeWorkbenchPanel();
+    store.openWorkbenchPanel('bench-2');
+
+    expect(useGameStore.getState().openedWorkbenchIds).toEqual(['bench-2', 'bench-1']);
+  });
+
   it('returns to editor focus when a focused editor target was active before inspect mode', () => {
     resetGameStore();
 
@@ -61,5 +75,12 @@ describe('game store camera state', () => {
     useGameStore.getState().exitSeatedMode();
     expect(useGameStore.getState().cameraMode).toBe('follow');
     expect(useGameStore.getState().playerMode).toBe('exploring');
+  });
+
+  it('numbers each fast-travel request, so the same destination twice is still two requests', () => {
+    const before = useGameStore.getState().travelRequest?.serial ?? 0;
+    useGameStore.getState().requestTravel({ x: 1, z: 2, facingYaw: 0.5 });
+    useGameStore.getState().requestTravel({ x: 1, z: 2, facingYaw: 0.5 });
+    expect(useGameStore.getState().travelRequest).toEqual({ x: 1, z: 2, facingYaw: 0.5, serial: before + 2 });
   });
 });

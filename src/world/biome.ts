@@ -13,6 +13,16 @@ import {
   isPointWalkable,
 } from './terrain';
 import { CENTRAL_PLAZA_FOUNTAIN_RADIUS } from './hub';
+import { TRAIL_SIGNS } from './landmarks/trailSignLayout';
+import {
+  LANDMARK_CLEAR_ZONES,
+  LIGHTHOUSE,
+  PATH_NETWORK_XZ,
+  PLAZA_FLOWER_BED_COLLIDERS,
+  PLAZA_LAMP_COLLIDER_RADIUS,
+  PLAZA_LAMP_POSITIONS,
+} from './islandPaths';
+import { PLAZA_WALL_COLLIDERS } from './plaza/plazaWallLayout';
 
 import type { CircleObstacle, CollisionObstacle } from '../engine/movement';
 
@@ -35,6 +45,7 @@ export const ROCK_COLLIDER_BUFFER = 0.04;
 export const WORKBENCH_GROUND_COVER_CLEAR_RADIUS = 2.2;
 export const CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS = CENTRAL_PLAZA_FOUNTAIN_RADIUS - 0.18;
 
+/** District corridors used by the workbench editor for placement snapping. */
 export const ROAD_PATH_NETWORK_XZ: Array<Array<[number, number]>> = [
   [
     [0, 0],
@@ -137,7 +148,8 @@ function pointToSegmentDistance(
 function distanceToRoad(pointX: number, pointZ: number): number {
   let minDistance = Number.POSITIVE_INFINITY;
 
-  for (const polyline of ROAD_PATH_NETWORK_XZ) {
+  // Vegetation keeps clear of the editor corridors and of the visible plaza spokes and island trails.
+  for (const polyline of [...ROAD_PATH_NETWORK_XZ, ...PATH_NETWORK_XZ]) {
     for (let index = 0; index < polyline.length - 1; index += 1) {
       const [startX, startZ] = polyline[index] ?? [0, 0];
       const [endX, endZ] = polyline[index + 1] ?? [0, 0];
@@ -200,6 +212,10 @@ function generateScatterPoints({
   return points;
 }
 
+function isNearLandmark(pointX: number, pointZ: number): boolean {
+  return LANDMARK_CLEAR_ZONES.some((zone) => Math.hypot(pointX - zone.x, pointZ - zone.z) < zone.radius);
+}
+
 function isInNeighborhood(pointX: number, pointZ: number): boolean {
   return Math.hypot(pointX, pointZ) < PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 1.8;
 }
@@ -218,6 +234,28 @@ function isGroundedPlacement(pointX: number, pointZ: number, radiusPadding = 0.3
   return isPointWalkable(pointX, pointZ, radiusPadding);
 }
 
+/**
+ * Low-frequency density field (0..1) that gathers trees into groves with open meadows between them.
+ * Acceptance uses a position hash, not the scatter generator's sequence, so the field stays independent.
+ */
+export function getGroveDensity(x: number, z: number): number {
+  const wave =
+    Math.sin(x * 0.085 + 1.3) * Math.sin(z * 0.078 - 0.7) * 0.6 +
+    Math.sin((x - z) * 0.05 + 2.1) * 0.25 +
+    Math.sin((x + z) * 0.16) * 0.15;
+  return clamp(0.5 + wave * 0.75, 0, 1);
+}
+
+function positionHash(x: number, z: number): number {
+  const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+function isOutsideGrove(x: number, z: number): boolean {
+  const density = getGroveDensity(x, z);
+  return positionHash(x, z) > 0.12 + density * density * 0.95;
+}
+
 export const TREE_POINTS: ScatterPoint[] = generateScatterPoints({
   count: 128,
   seed: 1701,
@@ -227,8 +265,10 @@ export const TREE_POINTS: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.38) ||
     distanceToRoad(x, z) < 1.75 ||
     isInNeighborhood(x, z) ||
+    isNearLandmark(x, z) ||
     isInsideWorkbenchClearZone(x, z) ||
-    getIslandDistanceNormalized(x, z) > 0.9,
+    getIslandDistanceNormalized(x, z) > 0.9 ||
+    isOutsideGrove(x, z),
 });
 
 export const BUSH_POINTS: ScatterPoint[] = generateScatterPoints({
@@ -240,6 +280,7 @@ export const BUSH_POINTS: ScatterPoint[] = generateScatterPoints({
     isNearLake(x, z, 0.28) ||
     distanceToRoad(x, z) < 1.2 ||
     isInNeighborhood(x, z) ||
+    isNearLandmark(x, z) ||
     isInsideWorkbenchClearZone(x, z, WORKBENCH_GROUND_COVER_CLEAR_RADIUS) ||
     getIslandDistanceNormalized(x, z) > 0.94,
 });
@@ -251,6 +292,7 @@ export const FLOWER_POINTS: ScatterPoint[] = generateScatterPoints({
   avoid: (x, z) =>
     !isGroundedPlacement(x, z, 0.22) ||
     isNearLake(x, z, 0.2) ||
+    isNearLandmark(x, z) ||
     Math.hypot(x, z) < PUBLISHED_WORKBENCH_PLAZA_METRICS.plazaRadius + 2.4 ||
     isInsideWorkbenchClearZone(x, z, WORKBENCH_GROUND_COVER_CLEAR_RADIUS) ||
     getIslandDistanceNormalized(x, z) > 0.95,
@@ -263,8 +305,9 @@ const rawBoulderPoints: ScatterPoint[] = generateScatterPoints({
   avoid: (x, z) =>
     !isGroundedPlacement(x, z, 0.5) ||
     isNearLake(x, z, 0.35) ||
-    distanceToRoad(x, z) < 1.35 ||
+    distanceToRoad(x, z) < 2.3 ||
     isInNeighborhood(x, z) ||
+    isNearLandmark(x, z) ||
     isInsideWorkbenchClearZone(x, z) ||
     getIslandDistanceNormalized(x, z) > 0.91,
 });
@@ -290,7 +333,7 @@ const rawCoastalRockPoints: ScatterPoint[] = generateScatterPoints({
       return true;
     }
 
-    return isNearLake(x, z, 0.5) || distanceToRoad(x, z) < 1.2 || isInNeighborhood(x, z);
+    return isNearLake(x, z, 0.5) || distanceToRoad(x, z) < 1.2 || isInNeighborhood(x, z) || isNearLandmark(x, z);
   },
 });
 
@@ -322,6 +365,11 @@ function createTreeAndRockCollisionObstacles(): CircleObstacle[] {
       centerZ: 0,
       radius: CENTRAL_PLAZA_FOUNTAIN_COLLIDER_RADIUS,
     },
+    ...PLAZA_LAMP_POSITIONS.map(([x, z]) => ({ centerX: x, centerZ: z, radius: PLAZA_LAMP_COLLIDER_RADIUS })),
+    ...PLAZA_FLOWER_BED_COLLIDERS.map(({ x, z, radius }) => ({ centerX: x, centerZ: z, radius })),
+    { centerX: LIGHTHOUSE.x, centerZ: LIGHTHOUSE.z, radius: LIGHTHOUSE.radius },
+    ...TRAIL_SIGNS.map((sign) => ({ centerX: sign.x, centerZ: sign.z, radius: 0.22 })),
+    ...PLAZA_WALL_COLLIDERS,
     ...treeObstacles,
     ...boulderObstacles,
   ];

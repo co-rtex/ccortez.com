@@ -60,6 +60,45 @@ Workbench layout is the live world model.
 - Interaction radius and scene streaming distance are derived from the workbench definition.
 - In dev mode, add `?workbenchEditor=1` or press `Ctrl+Shift+W` to open the layout editor.
 
+## URL Parameters
+
+Public:
+
+- `?bench=<id>` opens a published bench on load, moving the player to it as if picked in the guide. The case
+  studies on ccortez.com link here (`taskforge`, `enginex`, `quantlab`, `lidar-phenotyping-research`).
+
+Screenshot and diagnostic fixtures (harmless if left in a URL; ignored when absent):
+
+- `?shot=px,py,pz,tx,ty,tz` fixes the camera at a position looking at a target; `?spawn=x,z` starts the player
+  elsewhere.
+- `?avatar=yaw[,clip[,time]]` turns the avatar and plays or freezes a clip (`idle`, `walk`, `run`).
+- `?tfsim=ticks[,worker@tick]` freezes the TaskForge bench's run at a tick, optionally after crashing a worker.
+- `?stats` publishes renderer counters on `window.__sceneStats`; `?perf=a,b` switches systems off for profiling
+  (`noshadow`, `noscenes`, `noveg`, `dpr1`, and others in `src/world/perfFlags.ts`).
+- `?debugWaterCollision` logs water walkability while moving.
+
+## Flagship Benches
+
+TaskForge, EngineX, QuantLab and the LiDAR research bench each run a small deterministic model of the work in
+`src/sim/` (job queue, order book, backtest; the LiDAR pass is time-driven in its scene). The job queue, order book
+and backtest files are shared with the professional site (`src/lib/sim/` there) and must stay identical below their header comments;
+`npm run check:shared-sim` compares that code with a sibling `../portfolio-professional` checkout (it skips, with a
+message, if the checkout is missing, so run it by hand before a release). Each
+panel labels its model as a toy, not the real code, and runs it on a fallback clock when no 3D scene is driving it.
+
+The flagship tour (`FLAGSHIP_TOUR` in `src/workbench/flagships.ts`: Start Here, LiDAR, TaskForge, EngineX, QuantLab)
+is offered from the arrival card and the phone banner and continues from a footer on those panels; the last stop
+hands over to the written case studies. Only TaskForge, EngineX and QuantLab are called live models
+(`hasInteractiveModel`); LiDAR's scan pass has no controls.
+
+Two role benches have scripted dioramas instead of the shared desk kit: HCSC (`src/sim/reconcileLoop.ts`, a
+reconciliation pass) and Phoenix-Aid (`src/sim/extractionLoop.ts`, an extraction line with a validation gate).
+Both are fixed, tested scripts on made-up records, labelled as illustrations.
+
+`VITE_PROFESSIONAL_SITE_URL` points the game's links to the text portfolio at another build (for example a local
+build of the professional branch); the professional site's `NEXT_PUBLIC_GAME_URL` does the reverse, so the two
+development versions can be checked together before a release.
+
 ## Current Product Scope
 
 This stabilization baseline is intentionally recruiter-first.

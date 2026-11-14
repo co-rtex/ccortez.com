@@ -25,9 +25,13 @@ interface GameStore {
   activeRestSpotId: string | null;
   nearbyWorkbenchId: string | null;
   panelWorkbenchId: string | null;
+  /** Workbenches whose panel the visitor has opened this visit, in first-opened order. */
+  openedWorkbenchIds: string[];
   loadedSceneIds: string[];
   scenePresentationById: WorkbenchScenePresentationMap;
   collisionFeedbackEvent: CollisionFeedbackEvent | null;
+  /** A pending fast-travel move for the player controller; `serial` tells repeated requests apart. */
+  travelRequest: TravelRequest | null;
   setPlayerPosition: (position: WorldAnchor) => void;
   setEditorCameraTarget: (target: WorldAnchor | null) => void;
   clearEditorCameraTarget: () => void;
@@ -40,6 +44,14 @@ interface GameStore {
   setLoadedSceneIds: (ids: string[]) => void;
   setScenePresentationById: (presentation: WorkbenchScenePresentationMap) => void;
   emitCollisionFeedback: (reason: CollisionFeedbackReason) => void;
+  requestTravel: (destination: Omit<TravelRequest, 'serial'>) => void;
+}
+
+export interface TravelRequest {
+  x: number;
+  z: number;
+  facingYaw: number;
+  serial: number;
 }
 
 const initialPlayerPosition: WorldAnchor = {
@@ -81,9 +93,11 @@ export const useGameStore = create<GameStore>((set) => ({
   activeRestSpotId: null,
   nearbyWorkbenchId: null,
   panelWorkbenchId: null,
+  openedWorkbenchIds: [],
   loadedSceneIds: [],
   scenePresentationById: {},
   collisionFeedbackEvent: null,
+  travelRequest: null,
   setPlayerPosition: (position) => {
     set((state) => {
       if (
@@ -187,6 +201,9 @@ export const useGameStore = create<GameStore>((set) => ({
         panelWorkbenchId: id,
         inspectedWorkbenchId: id,
         cameraMode: 'workbench-inspect',
+        openedWorkbenchIds: state.openedWorkbenchIds.includes(id)
+          ? state.openedWorkbenchIds
+          : [...state.openedWorkbenchIds, id],
       };
     });
   },
@@ -225,5 +242,8 @@ export const useGameStore = create<GameStore>((set) => ({
         timestampMs: performance.now(),
       },
     }));
+  },
+  requestTravel: (destination) => {
+    set((state) => ({ travelRequest: { ...destination, serial: (state.travelRequest?.serial ?? 0) + 1 } }));
   },
 }));

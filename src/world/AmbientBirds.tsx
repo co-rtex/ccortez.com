@@ -87,7 +87,7 @@ export function AmbientBirds() {
         >
           <mesh castShadow scale={[0.11, 0.085, 0.28]}>
             <sphereGeometry args={[1, 12, 10]} />
-            <meshStandardMaterial color="#39425d" roughness={0.62} />
+            <meshStandardMaterial color="#eef0ee" roughness={0.7} />
           </mesh>
           <mesh castShadow position={[0, -0.012, 0.02]} scale={[0.07, 0.048, 0.16]}>
             <sphereGeometry args={[1, 12, 10]} />
@@ -95,7 +95,7 @@ export function AmbientBirds() {
           </mesh>
           <mesh castShadow position={[0, 0.01, 0.2]} scale={[0.055, 0.052, 0.09]}>
             <sphereGeometry args={[1, 10, 10]} />
-            <meshStandardMaterial color="#4a536d" roughness={0.58} />
+            <meshStandardMaterial color="#f4f4f0" roughness={0.7} />
           </mesh>
           <mesh castShadow position={[0, 0.018, 0.285]} rotation={[Math.PI / 2, 0, 0]}>
             <coneGeometry args={[0.018, 0.065, 6]} />
@@ -111,7 +111,7 @@ export function AmbientBirds() {
           </mesh>
           <mesh castShadow position={[0, -0.004, -0.16]} rotation={[-Math.PI / 2, 0, 0]}>
             <coneGeometry args={[0.028, 0.09, 4]} />
-            <meshStandardMaterial color="#334059" roughness={0.66} />
+            <meshStandardMaterial color="#d9dcdc" roughness={0.7} />
           </mesh>
           <group
             ref={(node) => {
@@ -121,7 +121,7 @@ export function AmbientBirds() {
           >
             <mesh castShadow rotation={[0.04, 0.12, -0.12]}>
               <boxGeometry args={[0.18, 0.018, 0.085]} />
-              <meshStandardMaterial color="#4d5877" roughness={0.56} />
+              <meshStandardMaterial color="#e8eae6" roughness={0.65} />
             </mesh>
           </group>
           <group
@@ -132,7 +132,7 @@ export function AmbientBirds() {
           >
             <mesh castShadow rotation={[0.04, -0.12, 0.12]}>
               <boxGeometry args={[0.18, 0.018, 0.085]} />
-              <meshStandardMaterial color="#4d5877" roughness={0.56} />
+              <meshStandardMaterial color="#e8eae6" roughness={0.65} />
             </mesh>
           </group>
         </group>

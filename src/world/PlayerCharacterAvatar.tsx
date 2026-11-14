@@ -3,15 +3,17 @@ import { useFrame } from '@react-three/fiber';
 import { Component, Suspense, useEffect, useMemo, useRef } from 'react';
 import type { MutableRefObject, ReactNode } from 'react';
 import { LoopRepeat, Mesh } from 'three';
-import type { AnimationAction, Group } from 'three';
+import type { AnimationAction, Group, Material } from 'three';
 
-import { type PlayerLocomotionState } from './playerAvatar';
+import { readAvatarInspectFixture } from './avatarInspect';
+import { PLAYER_AVATAR_APPEARANCE, type PlayerLocomotionMode, type PlayerLocomotionState } from './playerAvatar';
 import {
   PLAYER_AVATAR_ANIMATION_CROSSFADE_SECONDS,
   PLAYER_AVATAR_MODEL_PATH,
   PLAYER_AVATAR_MODEL_SCALE,
   PLAYER_AVATAR_MODEL_YAW_OFFSET,
   resolveAvailableAvatarClipName,
+  resolveGaitPlaybackRate,
 } from './playerAvatarModel';
 
 interface PlayerAvatarProps {
@@ -71,6 +73,7 @@ function PlayerAvatarModel({ locomotionRef, visible }: PlayerAvatarProps) {
   const gltf = useGLTF(PLAYER_AVATAR_MODEL_PATH);
   const modelScene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
   const { actions, names } = useAnimations(gltf.animations, modelScene);
+  const inspect = useMemo(() => readAvatarInspectFixture(), []);
 
   useEffect(() => {
     modelScene.traverse((object) => {
@@ -81,6 +84,7 @@ function PlayerAvatarModel({ locomotionRef, visible }: PlayerAvatarProps) {
       object.castShadow = true;
       object.receiveShadow = true;
       object.frustumCulled = false;
+      applyAvatarLightFloor(object.material);
     });
   }, [modelScene]);
 
@@ -103,13 +107,26 @@ function PlayerAvatarModel({ locomotionRef, visible }: PlayerAvatarProps) {
     }
 
     root.visible = visible;
-    root.rotation.y = locomotionRef.current.facingYaw + PLAYER_AVATAR_MODEL_YAW_OFFSET;
+    root.rotation.y = (inspect ? inspect.yaw : locomotionRef.current.facingYaw) + PLAYER_AVATAR_MODEL_YAW_OFFSET;
     if (!visible) {
       return;
     }
 
-    const desiredClipName = resolveAvailableAvatarClipName(locomotionRef.current.mode, names);
-    if (!desiredClipName || desiredClipName === activeClipNameRef.current) {
+    const desiredClipName = resolveAvailableAvatarClipName(inspect?.mode ?? locomotionRef.current.mode, names);
+    if (inspect?.time != null && desiredClipName) {
+      // Screenshot fixture: hold the clip at a fixed time.
+      const held = actions[desiredClipName];
+      if (held) holdAvatarAction(held, inspect.time);
+      activeClipNameRef.current = desiredClipName;
+      return;
+    }
+    if (desiredClipName && desiredClipName === activeClipNameRef.current) {
+      // Keep the feet in step with the ground as the player speeds up and slows down.
+      const active = actions[desiredClipName];
+      if (active) matchGaitPlayback(active, locomotionRef.current.mode, locomotionRef.current.planarSpeed);
+      return;
+    }
+    if (!desiredClipName) {
       return;
     }
 
@@ -145,22 +162,66 @@ function PlayerAvatarFallback({ locomotionRef, visible }: PlayerAvatarProps) {
     root.rotation.y = locomotionRef.current.facingYaw;
   });
 
+  // A simple stand-in while the model loads (or if it fails): the same outfit colours and height, standing on the
+  // ground (the player group sits 0.82 m up).
   return (
     <group ref={rootRef} visible={visible}>
-      <mesh castShadow position={[0, 1.02, 0.02]}>
-        <capsuleGeometry args={[0.16, 0.46, 6, 10]} />
-        <meshStandardMaterial color="#20324f" roughness={0.8} />
+      <mesh castShadow position={[0, -0.42, 0]}>
+        <capsuleGeometry args={[0.12, 0.6, 6, 10]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.trousersColor} roughness={0.85} flatShading />
       </mesh>
-      <mesh castShadow position={[0, 1.38, 0.03]}>
-        <sphereGeometry args={[0.24, 12, 10]} />
-        <meshStandardMaterial color="#d1a17d" roughness={0.85} />
+      <mesh castShadow position={[0, 0.27, 0]}>
+        <capsuleGeometry args={[0.17, 0.34, 6, 10]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.shirtColor} roughness={0.85} flatShading />
       </mesh>
-      <mesh castShadow position={[0, 1.53, -0.02]} scale={[0.9, 0.55, 0.62]}>
-        <sphereGeometry args={[0.2, 10, 8]} />
-        <meshStandardMaterial color="#3f2b22" roughness={0.9} />
+      <mesh castShadow position={[0, 0.74, 0.01]}>
+        <sphereGeometry args={[0.12, 12, 10]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.skinTone} roughness={0.85} flatShading />
+      </mesh>
+      <mesh castShadow position={[0, 0.82, -0.01]} scale={[1.05, 0.6, 1.05]}>
+        <sphereGeometry args={[0.125, 10, 8]} />
+        <meshStandardMaterial color={PLAYER_AVATAR_APPEARANCE.hairColor} roughness={0.9} flatShading />
       </mesh>
     </group>
   );
+}
+
+/**
+ * A small lighting floor for the avatar only: a fraction of each surface's own colour is added as emission, so in
+ * shade (under trees, on the far side of the fountain) the polo, khakis and skin keep their hues instead of sinking
+ * toward black and losing the likeness. The rest of the scene is lit as before.
+ */
+const AVATAR_LIGHT_FLOOR = 0.12;
+
+function applyAvatarLightFloor(material: Material | Material[]): void {
+  for (const entry of Array.isArray(material) ? material : [material]) {
+    if (entry.userData.avatarLightFloor) continue;
+    entry.userData.avatarLightFloor = true;
+    entry.onBeforeCompile = (shader) => {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <emissivemap_fragment>',
+        `#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * ${AVATAR_LIGHT_FLOOR.toFixed(2)};`,
+      );
+    };
+    entry.customProgramCacheKey = () => 'avatar-light-floor-v1';
+    entry.needsUpdate = true;
+  }
+}
+
+/** Plays a gait clip at the rate that makes its planted foot move with the ground at this speed. */
+function matchGaitPlayback(action: AnimationAction, mode: PlayerLocomotionMode, planarSpeed: number): void {
+  if (mode === 'idle') {
+    action.timeScale = 1;
+    return;
+  }
+  action.timeScale = resolveGaitPlaybackRate(mode, planarSpeed);
+}
+
+function holdAvatarAction(action: AnimationAction, time: number): void {
+  if (!action.isRunning()) action.play();
+  action.paused = true;
+  action.time = time;
+  action.weight = 1;
 }
 
 function activateAvatarAction(previousAction: AnimationAction | undefined, nextAction: AnimationAction): void {

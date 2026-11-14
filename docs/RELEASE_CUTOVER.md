@@ -7,7 +7,36 @@ Goal: `ccortez.com` serves the professional portfolio (Vercel); `game.ccortez.co
 (GitHub Pages). **Steps 1 and later change production and need Christian's explicit approval.** Everything
 in "Already done" was safe and reversible.
 
-## Verified current state (2026-11-13)
+## Release candidate, 2026-11-14 (code only: no DNS, no domain settings)
+
+Verified today with `scripts/verify-release.sh` (all checks pass): `ccortez.com` A `64.29.17.1`, `216.198.79.1`
+(Vercel); `www` CNAME `ccd20a33c6e119dd.vercel-dns-017.com.`; `game` CNAME `co-rtex.github.io.` (GitHub Pages).
+The domain table further down is the state **before** the 2026-11-12 cutover, kept for history.
+
+Order matters: the professional site's case studies link to `game.ccortez.com/?bench=<id>`, which only the new
+game supports (production's game opens the spawn point and ignores the parameter). **Release the game first.**
+
+Each step needs Christian's explicit approval.
+
+0. Before merging: in each repo, `git fetch` and confirm the branch head is the reviewed one; in the game repo run
+   `npm run check:shared-sim` with the professional checkout beside it (all four files "same").
+1. **Game.** Merge `game/art-direction-pass` into `main` of `co-rtex/ccortez.com`. **Squash-merge** it: commits
+   `21c92a2` and `e68c138` on the branch briefly held a claims-audit decision list (no confidential data; see the
+   professional repo's ledger); a squash keeps them out of `main`. Delete the branch afterwards if they should stop
+   being reachable. The Pages workflow lints, tests, builds and deploys. Then: `scripts/verify-release.sh`, open
+   `https://game.ccortez.com/?bench=taskforge` (TaskForge panel opens), and the arrival screen shows numbered
+   flagship badges.
+2. **Professional.** Merge `site/visual-identity` into `main` of `co-rtex/portfolio-professional`; Vercel deploys
+   `ccortez.com`. Then: `BASE_URL=https://ccortez.com npm run test:e2e` and
+   `BASE_URL=https://ccortez.com INTEGRATION_GAME_URL=https://game.ccortez.com npx playwright test integration`
+   (8 passed: four flagships, desktop and mobile).
+
+Rollback, in reverse order if both are out: the professional site first (Vercel dashboard or `vercel rollback` to
+the previous production deployment; instant, no rebuild), then the game (revert the squash commit on `main`; the
+Pages workflow redeploys the previous build). Rolling back only the game leaves the site's bench links opening the
+spawn point, which is harmless.
+
+## State before the 2026-11-12 cutover (historical)
 
 | Item | Value | How checked |
 | --- | --- | --- |

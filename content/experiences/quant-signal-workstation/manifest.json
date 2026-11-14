@@ -10,19 +10,18 @@
     "roleLabel": "Forecasting Pipeline & Signal Workstation",
     "organization": "Personal Project",
     "dateRange": "2026",
-    "summary": "Built a market-signal platform that ingests live data, ranks equities, and explains predictions with calibrated evaluation and interpretable outputs.",
+    "summary": "Built a forecasting pipeline for daily US equities that ranks signals, explains predictions and evaluates calibration.",
     "impactBullets": [
-      "Built a FastAPI backend ingesting live market data, generating ranked equity signals, and serving SHAP-backed explanations.",
-      "Implemented evaluation pipelines with ROC-AUC, PR-AUC, Brier scores, and calibration curves for model reliability.",
-      "Designed reproducible feature workflows and regime-aware backtesting for evidence-based model selection."
+      "Built a FastAPI backend that serves ranked equity signals from daily market data with SHAP-backed explanations.",
+      "Implemented evaluation with ROC-AUC, PR-AUC, Brier scores and calibration curves.",
+      "Designed reproducible feature datasets and walk-forward backtests for evidence-based model selection."
     ],
     "techStack": [
       "Python",
       "FastAPI",
       "scikit-learn",
       "PostgreSQL",
-      "SHAP",
-      "Streamlit"
+      "SHAP"
     ]
   }
 }

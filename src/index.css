@@ -79,7 +79,7 @@ body {
 
 .recruiter-navigator {
   pointer-events: auto;
-  width: min(380px, 40vw);
+  width: min(336px, 34vw);
   max-height: calc(100vh - 2.4rem);
   display: grid;
   gap: 0.9rem;
@@ -139,6 +139,11 @@ body {
   color: #f7eee1;
   font-size: 0.72rem;
   font-weight: 700;
+}
+
+.recruiter-navigator__counts .recruiter-navigator__progress {
+  background: rgba(241, 195, 127, 0.2);
+  color: #fbe3bb;
 }
 
 .recruiter-navigator__visibility-button {
@@ -272,6 +277,17 @@ body {
   box-shadow: 0 0 0 3px rgba(255, 248, 233, 0.08);
 }
 
+/* Flagships (benches with a case study): the same warm rule as their name badges in the world. */
+.recruiter-map-marker--flagship .recruiter-map-marker__core,
+.recruiter-navigator__swatch--flagship {
+  box-shadow: 0 0 0 2px rgba(240, 190, 96, 0.95);
+}
+
+.recruiter-navigator__swatch--flagship {
+  background: transparent;
+  border: 2px solid rgba(18, 27, 31, 0.92);
+}
+
 .recruiter-map-marker--experience .recruiter-map-marker__core {
   background: var(--accent);
 }
@@ -286,6 +302,11 @@ body {
 
 .recruiter-map-marker--secondary .recruiter-map-marker__core {
   background: var(--secondary-accent);
+}
+
+/* Opened this visit: a dark centre dot, so the marker keeps its category colour and contrast. */
+.recruiter-map-marker--opened .recruiter-map-marker__core {
+  background-image: radial-gradient(circle, rgba(18, 27, 31, 0.92) 0 2.5px, transparent 3px);
 }
 
 .recruiter-map-marker--nearby .recruiter-map-marker__core,
@@ -433,11 +454,31 @@ body {
   width: min(100%, 440px);
 }
 
+/* Folded, the guide is one pill matching the site bar's "How to play" (it was a lighter pill inside a dark box). */
 .recruiter-navigator--collapsed {
   width: auto;
   max-width: min(280px, 34vw);
-  padding: 0.75rem;
+  padding: 0;
   overflow: visible;
+  border: none;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.recruiter-navigator--collapsed .recruiter-navigator__visibility-button--show {
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid rgba(243, 224, 188, 0.4);
+  background: rgba(18, 32, 38, 0.88);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.recruiter-navigator--collapsed .recruiter-navigator__visibility-button--show:hover {
+  background: rgba(30, 50, 58, 0.95);
 }
 
 .recruiter-navigator__toggle {
@@ -606,6 +647,8 @@ body {
 }
 
 .mobile-lite-banner {
+  /* The HUD layer passes pointer events through to the world; the banner's button and link must take them. */
+  pointer-events: auto;
   align-self: flex-start;
   max-width: min(700px, 90vw);
   background: rgba(239, 198, 124, 0.95);
@@ -644,6 +687,12 @@ body {
   gap: 1rem;
   padding: 1.25rem 1.1rem 0.75rem;
   border-bottom: 1px solid rgba(84, 104, 111, 0.2);
+}
+
+/* The panel moves focus to its title so screen readers announce it; the title is not a control (tabindex -1),
+   so it shows no focus box. The next Tab lands on Close, which does. */
+#experience-panel-title:focus {
+  outline: none;
 }
 
 .experience-panel__header h2 {
@@ -686,7 +735,8 @@ body {
   border-bottom: 1px solid rgba(84, 104, 111, 0.2);
 }
 
-.experience-panel__meta span,
+/* Direct children only: the case-study link's arrow is a span inside the link and must not become a chip. */
+.experience-panel__meta > span,
 .experience-panel__meta-chip {
   background: rgba(216, 226, 224, 0.92);
   color: #24414c;
@@ -731,15 +781,13 @@ body {
   color: var(--panel-fg);
 }
 
+/* A quiet line of help, not a box: as a grey filled panel it read like a disabled input and took ~45px. */
 .experience-panel__inspect-hint {
-  margin: 0 0 1rem;
-  border-radius: 12px;
-  padding: 0.72rem 0.85rem;
-  background: rgba(34, 56, 64, 0.08);
-  border: 1px solid rgba(84, 104, 111, 0.16);
-  color: #29414a;
-  font-size: 0.82rem;
-  font-weight: 700;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  color: #4d6268;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .recruiter-card {
@@ -750,11 +798,18 @@ body {
   background: linear-gradient(180deg, rgba(255, 251, 243, 0.96), rgba(245, 236, 219, 0.86));
 }
 
+.recruiter-card__role {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
 .recruiter-card__meta {
-  margin: 0 0 0.7rem;
+  margin: 0.15rem 0 0.7rem;
   color: var(--panel-muted);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .recruiter-card__summary {
@@ -805,8 +860,15 @@ body {
 
 .experience-panel__content h1,
 .experience-panel__content h2,
-.experience-panel__content h3 {
+.experience-panel__content h3,
+.experience-panel__story-title {
   font-family: 'Syne', 'Avenir Next', sans-serif;
+}
+
+/* A story's own section headings (its `##`), one level under the panel's "Story" heading. */
+.experience-panel__story-title {
+  margin: 1.1rem 0 0.4rem;
+  font-size: 1.15rem;
 }
 
 .experience-panel__content p,
@@ -842,18 +904,56 @@ body {
   color: #eef6fb;
 }
 
+/* The open hint inside a nearby bench's title badge. */
+.landmark-tooltip__action {
+  display: block;
+  margin-top: 0.2rem;
+  color: #ffd27a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .landmark-tooltip--title {
-  max-width: 8.75rem;
+  /* drei's Html wrapper has no width, so without max-content the badge shrinks to its narrowest wrap. */
+  width: max-content;
+  max-width: 16rem;
+  text-wrap: balance;
+  transition: opacity 0.15s ease;
   border-color: rgba(221, 209, 180, 0.62);
   background: linear-gradient(130deg, rgba(20, 31, 37, 0.82), rgba(18, 29, 34, 0.76));
   color: #f8ead2;
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   line-height: 1.25;
   text-align: center;
   text-transform: none;
   white-space: normal;
+}
+
+/* Flagship benches (those with a case study): a warm rule on the badge, so the names that read from across the
+   plaza are recognisably the same set the guide tags "Case study". */
+.landmark-tooltip--flagship {
+  border-color: rgba(240, 190, 96, 0.95);
+  box-shadow: 0 0 0 1px rgba(240, 190, 96, 0.35);
+}
+
+/* The flagship's stop on the tour, before its name. */
+.landmark-tooltip__stop {
+  display: inline-grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-right: 0.4rem;
+  border-radius: 999px;
+  background: #f0be60;
+  color: #2b230f;
+  font-size: 0.7rem;
+  font-weight: 800;
+  vertical-align: 0.05em;
 }
 
 .landmark-tooltip--editor {
@@ -1120,6 +1220,9 @@ body {
 
   .experience-panel {
     width: 100vw;
+    /* Opaque and above the HUD so the guide never shows through the panel on phones. */
+    background: rgb(245, 239, 225);
+    z-index: 40;
   }
 
   .workbench-editor {
@@ -1331,12 +1434,12 @@ body {
 .scene-fallback {
   position: absolute;
   top: 50%;
-  /* Centre in the space to the right of the recruiter guide (380px wide plus HUD padding). */
-  left: calc((420px + 100vw) / 2);
+  /* Centre in the space to the right of the recruiter guide (336px wide plus HUD padding). */
+  left: calc((376px + 100vw) / 2);
   /* Below the HUD (which passes clicks through) so an expanded guide on phones covers it. */
   z-index: 9;
   transform: translate(-50%, -50%);
-  width: min(480px, calc(100vw - 460px));
+  width: min(480px, calc(100vw - 416px));
   padding: 1.6rem;
   border-radius: 20px;
   background: rgba(255, 250, 240, 0.94);
@@ -1391,8 +1494,66 @@ body {
 }
 
 @media (max-width: 900px) {
-  /* Phones and narrow windows: the guide and the banner carry the portfolio link instead. */
+  /* Phones and narrow windows: keep only the portfolio link, as a compact pill beside the folded guide. */
   .site-bar {
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+
+  .site-bar__button {
+    display: none;
+  }
+
+  .site-bar__link {
+    padding: 0.55rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .app-shell:has(.experience-panel--open) .site-bar {
+    display: none;
+  }
+
+  .recruiter-navigator--mobile:not([open]) {
+    width: auto;
+    padding: 0;
+  }
+
+  /* An open phone guide takes the top of the screen: the portfolio pill and the intro banner step aside
+     instead of sitting on top of it, and the guide's own eyebrow would only repeat the toggle's label. */
+  .app-shell:has(.recruiter-navigator--mobile[open]) .site-bar,
+  .app-shell:has(.recruiter-navigator--mobile[open]) .mobile-lite-banner,
+  .recruiter-navigator--mobile .recruiter-navigator__eyebrow {
+    display: none;
+  }
+
+  .recruiter-navigator--mobile .recruiter-navigator__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  /* A caret shows the toggle opens and closes the list. */
+  .recruiter-navigator--mobile .recruiter-navigator__toggle::after {
+    content: '';
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-0.15rem) rotate(45deg);
+  }
+
+  .recruiter-navigator--mobile[open] .recruiter-navigator__toggle::after {
+    transform: translateY(0.1rem) rotate(-135deg);
+  }
+
+  .recruiter-navigator--mobile:not([open]) .recruiter-navigator__toggle {
+    padding: 0.55rem 0.95rem;
+    font-size: 0.85rem;
+  }
+
+  /* On phones the panel covers the scene, so there is nothing to rotate. */
+  .experience-panel__inspect-hint {
     display: none;
   }
 
@@ -1406,5 +1567,623 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .site-bar {
     transition: none;
+  }
+}
+
+.experience-panel__meta[hidden] {
+  display: none;
+}
+
+.landmark-sign {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: center;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  background: rgba(20, 31, 37, 0.86);
+  border: 1px solid rgba(255, 224, 171, 0.6);
+  color: #f8ead2;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 8px 20px rgba(13, 22, 29, 0.36);
+}
+
+.landmark-sign__title {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.landmark-sign__link {
+  color: #ffd27a;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.landmark-sign__link:focus-visible {
+  outline: 2px solid #ffd27a;
+  outline-offset: 3px;
+}
+
+/* ---- TaskForge workbench: live model controls in the details panel, and its in-scene labels ---- */
+.taskforge-sim {
+  margin: 0 0 1.1rem;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: 14px;
+  background: #eef4f0;
+  border: 1px solid rgba(47, 143, 99, 0.28);
+}
+
+.taskforge-sim h4 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.taskforge-sim p {
+  margin: 0 0 0.6rem;
+  font-size: 0.88rem;
+}
+
+.taskforge-sim__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.2rem 0 0.7rem;
+}
+
+.taskforge-sim__buttons button {
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #23404a;
+  background: #fffdf8;
+  color: #23404a;
+  cursor: pointer;
+}
+
+.taskforge-sim__buttons button:hover:not([aria-disabled='true']) {
+  background: #23404a;
+  color: #fffdf8;
+}
+
+.taskforge-sim__buttons button[aria-disabled='true'] {
+  border-color: rgba(212, 81, 60, 0.6);
+  color: #9b3a2c;
+  cursor: default;
+}
+
+.taskforge-sim__buttons .taskforge-sim__restart {
+  border-style: dashed;
+}
+
+.taskforge-sim__buttons button:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}
+
+.taskforge-sim .taskforge-sim__status {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.taskforge-sim .taskforge-sim__event {
+  min-height: 1.6em;
+  font-family: 'SFMono-Regular', Consolas, Monaco, monospace;
+  font-size: 0.8rem;
+}
+
+/* The crashed job's story, as a timeline: a rail with one dot per step; the last, hollow dot is what the run is
+   waiting for next. */
+.taskforge-sim__trace {
+  margin: 0.2rem 0 0.9rem;
+}
+
+.taskforge-sim__trace h5 {
+  margin: 0 0 0.5rem;
+  font-size: 0.88rem;
+}
+
+.taskforge-sim__trace ol {
+  margin: 0;
+  padding: 0 0 0 1rem;
+  list-style: none;
+  border-left: 1px solid rgba(35, 64, 74, 0.35);
+}
+
+.taskforge-sim__step {
+  position: relative;
+  margin: 0 0 0.6rem;
+}
+
+.taskforge-sim__step::before {
+  content: '';
+  position: absolute;
+  top: 0.35rem;
+  left: calc(-1rem - 5px);
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #e8b04a;
+}
+
+.taskforge-sim__step--crash::before,
+.taskforge-sim__step--dead_letter::before {
+  background: #d4513c;
+}
+
+.taskforge-sim__step--success::before {
+  background: #2f8f63;
+}
+
+.taskforge-sim__step--next::before {
+  background: #eef4f0;
+  border: 1px dashed #23404a;
+  box-sizing: border-box;
+}
+
+.taskforge-sim .taskforge-sim__step p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.taskforge-sim .taskforge-sim__step p:first-child {
+  font-weight: 700;
+}
+
+.taskforge-sim .taskforge-sim__step p:last-child {
+  color: #4b5a5f;
+}
+
+.taskforge-sim__step--next p:first-child {
+  color: #4b5a5f;
+}
+
+.taskforge-sim__step p span {
+  margin-right: 0.45rem;
+  font-family: 'SFMono-Regular', Consolas, Monaco, monospace;
+  font-size: 0.74rem;
+  font-weight: 400;
+  color: #4b5a5f;
+}
+
+.taskforge-sim__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.78rem;
+}
+
+.taskforge-sim__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.taskforge-sim__legend span {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.taskforge-label {
+  display: block;
+  white-space: nowrap;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(20, 31, 37, 0.82);
+  color: #f8ead2;
+  font-size: 0.7rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* Text for assistive technology only (live announcements that would be noise on screen). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Phones and portrait tablets: the details panel is a bottom sheet, so the bench stays in view above it while its
+   controls are used (the camera shifts the view up to centre the bench in the uncovered part). */
+@media (max-width: 700px), (max-width: 1024px) and (orientation: portrait) {
+  .experience-panel {
+    top: auto;
+    bottom: 0;
+    width: 100vw;
+    height: 60%;
+    border-left: 0;
+    border-top: 1px solid rgba(84, 104, 111, 0.32);
+    border-radius: 18px 18px 0 0;
+    transform: translateY(100%);
+  }
+
+  .experience-panel--open {
+    transform: translateY(0);
+  }
+}
+
+/* Landscape phones and small tablets: a side panel that leaves the left part of the screen to the bench. */
+@media (max-width: 900px) and (orientation: landscape) {
+  .experience-panel {
+    width: min(430px, 55vw);
+  }
+}
+
+/* Short landscape screens: the in-scene bench labels keep their place but take less of the view. */
+@media (max-height: 500px) {
+  .taskforge-label {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.6rem;
+  }
+}
+
+/* Phones and portrait tablets: the inspect camera starts 1.5x further back there, which shrinks the in-scene labels
+   (they scale with distance); a larger base size brings them back to a readable ~11 px. */
+@media (max-width: 700px), (max-width: 1024px) and (orientation: portrait) {
+  .taskforge-label {
+    font-size: 0.95rem;
+    padding: 0.2rem 0.6rem;
+  }
+}
+
+/* "Try the live model" on flagship panels: a quiet button beside the chips that jumps to the demo. */
+.experience-panel__demo-jump {
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-height: 1.9rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #2f8f63;
+  background: #eef4f0;
+  color: #1f5e42;
+  cursor: pointer;
+}
+
+.experience-panel__demo-jump:hover {
+  background: #2f8f63;
+  color: #fffdf8;
+}
+
+.experience-panel__demo-jump:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}
+
+.taskforge-sim h4:focus {
+  outline: none;
+}
+
+/* Flagship tour: a footer on the panels of the benches on the route. It stays in view while the story scrolls. */
+.panel-tour {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem 1.1rem calc(0.8rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(84, 104, 111, 0.22);
+  background: rgba(238, 244, 240, 0.96);
+}
+
+.panel-tour__position {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #4b5a5f;
+}
+
+.panel-tour__position span {
+  margin-left: 0.35rem;
+  font-variant-numeric: tabular-nums;
+  color: #1f5e42;
+}
+
+.panel-tour__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.panel-tour__buttons button,
+.panel-tour__buttons a {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  min-height: 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.panel-tour__previous {
+  border: 1px solid rgba(35, 64, 74, 0.45);
+  background: transparent;
+  color: #23404a;
+}
+
+/* #1f5e42 under #fffdf8 is ~7.6:1 (the lighter #2f8f63 was ~3.9:1, short of 4.5:1 for its 13px label). */
+.panel-tour__next {
+  border: 1px solid #17482f;
+  background: #1f5e42;
+  color: #fffdf8;
+}
+
+.panel-tour__next:hover {
+  background: #17482f;
+}
+
+.panel-tour__previous:hover {
+  background: rgba(35, 64, 74, 0.08);
+}
+
+.panel-tour__buttons button:focus-visible,
+.panel-tour__buttons a:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}
+
+/* Arrival card: the first screen's one invitation (start the tour), with the controls as keycaps. */
+.arrival-card {
+  pointer-events: auto;
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+  max-width: min(400px, 88vw);
+  padding: 0.95rem 1.1rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(243, 224, 188, 0.42);
+  background: linear-gradient(145deg, rgba(19, 34, 40, 0.9), rgba(16, 27, 32, 0.8));
+  color: #f7eee1;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(9px);
+}
+
+.arrival-card__who {
+  margin: 0;
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: rgba(247, 238, 225, 0.82);
+}
+
+.arrival-card__who strong {
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.15rem;
+  color: #fff7ea;
+}
+
+.mobile-lite-banner__who {
+  margin: 0 0 0.45rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.arrival-card__title {
+  margin: 0;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.arrival-card__tour {
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #f0c66a;
+  background: #f0c66a;
+  color: #2b230f;
+  cursor: pointer;
+}
+
+.arrival-card__tour span {
+  font-size: 0.76rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.arrival-card__tour:hover {
+  background: #f6d68c;
+}
+
+.arrival-card__tour:focus-visible {
+  outline: 3px solid #f6d68c;
+  outline-offset: 3px;
+}
+
+.arrival-card__keys {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #fce5c2;
+}
+
+.arrival-card kbd {
+  display: inline-block;
+  min-width: 1.45em;
+  margin: 0 0.12em;
+  padding: 0 0.35em;
+  border-radius: 5px;
+  border: 1px solid rgba(252, 229, 194, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  font: 600 0.74rem/1.5 'SFMono-Regular', Consolas, Monaco, monospace;
+  text-align: center;
+}
+
+/* Start Here: the first stop, so its badge takes the amber of the arrival card's tour button rather than the dark
+   pill every other bench uses. */
+.landmark-tooltip--start {
+  border-color: #f0c66a;
+  background: #f0c66a;
+  color: #2b230f;
+}
+
+/* Phones: the tour footer is one row, the back button icon-sized, so the story keeps the space. */
+@media (max-width: 700px) {
+  .panel-tour {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.3rem 0.6rem;
+    padding-top: 0.55rem;
+  }
+
+  .panel-tour__position {
+    grid-column: 1 / -1;
+  }
+
+  .panel-tour__buttons {
+    grid-column: 1 / -1;
+    flex-wrap: nowrap;
+  }
+
+  .panel-tour__previous {
+    flex: 0 0 auto;
+  }
+
+  .panel-tour__previous .panel-tour__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .panel-tour__next {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+  }
+}
+
+/* Flagship panels: the written case study on ccortez.com, beside the live model. */
+.experience-panel__case-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 1.9rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1f4f8a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.experience-panel__case-link:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}
+
+/* Phone arrival: the banner leads with the tour, as the desktop arrival card does. */
+.mobile-lite-banner {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+
+.mobile-lite-banner__tour {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #2b230f;
+  background: #2b230f;
+  color: #f6d68c;
+  cursor: pointer;
+}
+
+.mobile-lite-banner__tour span {
+  font-size: 0.76rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.mobile-lite-banner__tour:focus-visible {
+  outline: 3px solid #2b230f;
+  outline-offset: 3px;
+}
+
+/* The panel's scrolling body takes keyboard focus (so it can be scrolled without a mouse); show it only for keys. */
+.experience-panel__content:focus {
+  outline: none;
+}
+
+.experience-panel__content:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: -3px;
+}
+
+/* Landscape phones: the banner kept its portrait size and covered ~40% of a 390px-tall view, avatar included. It
+   keeps to the left side, with tighter type, so the plaza and the avatar stay in view. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-lite-banner {
+    max-width: min(360px, 46vw);
+    font-size: 0.74rem;
+    line-height: 1.3;
+    padding: 0.45rem 0.6rem;
+    gap: 0.35rem;
+  }
+
+  .mobile-lite-banner__who {
+    margin-bottom: 0;
+    font-size: 0.72rem;
+  }
+
+  .mobile-lite-banner__tour {
+    min-height: 2.25rem;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.8rem;
+  }
+}
+
+/* Start Here's badge is amber itself, so its stop number is inverted. */
+.landmark-tooltip--start .landmark-tooltip__stop {
+  background: #2b230f;
+  color: #f6d68c;
+}
+
+/* Landscape phones: the four flagship badges share a short, wide view and overlapped at full size. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .landmark-tooltip--title {
+    font-size: 0.64rem;
+    padding: 0.2rem 0.45rem;
+  }
+
+  .landmark-tooltip__stop {
+    width: 0.95rem;
+    height: 0.95rem;
+    margin-right: 0.3rem;
+    font-size: 0.6rem;
   }
 }

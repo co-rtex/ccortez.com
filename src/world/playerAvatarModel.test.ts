@@ -7,8 +7,11 @@ import {
   PLAYER_AVATAR_ANIMATION_NAMES,
   PLAYER_AVATAR_MODEL_PATH,
   resolveAvailableAvatarClipName,
+  resolveGaitPlaybackRate,
   resolvePreferredAvatarClipName,
 } from './playerAvatarModel';
+import { PLAYER_AVATAR_CLIP_GROUND_SPEED } from './playerAvatarGaitSpeeds';
+import { DEFAULT_MOVEMENT_SPEED_CONFIG } from '../engine/playerSpeed';
 
 describe('player avatar model helpers', () => {
   it('keeps the local avatar asset contract stable', () => {
@@ -47,38 +50,63 @@ describe('player avatar model helpers', () => {
     ]);
     expect(nodeNames).toEqual(
       expect.arrayContaining([
+        // The rig the clips animate.
+        'Hips',
+        'Torso',
+        'Head',
+        'Arm_L',
+        'Arm_R',
+        'Forearm_L',
+        'Forearm_R',
+        'Thigh_L',
+        'Thigh_R',
+        'Calf_L',
+        'Calf_R',
+        'Foot_L',
+        'Foot_R',
+        // One merged mesh per body part.
         'HeadShape',
-        'UpperSkull',
-        'Cheek_L',
-        'Cheek_R',
-        'Smile',
-        'HairFrontCap',
-        'HairBackCap',
-        'HairCrownFill',
-        'HairSideSoft_L',
-        'HairSideSoft_R',
-        'HairTemple_L',
-        'HairTemple_R',
-        'HairLayer_L',
-        'HairLayer_R',
-        'EyeLidUpper_L',
-        'EyeLidUpper_R',
-        'JeanWaist',
-        'ShirtWaistOverlap',
-        'ShirtBody',
-        'ShirtFront',
-        'ShirtCollar',
+        'Hair',
+        'Polo',
+        'Khakis_Seat',
         'Arm_L_Sleeve',
         'Arm_R_Sleeve',
-        'Arm_L_Hand',
-        'Arm_R_Hand',
-        'Arm_L_Thumb',
-        'Arm_R_Thumb',
-        'Thigh_L_ShoeBody',
-        'Thigh_L_ShoeQuarter',
-        'Thigh_R_ShoeBody',
-        'Thigh_R_ShoeQuarter',
+        'Arm_L_Forearm',
+        'Arm_R_Forearm',
+        'Thigh_L_Khaki',
+        'Thigh_R_Khaki',
+        'Calf_L_Khaki',
+        'Calf_R_Khaki',
+        'Foot_L_Sneaker',
+        'Foot_R_Sneaker',
       ]),
     );
+  });
+
+  it('stays cheap to render: a handful of meshes and materials', () => {
+    const modelPath = resolve(process.cwd(), 'public', PLAYER_AVATAR_MODEL_PATH.slice(1));
+    const gltf = JSON.parse(readFileSync(modelPath, 'utf8')) as {
+      meshes?: unknown[];
+      materials?: unknown[];
+    };
+    expect(gltf.meshes?.length ?? 0).toBeLessThanOrEqual(16);
+    expect(gltf.materials?.length ?? 0).toBeLessThanOrEqual(2);
+  });
+
+  it('plays gait clips so the planted foot keeps pace with the ground at the default speeds', () => {
+    for (const mode of ['walk', 'run'] as const) {
+      const speed = DEFAULT_MOVEMENT_SPEED_CONFIG[mode];
+      const rate = resolveGaitPlaybackRate(mode, speed);
+      // Unclamped at the nominal speed, so foot speed = clip ground speed x rate = movement speed (no slide).
+      expect(rate * PLAYER_AVATAR_CLIP_GROUND_SPEED[mode]).toBeCloseTo(speed, 5);
+      // And a believable cadence: neither slow motion nor a frantic shuffle.
+      expect(rate).toBeGreaterThan(0.9);
+      expect(rate).toBeLessThan(1.45);
+    }
+  });
+
+  it('clamps the playback rate at extreme speeds', () => {
+    expect(resolveGaitPlaybackRate('walk', 0.05)).toBe(0.55);
+    expect(resolveGaitPlaybackRate('run', 40)).toBe(1.6);
   });
 });

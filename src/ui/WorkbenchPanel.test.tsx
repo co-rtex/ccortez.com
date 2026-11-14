@@ -148,6 +148,49 @@ describe('LinkedWorkbenchContent', () => {
     );
   });
 
+  it('renders story headings one level under the heading above them, leaving out one that repeats the title', () => {
+    const Story: Parameters<typeof LinkedWorkbenchContent>[0]['ActiveStory'] = ({ components }) => {
+      const H2 = components?.h2 ?? 'h2';
+      return (
+        <>
+          <H2>TaskForge</H2>
+          <H2>How it fails</H2>
+        </>
+      );
+    };
+    // Without a recruiter card there is no "Story" h3, so story headings sit directly under the panel's h2.
+    const markup = renderToStaticMarkup(<LinkedWorkbenchContent title="TaskForge" ActiveStory={Story} isLoading={false} />);
+    expect(markup).not.toContain('>TaskForge<');
+    expect(markup).toContain('<h3 class="experience-panel__story-title">How it fails</h3>');
+    // Under a recruiter card, the "Story" h3 comes first and story headings are h4.
+    const withCard = renderToStaticMarkup(
+      <LinkedWorkbenchContent
+        title="TaskForge"
+        recruiterCard={{
+          roleLabel: 'Systems project',
+          organization: 'Personal',
+          dateRange: '2026',
+          location: 'Madison, WI',
+          summary: 'A job platform.',
+          impactBullets: ['One.', 'Two.', 'Three.'],
+          techStack: ['Go'],
+        }}
+        ActiveStory={Story}
+        isLoading={false}
+      />,
+    );
+    expect(withCard).toContain('<h3 class="experience-panel__story-heading">Story</h3>');
+    expect(withCard).toContain('<h4 class="experience-panel__story-title">How it fails</h4>');
+    // A story that opens with a top-level `#` title is mapped the same way, never rendered as an h1.
+    const H1Story: Parameters<typeof LinkedWorkbenchContent>[0]['ActiveStory'] = ({ components }) => {
+      const H1 = components?.h1 ?? 'h1';
+      return <H1>TaskForge</H1>;
+    };
+    const h1Markup = renderToStaticMarkup(<LinkedWorkbenchContent title="TaskForge" ActiveStory={H1Story} isLoading={false} />);
+    expect(h1Markup).not.toContain('<h1');
+    expect(h1Markup).not.toContain('>TaskForge<');
+  });
+
   it('renders an explicit error state without showing the loading copy', () => {
     const markup = renderToStaticMarkup(
       <LinkedWorkbenchContent
@@ -173,10 +216,36 @@ describe('LinkedWorkbenchContent', () => {
     const flattened = chipLabels.join(' | ');
 
     expect(resolvePanelEyebrow(record)).toBe('Recruiter Brief');
-    expect(chipLabels).toEqual(expect.arrayContaining(['Type: Project', 'District: Projects District', 'Featured']));
+    // An anchor-tier bench without a case study gets no flagship chip.
+    expect(chipLabels).toEqual(['Type: Project']);
+    const flagship = { ...record, definition: { ...record.definition, id: 'taskforge' } };
+    // A flagship is marked by its case-study link, not a second chip saying the same thing.
+    expect(buildWorkbenchMetaChips(flagship).map((chip) => chip.label)).toEqual(['Type: Project']);
     expect(flattened).not.toContain('Visibility:');
     expect(flattened).not.toContain('Presentation:');
     expect(flattened).not.toContain('Anchor:');
     expect(flattened).not.toContain('Mode:');
+  });
+});
+
+describe('inspect hint wording', () => {
+  it('says pinch on touch screens and scroll elsewhere', async () => {
+    const { getWorkbenchInspectHint } = await import('./workbenchPanelHints');
+    expect(getWorkbenchInspectHint(true)).toContain('Pinch');
+    expect(getWorkbenchInspectHint(false)).toContain('Scroll');
+  });
+});
+
+describe('Start Here panel header', () => {
+  it('does not repeat Start Here or show a layout district', async () => {
+    const { buildWorkbenchMetaChips: chips, resolvePanelEyebrow: eyebrow } = await import('./workbenchPanelMeta');
+    const { START_HERE_WORKBENCH_ID } = await import('../world/hub');
+    const { buildWorkbenchRuntime } = await import('../workbench/runtime');
+    const { WORKBENCH_DISTRICTS, WORKBENCH_LAYOUT } = await import('../../content/workbenches/layout');
+    const start = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, []).find(
+      (record) => record.definition.id === START_HERE_WORKBENCH_ID,
+    )!;
+    expect(eyebrow(start)).toBe('Welcome');
+    expect(chips(start)).toEqual([]);
   });
 });

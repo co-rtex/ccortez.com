@@ -9,19 +9,18 @@
   "recruiterCard": {
     "roleLabel": "Data-Driven Sports Analytics Application",
     "organization": "Personal Project",
-    "dateRange": "2026",
-    "summary": "Built a sports analytics application that engineers match features, trains classification models, and validates season-over-season performance to avoid overfitting.",
+    "dateRange": "2025",
+    "summary": "Built an end-to-end match outcome predictor: rolling team features, models compared by log loss on a held-out validation set, a FastAPI prediction endpoint and a Streamlit explorer.",
     "impactBullets": [
-      "Engineered features from historical match data and trained classification models using scikit-learn pipelines.",
-      "Evaluated season-over-season performance to validate model generalization and reduce overfitting risk.",
-      "Combined sports context, feature design, and model evaluation into a cleaner decision workflow."
+      "Built an ETL pipeline that turns historical match data into rolling team features.",
+      "Trained scikit-learn classifiers and compared them by log loss on a held-out validation set.",
+      "Served predictions through FastAPI and an interactive Streamlit explorer."
     ],
     "techStack": [
       "Python",
       "scikit-learn",
-      "Feature Engineering",
-      "Classification Models",
-      "Sports Analytics"
+      "FastAPI",
+      "Streamlit"
     ]
   }
 }

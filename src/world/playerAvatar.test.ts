@@ -42,7 +42,7 @@ describe('player avatar helpers', () => {
 
   it('steps locomotion state using planar movement and preserves facing when frozen', () => {
     const initial = createInitialPlayerLocomotionState();
-    const moving = stepPlayerLocomotionState(initial, { x: 0.5, z: 0 }, 0.1, false);
+    const moving = stepPlayerLocomotionState(initial, { x: 0.22, z: 0 }, 0.1, false);
     const frozen = stepPlayerLocomotionState(moving, { x: 0, z: 0 }, 0.1, true);
 
     expect(moving.mode).toBe('walk');
@@ -53,16 +53,16 @@ describe('player avatar helpers', () => {
   });
 
   it('keeps the appearance palette and camera look height aligned with the avatar proportions', () => {
-    expect(PLAYER_AVATAR_APPEARANCE.skinTone).toBe('#d3a27f');
-    expect(PLAYER_AVATAR_APPEARANCE.hairColor).toBe('#4a3528');
-    expect(PLAYER_AVATAR_APPEARANCE.hairHighlightColor).toBe('#6b4d3b');
-    expect(PLAYER_AVATAR_APPEARANCE.eyeWhiteColor).toBe('#f8f2ea');
-    expect(PLAYER_AVATAR_APPEARANCE.irisColor).toBe('#6a4734');
-    expect(PLAYER_AVATAR_APPEARANCE.eyeColor).toBe('#261a15');
-    expect(PLAYER_AVATAR_APPEARANCE.shirtColor).toBe('#20324f');
-    expect(PLAYER_AVATAR_APPEARANCE.undershirtColor).toBe('#6d737b');
-    expect(PLAYER_AVATAR_APPEARANCE.jeansColor).toBe('#6488be');
-    expect(PLAYER_AVATAR_APPEARANCE.shoeColor).toBe('#92979f');
+    expect(PLAYER_AVATAR_APPEARANCE.skinTone).toBe('#dcac8c');
+    expect(PLAYER_AVATAR_APPEARANCE.hairColor).toBe('#2a1a12');
+    expect(PLAYER_AVATAR_APPEARANCE.hairHighlightColor).toBe('#47301f');
+    expect(PLAYER_AVATAR_APPEARANCE.eyeWhiteColor).toBe('#eee5da');
+    expect(PLAYER_AVATAR_APPEARANCE.irisColor).toBe('#2e1c13');
+    expect(PLAYER_AVATAR_APPEARANCE.eyeColor).toBe('#1d120c');
+    expect(PLAYER_AVATAR_APPEARANCE.shirtColor).toBe('#8fc0f7');
+    expect(PLAYER_AVATAR_APPEARANCE.collarColor).toBe('#7fb0ec');
+    expect(PLAYER_AVATAR_APPEARANCE.trousersColor).toBe('#cdb48c');
+    expect(PLAYER_AVATAR_APPEARANCE.shoeColor).toBe('#e4e0d8');
     expect(PLAYER_AVATAR_APPEARANCE.headRadius).toBeGreaterThan(0.28);
     expect(PLAYER_AVATAR_APPEARANCE.headRadius).toBeLessThan(0.32);
     expect(PLAYER_AVATAR_APPEARANCE.eyebrowY).toBeGreaterThan(PLAYER_AVATAR_APPEARANCE.eyeY + 0.05);
@@ -76,5 +76,35 @@ describe('player avatar helpers', () => {
     expect(resolveCameraAwareMovementInput({ x: 1, z: -1 }, 'follow')).toEqual({ x: 1, z: -1 });
     expect(shouldRenderPlayerAvatar('exploring')).toBe(true);
     expect(shouldRenderPlayerAvatar('seated')).toBe(false);
+  });
+});
+
+describe('facing an open bench', () => {
+  const still = { x: 0, z: 0 };
+
+  it('turns a standing avatar towards the target over a few frames, not at once', () => {
+    let state = createInitialPlayerLocomotionState(0);
+    const target = { yaw: Math.PI / 2, snap: false };
+    state = stepPlayerLocomotionState(state, still, 1 / 60, true, undefined, target);
+    expect(state.facingYaw).toBeGreaterThan(0);
+    expect(state.facingYaw).toBeLessThan(Math.PI / 4);
+    for (let i = 0; i < 60; i += 1) state = stepPlayerLocomotionState(state, still, 1 / 60, true, undefined, target);
+    expect(state.facingYaw).toBeCloseTo(Math.PI / 2, 2);
+  });
+
+  it('snaps under reduced motion', () => {
+    const state = stepPlayerLocomotionState(createInitialPlayerLocomotionState(0), still, 1 / 60, true, undefined, {
+      yaw: -Math.PI / 3,
+      snap: true,
+    });
+    expect(state.facingYaw).toBeCloseTo(-Math.PI / 3, 6);
+  });
+
+  it('keeps following the movement heading while moving', () => {
+    const moving = stepPlayerLocomotionState(createInitialPlayerLocomotionState(0), { x: 0, z: 0.05 }, 1 / 60, false, undefined, {
+      yaw: Math.PI,
+      snap: true,
+    });
+    expect(moving.facingYaw).toBeCloseTo(0, 6);
   });
 });

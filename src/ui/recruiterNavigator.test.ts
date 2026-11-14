@@ -4,6 +4,7 @@ import {
   START_HERE_LOCATION_LABEL,
   deriveRecruiterNavigatorData,
   resolveRecruiterNavigatorCategory,
+  summarizeOpenedProgress,
 } from './recruiterNavigator';
 import { START_HERE_WORKBENCH_ID } from '../world/hub';
 
@@ -251,5 +252,53 @@ describe('recruiter navigator data', () => {
     expect(data.playerMarker.xPercent).toBeLessThan(rightMarker?.xPercent ?? 100);
     expect(leftMarker?.state).toBe('nearby');
     expect(rightMarker?.state).toBe('active');
+  });
+});
+
+describe('summarizeOpenedProgress', () => {
+  const markers = [
+    { id: 'start', canOpen: true },
+    { id: 'a', canOpen: true },
+    { id: 'b', canOpen: true },
+    { id: 'draft', canOpen: false },
+  ];
+
+  it('counts only openable workbenches the visitor has opened', () => {
+    expect(summarizeOpenedProgress(markers, ['a', 'draft', 'not-on-map'])).toEqual({ opened: 1, total: 3 });
+  });
+
+  it('starts at zero', () => {
+    expect(summarizeOpenedProgress(markers, [])).toEqual({ opened: 0, total: 3 });
+  });
+
+  it('tags only flagships (benches with a case study) as featured and lists them first in their section', () => {
+    const data = deriveRecruiterNavigatorData(
+      [
+        createWorkbenchRecord({
+          id: 'anchor-project',
+          title: 'Anchor Project',
+          priorityTier: 'anchor',
+          linkedType: 'project',
+          x: 0,
+          z: -3,
+        }),
+        createWorkbenchRecord({
+          id: 'taskforge',
+          title: 'TaskForge',
+          priorityTier: 'anchor',
+          linkedType: 'project',
+          x: 4,
+          z: -3,
+        }),
+      ],
+      { x: 0, y: 0, z: 0 },
+      null,
+      null,
+    );
+    const projects = data.shortlistSections.flatMap((section) => section.entries);
+    expect(projects.map((entry) => [entry.id, entry.featured])).toEqual([
+      ['taskforge', true],
+      ['anchor-project', false],
+    ]);
   });
 });

@@ -28,11 +28,22 @@ function getIslandPolarAngle(x: number, z: number): number {
   return Math.atan2(z / ISLAND_RADIUS_Z, x / ISLAND_RADIUS_X);
 }
 
-export function getIslandEdgeRadiusFactor(angle: number): number {
+function getRawIslandEdgeRadiusFactor(angle: number): number {
   const large = Math.sin(angle * 3.2 + 0.4) * 0.09;
   const medium = Math.cos(angle * 5.4 - 0.8) * 0.06;
   const small = Math.sin(angle * 8.1 + 1.3) * 0.04;
   return 1 + large + medium + small;
+}
+
+// The wave frequencies are not whole numbers, so the raw shape jumps where atan2 wraps (due west): a 17%
+// radius step that drew a sharp spit with a straight edge. Half the step is blended into each side over the
+// last ISLAND_SEAM_BLEND radians, leaving the rest of the coast (and every lake, trail and bench) unchanged.
+const ISLAND_SEAM_BLEND = 0.45;
+const ISLAND_SEAM_STEP = getRawIslandEdgeRadiusFactor(-Math.PI) - getRawIslandEdgeRadiusFactor(Math.PI);
+
+export function getIslandEdgeRadiusFactor(angle: number): number {
+  const seamWeight = smoothstep(Math.abs(angle), Math.PI - ISLAND_SEAM_BLEND, Math.PI);
+  return getRawIslandEdgeRadiusFactor(angle) + Math.sign(angle) * (ISLAND_SEAM_STEP / 2) * seamWeight;
 }
 
 export function getIslandDistanceNormalized(x: number, z: number): number {

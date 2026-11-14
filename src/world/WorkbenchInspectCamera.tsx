@@ -5,6 +5,7 @@ import type { ReactElement } from 'react';
 import { Vector3 } from 'three';
 
 import { useGameStore } from '../state/gameStore';
+import { prefersReducedMotion } from './reducedMotion';
 import {
   WORKBENCH_INSPECT_MAX_DISTANCE,
   WORKBENCH_INSPECT_MAX_POLAR_ANGLE,
@@ -12,6 +13,7 @@ import {
   WORKBENCH_INSPECT_MIN_POLAR_ANGLE,
   WORKBENCH_INSPECT_TRANSITION_SECONDS,
   getWorkbenchInspectCameraPosition,
+  getWorkbenchInspectDistanceScale,
   getWorkbenchInspectTarget,
 } from './workbenchInspect';
 
@@ -33,6 +35,8 @@ export function WorkbenchInspectCamera({
   const cameraMode = useGameStore((state) => state.cameraMode);
   const inspectedWorkbenchId = useGameStore((state) => state.inspectedWorkbenchId);
   const { camera } = useThree();
+  const getThree = useThree((state) => state.get);
+  const distanceScale = useThree((state) => getWorkbenchInspectDistanceScale(state.size.width, state.size.height));
   const controlsRef = useRef<OrbitControlsHandle | null>(null);
   const startPositionRef = useRef(new Vector3());
   const startTargetRef = useRef(new Vector3());
@@ -65,14 +69,21 @@ export function WorkbenchInspectCamera({
     startPositionRef.current.copy(camera.position);
     startTargetRef.current.copy(currentTarget);
     endTargetRef.current.copy(getWorkbenchInspectTarget(activeWorkbench.placement.anchor));
-    endPositionRef.current.copy(getWorkbenchInspectCameraPosition(activeWorkbench.placement.anchor));
+    endPositionRef.current.copy(
+      getWorkbenchInspectCameraPosition(
+        activeWorkbench.placement.anchor,
+        activeWorkbench.placement.rotationY,
+        // Read when a bench is opened, not tracked: a resize mid-inspect must not throw away the visitor's orbit.
+        getWorkbenchInspectDistanceScale(getThree().size.width, getThree().size.height),
+      ),
+    );
     transitionTargetRef.current.copy(currentTarget);
     transitionProgressRef.current = 0;
 
     if (controls) {
       controls.enabled = false;
     }
-  }, [activeWorkbench, camera]);
+  }, [activeWorkbench, camera, getThree]);
 
   useFrame((_, delta) => {
     if (!activeWorkbench) {
@@ -83,7 +94,10 @@ export function WorkbenchInspectCamera({
     const progress = transitionProgressRef.current;
 
     if (progress < 1) {
-      const nextProgress = Math.min(1, progress + delta / WORKBENCH_INSPECT_TRANSITION_SECONDS);
+      // Reduced motion: cut straight to the inspect view instead of flying the camera there.
+      const nextProgress = prefersReducedMotion()
+        ? 1
+        : Math.min(1, progress + delta / WORKBENCH_INSPECT_TRANSITION_SECONDS);
       const easedProgress = 1 - Math.pow(1 - nextProgress, 3);
       transitionProgressRef.current = nextProgress;
 
@@ -121,7 +135,7 @@ export function WorkbenchInspectCamera({
       enabled={false}
       target={getWorkbenchInspectTarget(activeWorkbench.placement.anchor)}
       minDistance={WORKBENCH_INSPECT_MIN_DISTANCE}
-      maxDistance={WORKBENCH_INSPECT_MAX_DISTANCE}
+      maxDistance={WORKBENCH_INSPECT_MAX_DISTANCE * distanceScale}
       minPolarAngle={WORKBENCH_INSPECT_MIN_POLAR_ANGLE}
       maxPolarAngle={WORKBENCH_INSPECT_MAX_POLAR_ANGLE}
     />

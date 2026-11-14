@@ -10,17 +10,18 @@ export function getWorkbenchFacingCenterRotationY(x: number, z: number): number 
 }
 
 export const START_HERE_WORKBENCH_ID = 'about-me-overview';
-export const CENTRAL_PLAZA_CENTER_PAD_RADIUS = 6.4;
+// The paved court around the fountain; Start Here sits on it, clear of the fountain basin.
+export const CENTRAL_PLAZA_CENTER_PAD_RADIUS = 9.4;
 export const CENTRAL_PLAZA_FOUNTAIN_RADIUS = 2.35;
+// On the south side of the fountain, between it and the spawn point, so it is the first thing in view on
+// arrival (north of the fountain, the basin and armillary hid it from the follow camera).
 export const START_HERE_ANCHOR = {
   x: 0,
-  z: -4.3,
+  z: 5.7,
 } as const;
 export const START_HERE_PLACEMENT_TOLERANCE = 0.28;
-export const START_HERE_ROTATION_Y = getWorkbenchFacingCenterRotationY(
-  START_HERE_ANCHOR.x,
-  START_HERE_ANCHOR.z,
-);
+// Faces south, toward the arriving visitor, rather than toward the fountain behind it.
+export const START_HERE_ROTATION_Y = 0;
 
 export const SPAWN_HUB_RADIUS = CENTRAL_PLAZA_CENTER_PAD_RADIUS;
 export const CENTRAL_PLAZA_ENTRY_GAP_SLOTS = 1;

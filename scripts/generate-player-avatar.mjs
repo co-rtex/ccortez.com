@@ -1,9 +1,20 @@
+// Generates the player avatar (Christian) as a GLTF with three clips: AvatarIdle, AvatarWalk, AvatarRun.
+//
+// Stylized realism for the golden-hour island: sculpted (lathed and deformed) shapes rather than stacked
+// primitives, a compact wavy mop with a curly fringe, a light-blue polo, khaki straight-leg trousers and off-white
+// canvas sneakers. Flat-shaded like the rest of the island. Each joint's parts are merged into one vertex-coloured
+// mesh, so the whole avatar is 14 meshes sharing one material.
+//
+// Rig contract (used by the game): joints Hips > Torso > Head, Torso > Arm_L/R > Forearm_L/R, Hips > Thigh_L/R >
+// Calf_L/R > Foot_L/R. The model faces +z. The player group sits 0.82 m above the ground, so the soles rest at
+// y = -0.82 in model space; walk and run are solved so the lowest sole touches that plane at every key.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outputPath = join(__dirname, '..', 'public', 'models', 'player', 'ccortez-avatar.gltf');
@@ -29,137 +40,155 @@ class NodeFileReader {
 
 globalThis.FileReader = NodeFileReader;
 
-const MATERIALS = {
-  skin: flatMaterial('#d4a27f'),
-  skinWarm: flatMaterial('#e1b79a'),
-  cheek: flatMaterial('#db9a89'),
-  hair: flatMaterial('#24130f'),
-  hairHighlight: flatMaterial('#5e3d31'),
-  brow: flatMaterial('#3a241c'),
-  eyeWhite: flatMaterial('#f8f3ee'),
-  iris: flatMaterial('#5c4c45'),
-  pupil: flatMaterial('#191210'),
-  shirtMain: flatMaterial('#5f88bc'),
-  shirtTrim: flatMaterial('#769dca'),
-  jeansMain: flatMaterial('#aec8e6'),
-  jeansTrim: flatMaterial('#7da6d1'),
-  shoeMain: flatMaterial('#f4f2ee'),
-  shoeAccent: flatMaterial('#d8dde3'),
-  shoeSole: flatMaterial('#a8b2bf'),
+// ---------------------------------------------------------------------------------------------- palette ----
+const COLORS = {
+  skin: '#dcac8c',
+  skinShade: '#c89676',
+  skinLight: '#e6b99b',
+  lip: '#9c5a4c',
+  mouth: '#4b2420',
+  teeth: '#f1ebe2',
+  brow: '#2e1d14',
+  lash: '#1d120c',
+  eyeWhite: '#eee5da',
+  iris: '#2e1c13',
+  hair: '#3a2418',
+  hairDeep: '#2a1a11',
+  hairLight: '#5a3a26',
+  polo: '#8fc0f7',
+  poloShade: '#7eaee8',
+  poloRib: '#7fb0ec',
+  button: '#f3f1ea',
+  khaki: '#cdb48c',
+  khakiShade: '#b59d76',
+  canvas: '#e4e0d8',
+  canvasShade: '#bdb9b0',
+  sole: '#ece6da',
+  laces: '#ece9e2',
 };
 
-const scene = new THREE.Group();
-scene.name = 'CcortezAvatarRoot';
+const GROUND_Y = -0.82;
 
-const hips = addJoint(scene, 'Hips', [0, 0, 0]);
-addMesh(hips, 'Pelvis', new THREE.BoxGeometry(0.27, 0.12, 0.15), MATERIALS.jeansMain, [0, -0.015, 0.02], [0, 0, 0], [1, 1, 1]);
-addMesh(hips, 'JeanWaist', new THREE.CapsuleGeometry(0.138, 0.05, 5, 8), MATERIALS.jeansMain, [0, 0.028, 0.022], [0.02, 0, 0], [1.18, 0.74, 0.8]);
+// Body layout (model space, metres). Leg chain from the hip joint to the sole: 0.06 + 0.38 + 0.37 + 0.075.
+const HIPS_Y = GROUND_Y + 0.06 + 0.38 + 0.37 + 0.075;
+const THIGH_OFFSET = [0.078, -0.06, 0];
+const KNEE_Y = -0.38;
+const ANKLE_Y = -0.37;
+const SOLE_DEPTH = 0.075;
+const TORSO_OFFSET = [0, 0.08, 0];
+const SHOULDER = [0.185, 0.405, -0.005];
+const ELBOW_Y = -0.29;
+const NECK_TOP = 0.478;
 
-const torso = addJoint(hips, 'Torso', [0, 0.205, 0.02]);
-addMesh(torso, 'ShirtBody', new THREE.CapsuleGeometry(0.224, 0.11, 6, 8), MATERIALS.shirtMain, [0, 0.12, 0.018], [0.02, 0, 0], [1.04, 1.0, 0.92]);
-addMesh(torso, 'ShirtFront', new THREE.SphereGeometry(0.176, 10, 8), MATERIALS.shirtMain, [0, 0.1, 0.078], [0, 0, 0], [1.0, 0.68, 0.56]);
-addMesh(torso, 'ShirtHem', new THREE.BoxGeometry(0.37, 0.028, 0.15), MATERIALS.shirtTrim, [0, 0.024, 0.03], [0.02, 0, 0], [1, 1, 1]);
-addMesh(torso, 'ShirtWaistOverlap', new THREE.SphereGeometry(0.15, 10, 8), MATERIALS.shirtMain, [0, 0.038, 0.03], [0.02, 0, 0], [1.12, 0.42, 0.82]);
-addMesh(torso, 'ShirtCollar', new THREE.TorusGeometry(0.082, 0.011, 6, 16, Math.PI * 2), MATERIALS.shirtTrim, [0, 0.282, 0.038], [Math.PI / 2, 0, 0], [1.0, 0.8, 0.68]);
-const neck = addMesh(torso, 'Neck', new THREE.CylinderGeometry(0.08, 0.086, 0.09, 8), MATERIALS.skin, [0, 0.35, 0.02]);
-neck.scale.set(0.92, 1, 0.92);
-
-const head = addJoint(torso, 'Head', [0, 0.48, 0.03]);
-addMesh(head, 'HeadShape', new THREE.SphereGeometry(0.246, 16, 14), MATERIALS.skin, [0, 0.018, 0.012], [0, 0, 0], [1.0, 0.99, 0.92]);
-addMesh(head, 'UpperSkull', new THREE.SphereGeometry(0.198, 14, 12), MATERIALS.skin, [0, 0.1, -0.01], [0.02, 0, 0], [1.05, 0.84, 0.95]);
-addMesh(head, 'FaceWarmth', new THREE.SphereGeometry(0.194, 12, 10), MATERIALS.skinWarm, [0, -0.004, 0.102], [0, 0, 0], [0.93, 0.62, 0.56]);
-addMesh(head, 'ChinSoft', new THREE.SphereGeometry(0.068, 8, 8), MATERIALS.skinWarm, [0, -0.132, 0.098], [0, 0, 0], [0.82, 0.54, 0.66]);
-addMesh(head, 'Cheek_L', new THREE.SphereGeometry(0.072, 8, 8), MATERIALS.cheek, [0.103, -0.028, 0.128], [0, 0, 0], [1.0, 0.76, 0.56]);
-addMesh(head, 'Cheek_R', new THREE.SphereGeometry(0.072, 8, 8), MATERIALS.cheek, [-0.103, -0.028, 0.128], [0, 0, 0], [1.0, 0.76, 0.56]);
-addMesh(head, 'Ear_L', new THREE.SphereGeometry(0.044, 8, 8), MATERIALS.skinWarm, [0.206, 0.008, 0.012], [0, 0, 0], [0.34, 0.56, 0.22]);
-addMesh(head, 'Ear_R', new THREE.SphereGeometry(0.044, 8, 8), MATERIALS.skinWarm, [-0.206, 0.008, 0.012], [0, 0, 0], [0.34, 0.56, 0.22]);
-
-addMesh(head, 'HairBackCap', new THREE.SphereGeometry(0.242, 14, 12), MATERIALS.hair, [0, 0.147, -0.018], [0.02, 0, 0], [1.04, 0.9, 0.97]);
-addMesh(head, 'HairFrontCap', new THREE.SphereGeometry(0.212, 14, 12), MATERIALS.hair, [0, 0.158, 0.024], [0.02, 0, 0], [1.0, 0.42, 0.68]);
-addMesh(head, 'HairSideSoft_L', new THREE.SphereGeometry(0.086, 10, 8), MATERIALS.hair, [0.156, 0.09, -0.002], [0.06, 0.05, 0.08], [0.48, 0.92, 0.76]);
-addMesh(head, 'HairSideSoft_R', new THREE.SphereGeometry(0.086, 10, 8), MATERIALS.hair, [-0.15, 0.082, -0.002], [0.06, -0.05, -0.08], [0.48, 0.9, 0.72]);
-addMesh(head, 'HairTemple_L', new THREE.SphereGeometry(0.05, 8, 8), MATERIALS.hair, [0.11, 0.11, 0.074], [0.04, 0.02, 0.08], [0.62, 0.5, 0.46]);
-addMesh(head, 'HairTemple_R', new THREE.SphereGeometry(0.05, 8, 8), MATERIALS.hair, [-0.11, 0.11, 0.074], [0.04, -0.02, -0.08], [0.62, 0.5, 0.46]);
-addMesh(head, 'HairLayer_L', new THREE.CapsuleGeometry(0.034, 0.06, 4, 8), MATERIALS.hair, [0.126, 0.094, 0.086], [0.44, 0.08, 0.28], [0.7, 1.02, 0.54]);
-addMesh(head, 'HairLayer_R', new THREE.CapsuleGeometry(0.03, 0.052, 4, 8), MATERIALS.hair, [-0.092, 0.102, 0.084], [0.32, -0.04, -0.18], [0.62, 0.92, 0.5]);
-addMesh(head, 'HairBackSoft', new THREE.CapsuleGeometry(0.078, 0.11, 5, 8), MATERIALS.hair, [0, 0.028, -0.104], [Math.PI / 2 + 0.08, 0, 0], [0.96, 0.9, 0.72]);
-addMesh(head, 'HairNape', new THREE.SphereGeometry(0.068, 10, 8), MATERIALS.hair, [0, -0.018, -0.088], [0.12, 0, 0], [0.9, 0.44, 0.3]);
-addMesh(head, 'HairCrownFill', new THREE.SphereGeometry(0.132, 10, 8), MATERIALS.hair, [0, 0.208, 0.0], [0.02, 0, 0], [0.98, 0.68, 0.84]);
-addMesh(head, 'HairHighlight', new THREE.IcosahedronGeometry(0.046, 0), MATERIALS.hairHighlight, [0.022, 0.223, 0.024], [0.06, 0, -0.08], [0.82, 0.38, 0.6]);
-
-const frontCurlPlacements = [
-  { position: [0.108, 0.126, 0.086], rotation: [0.16, 0, 0.18], scale: [0.34, 0.42, 0.3], highlight: false },
-  { position: [0.054, 0.142, 0.088], rotation: [0.1, 0, 0.06], scale: [0.34, 0.34, 0.28], highlight: true },
-  { position: [0.006, 0.15, 0.084], rotation: [0.08, 0, 0.02], scale: [0.36, 0.28, 0.28], highlight: true },
-  { position: [-0.042, 0.138, 0.086], rotation: [0.11, 0, -0.04], scale: [0.32, 0.38, 0.28], highlight: true },
-  { position: [-0.096, 0.12, 0.078], rotation: [0.16, 0, -0.16], scale: [0.28, 0.46, 0.28], highlight: false },
-];
-
-frontCurlPlacements.forEach(({ position, rotation, scale, highlight }, index) => {
-  addMesh(
-    head,
-    `HairCurl_${index + 1}`,
-    new THREE.IcosahedronGeometry(0.038, 0),
-    highlight ? MATERIALS.hairHighlight : MATERIALS.hair,
-    position,
-    rotation,
-    scale,
-  );
+// --------------------------------------------------------------------------------------------- materials ---
+// One flat-shaded material for everything (the island's faceted look). Smooth normals are still stored: the sun's
+// shadow normal-bias offsets along them, and without them the avatar would show shadow acne.
+const AVATAR_MATERIAL = new THREE.MeshStandardMaterial({
+  name: 'Avatar',
+  vertexColors: true,
+  roughness: 0.86,
+  metalness: 0,
+  flatShading: true,
 });
 
-addMesh(head, 'Eyebrow_L', new THREE.BoxGeometry(0.05, 0.007, 0.01), MATERIALS.brow, [0.09, 0.086, 0.223], [0.02, 0.014, -0.11], [1, 1, 1]);
-addMesh(head, 'Eyebrow_R', new THREE.BoxGeometry(0.05, 0.007, 0.01), MATERIALS.brow, [-0.09, 0.086, 0.223], [0.02, -0.014, 0.11], [1, 1, 1]);
-addMesh(head, 'EyeWhite_L', new THREE.SphereGeometry(0.04, 12, 12), MATERIALS.eyeWhite, [0.09, 0.034, 0.232], [0, 0, 0], [0.92, 0.94, 0.36]);
-addMesh(head, 'EyeWhite_R', new THREE.SphereGeometry(0.04, 12, 12), MATERIALS.eyeWhite, [-0.09, 0.034, 0.232], [0, 0, 0], [0.92, 0.94, 0.36]);
-addMesh(head, 'EyeLidUpper_L', new THREE.SphereGeometry(0.034, 8, 8), MATERIALS.skin, [0.09, 0.05, 0.236], [0.02, 0, 0], [1.12, 0.42, 0.28]);
-addMesh(head, 'EyeLidUpper_R', new THREE.SphereGeometry(0.034, 8, 8), MATERIALS.skin, [-0.09, 0.05, 0.236], [0.02, 0, 0], [1.12, 0.42, 0.28]);
-addMesh(head, 'Iris_L', new THREE.CylinderGeometry(0.0245, 0.0245, 0.016, 10), MATERIALS.iris, [0.09, 0.032, 0.247], [Math.PI / 2, 0, 0], [1.04, 1.1, 1]);
-addMesh(head, 'Iris_R', new THREE.CylinderGeometry(0.0245, 0.0245, 0.016, 10), MATERIALS.iris, [-0.09, 0.032, 0.247], [Math.PI / 2, 0, 0], [1.04, 1.1, 1]);
-addMesh(head, 'Pupil_L', new THREE.CylinderGeometry(0.011, 0.011, 0.02, 8), MATERIALS.pupil, [0.09, 0.03, 0.253], [Math.PI / 2, 0, 0]);
-addMesh(head, 'Pupil_R', new THREE.CylinderGeometry(0.011, 0.011, 0.02, 8), MATERIALS.pupil, [-0.09, 0.03, 0.253], [Math.PI / 2, 0, 0]);
-addMesh(head, 'NoseTip', new THREE.SphereGeometry(0.01, 8, 8), MATERIALS.skinWarm, [0, -0.024, 0.223], [0, 0, 0], [1.0, 0.82, 0.76]);
-addMesh(head, 'SmileShadow', new THREE.BoxGeometry(0.048, 0.006, 0.008), MATERIALS.skinWarm, [0, -0.059, 0.225], [0.02, 0, 0], [0.86, 1, 1]);
-addMesh(head, 'Smile', new THREE.TorusGeometry(0.046, 0.0058, 8, 16, Math.PI * 0.98), MATERIALS.brow, [0, -0.067, 0.226], [Math.PI / 2, 0, Math.PI], [1, 0.74, 1]);
+// ---------------------------------------------------------------------------------------------- builders ---
+/** Collects geometry for one joint, baked into the joint's space, then merged into one mesh. */
+class PartSet {
+  constructor() {
+    this.parts = [];
+  }
 
-const armLeft = addArm(torso, 'Arm_L', [0.2, 0.164, 0.018], 1);
-const armRight = addArm(torso, 'Arm_R', [-0.2, 0.164, 0.018], -1);
-const legLeft = addLeg(hips, 'Thigh_L', [0.098, -0.05, 0.02], 1);
-const legRight = addLeg(hips, 'Thigh_R', [-0.098, -0.05, 0.02], -1);
+  add(geometry, color, { position = [0, 0, 0], rotation = [0, 0, 0], order = 'XYZ', scale = [1, 1, 1] } = {}) {
+    const g = flatten(geometry);
+    for (const name of Object.keys(g.attributes)) {
+      if (name !== 'position' && name !== 'color') g.deleteAttribute(name);
+    }
+    const matrix = new THREE.Matrix4().compose(
+      new THREE.Vector3(...position),
+      new THREE.Quaternion().setFromEuler(new THREE.Euler(...rotation, order)),
+      new THREE.Vector3(...scale),
+    );
+    g.applyMatrix4(matrix);
+    if (!g.getAttribute('color')) paint(g, color);
+    this.parts.push(g);
+    return this;
+  }
 
-const clips = [
-  createIdleClip({ hips, torso, head, armLeft, armRight, legLeft, legRight }),
-  createWalkClip({ hips, torso, head, armLeft, armRight, legLeft, legRight }),
-  createRunClip({ hips, torso, head, armLeft, armRight, legLeft, legRight }),
-];
+  build(joint, name) {
+    // Weld shared vertices (same position and colour), then give the welded mesh smooth normals for the shadow bias.
+    const geometry = mergeVertices(mergeGeometries(this.parts, false), 1e-5);
+    geometry.computeVertexNormals();
+    geometry.setAttribute('color', quantizeColors(geometry.getAttribute('color')));
+    const mesh = new THREE.Mesh(geometry, AVATAR_MATERIAL);
+    mesh.name = name;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    joint.add(mesh);
+    return mesh;
+  }
+}
 
-const exporter = new GLTFExporter();
+function paint(geometry, color, jitter = 0, seed = 1) {
+  const base = new THREE.Color(color);
+  const count = geometry.getAttribute('position').count;
+  const colors = new Float32Array(count * 3);
+  for (let i = 0; i < count; i += 1) {
+    const k = jitter ? 1 + (hash(seed * 31 + Math.floor(i / 3)) - 0.5) * jitter : 1;
+    colors[i * 3] = base.r * k;
+    colors[i * 3 + 1] = base.g * k;
+    colors[i * 3 + 2] = base.b * k;
+  }
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  return geometry;
+}
 
-mkdirSync(dirname(outputPath), { recursive: true });
+/** Vertex colours as normalised bytes: a quarter of the float size, and plenty for flat colour regions. */
+function quantizeColors(attribute) {
+  const bytes = new Uint8Array(attribute.count * 3);
+  for (let i = 0; i < attribute.count; i += 1) {
+    bytes[i * 3] = Math.round(Math.min(1, attribute.getX(i)) * 255);
+    bytes[i * 3 + 1] = Math.round(Math.min(1, attribute.getY(i)) * 255);
+    bytes[i * 3 + 2] = Math.round(Math.min(1, attribute.getZ(i)) * 255);
+  }
+  return new THREE.BufferAttribute(bytes, 3, true);
+}
 
-exporter.parse(
-  scene,
-  (result) => {
-    writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`, 'utf8');
-    console.log(`Generated ${outputPath}`);
-  },
-  (error) => {
-    console.error(error);
-    process.exitCode = 1;
-  },
-  {
-    binary: false,
-    onlyVisible: false,
-    animations: clips,
-  },
-);
+function flatten(geometry) {
+  return geometry.index ? geometry.toNonIndexed() : geometry.clone();
+}
 
-function flatMaterial(color) {
-  return new THREE.MeshStandardMaterial({
-    color,
-    flatShading: true,
-    roughness: 0.94,
-    metalness: 0.02,
-  });
+function hash(n) {
+  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return s - Math.floor(s);
+}
+
+function smoothstep(edge0, edge1, x) {
+  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
+
+/** A lathe from [radius, y] pairs, squashed front-to-back by `depth` (bodies are wider than deep). */
+function lathe(profile, { segments = 20, depth = 1, phiStart = 0, phiLength = Math.PI * 2 } = {}) {
+  // LatheGeometry faces outward only when the profile runs bottom to top; a profile written top to bottom (as
+  // limbs naturally are) would render inside out. Closed loops (first point repeated) are left as written.
+  const closed = profile.length > 2 && profile[0][0] === profile.at(-1)[0] && profile[0][1] === profile.at(-1)[1];
+  const ordered = !closed && profile[0][1] > profile.at(-1)[1] ? [...profile].reverse() : profile;
+  const points = ordered.map(([r, y]) => new THREE.Vector2(Math.max(r, 0.0001), y));
+  const geometry = new THREE.LatheGeometry(points, segments, phiStart, phiLength);
+  geometry.scale(1, 1, depth);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function ellipsoid(rx, ry, rz, w = 14, h = 10) {
+  const geometry = new THREE.SphereGeometry(1, w, h);
+  geometry.scale(rx, ry, rz);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+function capsule(radius, length, radial = 10) {
+  return new THREE.CapsuleGeometry(radius, length, 4, radial);
 }
 
 function addJoint(parent, name, position) {
@@ -170,253 +199,712 @@ function addJoint(parent, name, position) {
   return joint;
 }
 
-function addMesh(parent, name, geometry, material, position, rotation = [0, 0, 0], scale = [1, 1, 1]) {
-  geometry.computeVertexNormals();
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.name = name;
-  mesh.position.set(...position);
-  mesh.rotation.set(...rotation);
-  mesh.scale.set(...scale);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  parent.add(mesh);
-  return mesh;
+// ------------------------------------------------------------------------------------------------- head ---
+// Head-local space: origin at the head centre. A rounded oval: a touch narrower than deep, the jaw tapering to a
+// soft chin, fuller at the cheekbones, a slightly flattened face plane and a cranium that extends back.
+const HEAD = { rx: 0.114, ry: 0.134, rz: 0.13, centerY: 0.122 };
+
+function headDeform(nx, ny, nz) {
+  let x = nx * HEAD.rx;
+  let y = ny * HEAD.ry;
+  let z = nz * HEAD.rz;
+  const jaw = smoothstep(0.05, -1, ny);
+  x *= 1 - 0.08 * jaw;
+  z *= nz > 0 ? 1 - 0.05 * jaw : 1 - 0.3 * jaw;
+  if (nz < 0 && ny > -0.3) z *= 1 + 0.1 * smoothstep(-0.3, 0.4, ny);
+  x *= 1 + 0.1 * Math.exp(-(((ny + 0.2) / 0.32) ** 2)) * Math.max(nz, 0);
+  if (nz > 0.45) z *= 1 - 0.07 * smoothstep(0.45, 1, nz);
+  if (ny > 0.55) y *= 0.97;
+  return [x, y, z];
 }
 
-function addArm(parent, name, position, side) {
-  const arm = addJoint(parent, name, position);
-  addMesh(arm, `${name}_SleeveCap`, new THREE.SphereGeometry(0.078, 10, 8), MATERIALS.shirtMain, [0.012 * side, -0.002, 0.012], [0.04, 0, -0.08 * side], [0.86, 0.72, 0.82]);
-  addMesh(arm, `${name}_Sleeve`, new THREE.CapsuleGeometry(0.074, 0.042, 5, 8), MATERIALS.shirtMain, [0.006 * side, -0.032, 0.002], [0, 0, -0.02 * side], [1.0, 0.94, 0.9]);
-  addMesh(arm, `${name}_SleeveCuff`, new THREE.BoxGeometry(0.074, 0.014, 0.058), MATERIALS.shirtTrim, [0.006 * side, -0.064, 0.004], [0.02, 0, -0.015 * side], [1, 1, 1]);
+function headGeometry() {
+  const geometry = new THREE.SphereGeometry(1, 28, 22);
+  const p = geometry.getAttribute('position');
+  for (let i = 0; i < p.count; i += 1) {
+    const [x, y, z] = headDeform(p.getX(i), p.getY(i), p.getZ(i));
+    p.setXYZ(i, x, y, z);
+  }
+  geometry.computeVertexNormals();
+  return geometry;
+}
 
-  const forearm = addJoint(arm, name === 'Arm_L' ? 'Forearm_L' : 'Forearm_R', [0.012 * side, -0.118, 0.012]);
-  addMesh(forearm, `${name}_Forearm`, new THREE.CapsuleGeometry(0.06, 0.1, 5, 8), MATERIALS.skinWarm, [0, -0.06, 0], [0, 0, -0.012 * side], [0.92, 1.02, 0.86]);
-  addMesh(forearm, `${name}_Hand`, new THREE.SphereGeometry(0.046, 8, 8), MATERIALS.skin, [0.014 * side, -0.114, 0.018], [0.04, 0, 0], [1.28, 1.02, 0.84]);
-  addMesh(forearm, `${name}_Thumb`, new THREE.SphereGeometry(0.018, 8, 8), MATERIALS.skinWarm, [0.042 * side, -0.104, 0.03], [0, 0, 0], [1.12, 0.88, 0.76]);
+/** Point on the face surface at head-local (x, y), nudged out by `lift`. */
+function onFace(x, y, lift = 0.001) {
+  // Search the deformed sphere along its front for the point whose (x, y) matches.
+  let best = null;
+  for (let a = -1; a <= 1; a += 0.01) {
+    for (let b = -1; b <= 1; b += 0.01) {
+      const nz2 = 1 - a * a - b * b;
+      if (nz2 < 0) continue;
+      const [px, py, pz] = headDeform(a, b, Math.sqrt(nz2));
+      const d = (px - x) ** 2 + (py - y) ** 2;
+      if (!best || d < best.d) best = { d, z: pz };
+    }
+  }
+  return [x, y, best.z + lift];
+}
 
+function buildHead(head) {
+  const parts = new PartSet();
+  const c = HEAD.centerY;
+  parts.add(headGeometry(), COLORS.skin, { position: [0, c, 0] });
+  // Ears, set back a little and tilted.
+  for (const side of [1, -1]) {
+    parts.add(ellipsoid(0.012, 0.03, 0.02, 10, 8), COLORS.skinShade, {
+      position: [side * HEAD.rx * 0.97, c - 0.004, -0.006],
+      rotation: [0.1, 0, side * 0.12],
+    });
+  }
+
+  // Eyes: open almonds (sclera, dark iris, an upper lash line set high), brows gently arched.
+  for (const side of [1, -1]) {
+    const [x, y, z] = onFace(side * 0.042, 0.008);
+    parts.add(ellipsoid(0.0185, 0.0128, 0.0045, 14, 8), COLORS.eyeWhite, { position: [x, c + y, z - 0.002] });
+    parts.add(ellipsoid(0.0115, 0.0118, 0.003, 12, 8), COLORS.iris, { position: [x, c + y - 0.0004, z + 0.0006] });
+    parts.add(ellipsoid(0.0195, 0.0028, 0.0038, 12, 6), COLORS.lash, { position: [x, c + y + 0.0118, z + 0.0002] });
+    // Lower lid lifted into a crescent by the smile.
+    parts.add(ellipsoid(0.017, 0.0034, 0.004, 12, 6), COLORS.skinShade, { position: [x, c + y - 0.0098, z - 0.0006] });
+    // Brows: flat and relaxed, the inner ends lifted a touch (a scowl tilts them the other way).
+    const [bx, by, bz] = onFace(side * 0.044, 0.045, 0.0015);
+    parts.add(ellipsoid(0.02, 0.0032, 0.0035, 12, 6), COLORS.brow, { position: [bx, c + by, bz], rotation: [0, -side * 0.14, -side * 0.09] });
+  }
+
+  // Nose: small and soft.
+  const [, ny, nz] = onFace(0, -0.024, 0);
+  parts.add(ellipsoid(0.0038, 0.01, 0.0038, 8, 6), COLORS.skin, { position: [0, c + ny + 0.004, nz - 0.0004] });
+  parts.add(ellipsoid(0.0056, 0.004, 0.0034, 8, 6), COLORS.skin, { position: [0, c + ny - 0.004, nz + 0.0012] });
+
+  // A friendly grin: a wide, shallow crescent with a band of upper teeth and corners turned up.
+  const [, my, mz] = onFace(0, -0.06, 0);
+  const grin = new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2); // lower half: a bowl
+  grin.scale(0.037, 0.0135, 0.0042);
+  parts.add(grin, COLORS.mouth, { position: [0, c + my + 0.006, mz - 0.0012] });
+  parts.add(ellipsoid(0.032, 0.0058, 0.0044, 16, 6), COLORS.teeth, { position: [0, c + my + 0.003, mz - 0.0004] });
+  for (const side of [1, -1]) {
+    // Corners lifting into the cheeks.
+    parts.add(ellipsoid(0.007, 0.0022, 0.003, 8, 4), COLORS.skinShade, {
+      position: [side * 0.037, c + my + 0.0078, mz - 0.0016],
+      rotation: [0, 0, side * 0.75],
+    });
+  }
+  parts.build(head, 'HeadShape');
+
+  buildHair(head);
+}
+
+// ------------------------------------------------------------------------------------------------- hair ---
+// Thick, dark, wavy hair with volume on top, shorter sides and a layered fringe of curling locks on the forehead.
+// A faceted cap gives the base mass; long, flattened, curved locks laid along the scalp from the crown forward give
+// the waves and volume; the fringe locks hang from the front hairline and curl at the tips.
+function hairlineY(theta) {
+  // theta: 0 at the front, ±π at the back. Returns the lowest normalised height the cap covers.
+  const a = Math.abs(theta);
+  if (a < 0.75) return 0.42;
+  if (a < 1.75) return 0.42 - (a - 0.75) * 0.4; // past the temples to just above the ears (short sides)
+  return 0.02 - (a - 1.75) * 0.5 + 0.06 * Math.sin(theta * 9); // lower at the back, to an uneven nape
+}
+
+function hairCap() {
+  const geometry = new THREE.IcosahedronGeometry(1, 4);
+  const p = geometry.getAttribute('position');
+  for (let i = 0; i < p.count; i += 1) {
+    const nx = p.getX(i);
+    const ny = p.getY(i);
+    const nz = p.getZ(i);
+    const covered = ny > hairlineY(Math.atan2(nx, nz));
+    const [hx, hy, hz] = headDeform(nx, ny, nz);
+    const bump = 1 + 0.35 * (hash(Math.round(nx * 7) * 13 + Math.round(ny * 7) * 7 + Math.round(nz * 7) * 3) - 0.5);
+    // Thicker on top (volume), thin at the short sides and nape; uncovered vertices sink inside the head.
+    const top = smoothstep(0.1, 0.95, ny);
+    const thickness = covered ? (0.005 + 0.016 * top) * bump : -0.014;
+    const len = Math.hypot(hx, hy, hz);
+    const k = (len + thickness) / len;
+    p.setXYZ(i, hx * k, hy * k, hz * k);
+  }
+  return paint(flatten(geometry), COLORS.hair, 0.25, 3);
+}
+
+/** Scalp point (head-local, at the cap's outer surface) for normalised direction (theta, ny). */
+function scalp(theta, ny, lift = 0) {
+  const r = Math.sqrt(Math.max(0, 1 - ny * ny));
+  const [x, y, z] = headDeform(r * Math.sin(theta), ny, r * Math.cos(theta));
+  const len = Math.hypot(x, y, z);
+  const k = (len + 0.012 + 0.02 * smoothstep(0.1, 0.95, ny) + lift) / len;
+  return [x * k, y * k, z * k];
+}
+
+/**
+ * A rounded clump of hair: a low-poly blob, flattened, with one side drawn down into a curling tip (toward -y and
+ * +z in its own frame). `stretch` lengthens the tip for fringe curls.
+ */
+function clump(size, seed, stretch = 1) {
+  const geometry = new THREE.IcosahedronGeometry(1, 1);
+  const p = geometry.getAttribute('position');
+  for (let i = 0; i < p.count; i += 1) {
+    let x = p.getX(i);
+    let y = p.getY(i);
+    let z = p.getZ(i);
+    const front = Math.max(0, z);
+    // Pull the front-lower part down and in to make the curl.
+    y -= front * 0.55 * stretch;
+    z += front * 0.15 - Math.max(0, -y) * 0.25;
+    x *= 1.25;
+    p.setXYZ(i, x * size, y * size * 0.62, z * size * 0.95);
+  }
+  const tone = hash(seed);
+  const color = tone > 0.7 ? COLORS.hairLight : tone < 0.22 ? COLORS.hairDeep : COLORS.hair;
+  return paint(flatten(geometry), color, 0.12, seed);
+}
+
+function buildHair(head) {
+  const parts = new PartSet();
+  const c = HEAD.centerY;
+  parts.add(hairCap(), COLORS.hair, { position: [0, c, 0] });
+
+  // Top: short, wide, rounded clumps over the crown and down the sides, tips curling down and in, so the hair
+  // reads as a compact wavy mop with volume on top rather than spikes.
+  let seed = 10;
+  const rows = [
+    { ny: 0.95, count: 3, size: 0.034, spread: 1.6 },
+    { ny: 0.8, count: 6, size: 0.036, spread: 3.3 },
+    { ny: 0.62, count: 7, size: 0.036, spread: 4.4 },
+    { ny: 0.44, count: 6, size: 0.028, spread: 5.0 },
+  ];
+  for (const row of rows) {
+    for (let i = 0; i < row.count; i += 1) {
+      seed += 1;
+      const theta = -row.spread / 2 + (row.spread * (i + 0.5)) / row.count + (hash(seed) - 0.5) * 0.3;
+      // Fuller on top and at the front, tighter at the sides and back.
+      const sideness = Math.abs(Math.sin(theta));
+      const size = row.size * (1 - 0.3 * sideness * (1 - row.ny)) * (0.85 + 0.3 * hash(seed + 1));
+      const [x, y, z] = scalp(theta, row.ny, -0.024 + size * 0.15 - 0.012 * Math.abs(Math.sin(theta)));
+      parts.add(clump(size, seed), COLORS.hair, {
+        position: [x, c + y, z],
+        rotation: [-0.6 + (1 - row.ny) * 0.5, theta, (hash(seed + 2) - 0.5) * 0.6],
+        order: 'YXZ',
+      });
+    }
+  }
+
+  // Fringe: five soft curls falling forward over the upper forehead, just above the brows.
+  [-0.072, -0.048, -0.022, 0.004, 0.03, 0.054, 0.076].forEach((x, index) => {
+    const [fx, fy, fz] = onFace(x, 0.074 - Math.abs(x) * 0.2 - (index % 2) * 0.01, 0.012);
+    const size = 0.026 + 0.005 * hash(200 + index);
+    parts.add(clump(size, 200 + index, 1.5), COLORS.hair, {
+      position: [fx, c + fy, fz],
+      rotation: [0.5, 0, (index - 2) * 0.2],
+      order: 'YXZ',
+    });
+  });
+  parts.build(head, 'Hair');
+}
+
+// ---------------------------------------------------------------------------------------------- torso ----
+function buildTorso(torso) {
+  const parts = new PartSet();
+  // Polo body: untucked hem, a slim waist, chest and shoulders; wider than deep.
+  parts.add(
+    lathe(
+      [
+        [0.152, -0.132],
+        [0.162, -0.124],
+        [0.158, -0.09],
+        [0.152, 0.0],
+        [0.15, 0.08],
+        [0.157, 0.19],
+        [0.165, 0.29],
+        [0.168, 0.35],
+        [0.162, 0.4],
+        [0.14, 0.44],
+        [0.1, 0.468],
+        [0.062, 0.48],
+      ],
+      { segments: 14, depth: 0.66 },
+    ),
+    COLORS.polo,
+  );
+  // Neck.
+  parts.add(capsule(0.052, 0.02, 10), COLORS.skin, { position: [0, 0.478, 0.0] });
+  // Collar: a band standing around the neck, open at the front, and a fold-down that rests on the shoulders.
+  const opening = 0.38;
+  // Closed profiles (a band with thickness), so no inside faces show and single-sided rendering is enough.
+  parts.add(
+    lathe(
+      [
+        [0.052, 0.462],
+        [0.054, 0.484],
+        [0.06, 0.492],
+        [0.06, 0.484],
+        [0.058, 0.464],
+        [0.052, 0.462],
+      ],
+      { segments: 20, phiStart: opening, phiLength: Math.PI * 2 - opening * 2 },
+    ),
+    COLORS.poloRib,
+  );
+  parts.add(
+    lathe(
+      [
+        [0.058, 0.494],
+        [0.078, 0.484],
+        [0.096, 0.468],
+        [0.093, 0.462],
+        [0.076, 0.477],
+        [0.058, 0.488],
+        [0.058, 0.494],
+      ],
+      { segments: 20, phiStart: opening * 0.6, phiLength: Math.PI * 2 - opening * 1.2 },
+    ),
+    COLORS.poloRib,
+  );
+  // Collar points, folding down either side of the placket.
+  for (const side of [1, -1]) {
+    const point = new THREE.ConeGeometry(0.028, 0.05, 3);
+    point.computeVertexNormals();
+    parts.add(point, COLORS.poloRib, {
+      position: [side * 0.03, 0.452, 0.088],
+      rotation: [Math.PI - 0.55, 0, side * 0.42],
+      scale: [0.85, 0.85, 0.32],
+    });
+  }
+  // Placket with two buttons, following the chest's lean.
+  parts.add(new THREE.BoxGeometry(0.03, 0.115, 0.006), COLORS.poloShade, { position: [0, 0.395, 0.107], rotation: [-0.2, 0, 0] });
+  for (const y of [0.42, 0.375]) {
+    const button = new THREE.CylinderGeometry(0.0055, 0.0055, 0.004, 10);
+    parts.add(button, COLORS.button, { position: [0, y, 0.111 + (0.42 - y) * 0.2], rotation: [Math.PI / 2 - 0.2, 0, 0] });
+  }
+  parts.build(torso, 'Polo');
+}
+
+function buildArm(torso, side) {
+  const suffix = side > 0 ? 'L' : 'R';
+  const arm = addJoint(torso, `Arm_${suffix}`, [side * SHOULDER[0], SHOULDER[1], SHOULDER[2]]);
+  const upper = new PartSet();
+  // Short sleeve to mid upper arm, with a ribbed hem band.
+  upper.add(
+    lathe(
+      [
+        [0.0, 0.05],
+        [0.03, 0.045],
+        [0.05, 0.022],
+        [0.057, -0.01],
+        [0.058, -0.05],
+        [0.056, -0.122],
+        [0.0, -0.125],
+      ],
+      { segments: 10, depth: 0.92 },
+    ),
+    COLORS.polo,
+  );
+  upper.add(lathe([[0.0, -0.118], [0.0585, -0.12], [0.0595, -0.15], [0.052, -0.154], [0.0, -0.155]], { segments: 10, depth: 0.92 }), COLORS.poloRib);
+  // Upper arm below the sleeve: slim, slightly tapering.
+  upper.add(lathe([[0.048, -0.12], [0.047, -0.2], [0.042, -0.29], [0.041, -0.33]], { segments: 14 }), COLORS.skin);
+  upper.build(arm, `Arm_${suffix}_Sleeve`);
+
+  const forearm = addJoint(arm, `Forearm_${suffix}`, [0, ELBOW_Y, 0]);
+  const lower = new PartSet();
+  lower.add(lathe([[0.0, 0.035], [0.034, 0.03], [0.042, 0.0], [0.042, -0.07], [0.035, -0.2], [0.03, -0.25], [0.0, -0.255]], { segments: 14, depth: 0.92 }), COLORS.skin);
+  // Hand: one tapered paddle overlapping the wrist, palm toward the thigh, fingers gently curled, plus a thumb.
+  const hand = new THREE.SphereGeometry(1, 10, 10);
+  const hp = hand.getAttribute('position');
+  for (let i = 0; i < hp.count; i += 1) {
+    const y = hp.getY(i);
+    const t = (1 - y) / 2; // 0 at the wrist, 1 at the fingertips
+    hp.setXYZ(i, hp.getX(i) * 0.026 * (1 - 0.25 * t), y * 0.064, hp.getZ(i) * 0.044 * (1 - 0.3 * t) + t * t * 0.016);
+  }
+  lower.add(hand, COLORS.skin, { position: [0, -0.308, 0.004], rotation: [-0.12, side * 0.45, 0] });
+  const thumb = new THREE.ConeGeometry(0.014, 0.05, 6);
+  lower.add(thumb, COLORS.skin, { position: [-side * 0.008, -0.29, 0.04], rotation: [-0.6 + Math.PI, 0, side * 0.25] });
+  lower.build(forearm, `Arm_${suffix}_Forearm`);
   return { upper: arm, forearm };
 }
 
-function addLeg(parent, name, position, side) {
-  const thigh = addJoint(parent, name, position);
-  addMesh(thigh, `${name}_Upper`, new THREE.CapsuleGeometry(0.092, 0.13, 5, 8), MATERIALS.jeansMain, [0, -0.094, 0.015], [0.02, 0, 0], [1.06, 1.02, 0.98]);
-  addMesh(thigh, `${name}_Trim`, new THREE.BoxGeometry(0.018, 0.11, 0.018), MATERIALS.jeansTrim, [0.05 * side, -0.074, 0.068], [0.02, 0, 0.04 * side], [1, 1, 1]);
+// ------------------------------------------------------------------------------------------------- legs ---
+function buildHips(hips) {
+  const parts = new PartSet();
+  // Khaki seat and waist under the untucked polo hem.
+  parts.add(
+    lathe(
+      [
+        [0.0, -0.05],
+        [0.09, -0.05],
+        [0.128, -0.03],
+        [0.136, 0.0],
+        [0.132, 0.04],
+        [0.11, 0.08],
+      ],
+      { segments: 20, depth: 0.68 },
+    ),
+    COLORS.khaki,
+  );
+  parts.build(hips, 'Khakis_Seat');
+}
 
-  const calf = addJoint(thigh, name === 'Thigh_L' ? 'Calf_L' : 'Calf_R', [0, -0.18, 0.015]);
-  addMesh(calf, `${name}_Lower`, new THREE.CapsuleGeometry(0.08, 0.11, 5, 8), MATERIALS.jeansMain, [0, -0.074, 0.008], [0.01, 0, 0], [1.02, 1.0, 0.94]);
+function buildLeg(hips, side) {
+  const suffix = side > 0 ? 'L' : 'R';
+  const thigh = addJoint(hips, `Thigh_${suffix}`, [side * THIGH_OFFSET[0], THIGH_OFFSET[1], THIGH_OFFSET[2]]);
+  const upper = new PartSet();
+  // Straight-leg khakis: an easy fit through the thigh, no taper to speak of.
+  upper.add(
+    lathe(
+      [
+        [0.0, 0.07],
+        [0.084, 0.06],
+        [0.09, 0.0],
+        [0.088, -0.12],
+        [0.083, -0.26],
+        [0.082, -0.3],
+        [0.082, -0.38],
+        [0.0, -0.381],
+      ],
+      { segments: 10, depth: 0.95 },
+    ),
+    COLORS.khaki,
+  );
+  // Front crease and a pocket edge.
+  upper.build(thigh, `Thigh_${suffix}_Khaki`);
 
-  const foot = addJoint(calf, name === 'Thigh_L' ? 'Foot_L' : 'Foot_R', [0, -0.15, 0.055]);
-  addMesh(foot, `${name}_ShoeBody`, new THREE.CapsuleGeometry(0.056, 0.09, 5, 8), MATERIALS.shoeMain, [0, -0.006, 0.082], [Math.PI / 2 - 0.02, 0, 0], [1.16, 0.96, 1.04]);
-  addMesh(foot, `${name}_ShoeToe`, new THREE.SphereGeometry(0.06, 10, 8), MATERIALS.shoeMain, [0, 0.004, 0.146], [0.04, 0, 0], [1.08, 0.78, 1.0]);
-  addMesh(foot, `${name}_ShoeQuarter`, new THREE.SphereGeometry(0.052, 10, 8), MATERIALS.shoeMain, [0, 0.0, 0.064], [0.02, 0, 0], [1.12, 0.74, 0.92]);
-  addMesh(foot, `${name}_ShoeSole`, new THREE.BoxGeometry(0.132, 0.022, 0.176), MATERIALS.shoeSole, [0, -0.05, 0.082], [0, 0, 0], [1, 1, 1]);
-  addMesh(foot, `${name}_ShoeAccent`, new THREE.BoxGeometry(0.018, 0.028, 0.066), MATERIALS.shoeAccent, [0.036 * side, -0.002, 0.086], [0, 0, 0.05 * side], [1, 1, 1]);
-  addMesh(foot, `${name}_Laces`, new THREE.BoxGeometry(0.04, 0.01, 0.05), MATERIALS.shoeMain, [0, 0.024, 0.096], [0.02, 0, 0], [1, 1, 1]);
+  const calf = addJoint(thigh, `Calf_${suffix}`, [0, KNEE_Y, 0.004]);
+  const lower = new PartSet();
+  // Knee: a sphere a little inside the trouser radius at the joint, so it fills the gap when the knee bends and
+  // stays hidden when the leg is straight (thigh and calf shells meet edge to edge at the same radius).
+  lower.add(ellipsoid(0.076, 0.076, 0.072, 10, 8), COLORS.khaki);
 
+  lower.add(
+    lathe(
+      [
+        [0.0, 0.001],
+        [0.082, 0.0],
+        [0.082, -0.08],
+        [0.079, -0.2],
+        [0.078, -0.3],
+        [0.081, -0.345],
+        [0.083, -0.362],
+        [0.0, -0.364],
+      ],
+      { segments: 10, depth: 0.95 },
+    ),
+    COLORS.khaki,
+  );
+  // The hem breaking over the shoe.
+  lower.build(calf, `Calf_${suffix}_Khaki`);
+
+  const foot = addJoint(calf, `Foot_${suffix}`, [0, ANKLE_Y, 0]);
+  const shoe = new PartSet();
+  // Cream rubber sole band: a rounded footprint, heel behind the ankle, toe well forward.
+  const outline = new THREE.Shape();
+  outline.absellipse(0, 0.072, 0.047, 0.126, 0, Math.PI * 2, false, 0);
+  const sole = new THREE.ExtrudeGeometry(outline, { depth: 0.024, bevelEnabled: true, bevelThickness: 0.003, bevelSize: 0.003, bevelSegments: 1, curveSegments: 18 });
+  sole.rotateX(Math.PI / 2);
+  shoe.add(sole, COLORS.sole, { position: [0, -SOLE_DEPTH + 0.027, 0] });
+  // Canvas upper: low, rounded at the toe, with a defined, near-vertical heel.
+  const upperShell = new THREE.SphereGeometry(1, 16, 10);
+  const sp = upperShell.getAttribute('position');
+  for (let i = 0; i < sp.count; i += 1) {
+    const x = sp.getX(i);
+    let y = sp.getY(i);
+    let z = sp.getZ(i);
+    if (y < 0) y *= 0.4; // the upper's lower edge wraps down over the sole's sides
+    if (z < -0.55) z = -0.55 - (z + 0.55) * 0.35; // squared-off heel
+    const toeDrop = smoothstep(0.15, 1, z) * 0.45;
+    const heelRise = 1 + 0.45 * smoothstep(0.2, -0.6, z); // higher at the heel and ankle collar
+    sp.setXYZ(i, x * 0.051, (y - toeDrop * Math.max(y, 0)) * 0.064 * (y > 0 ? heelRise : 1), z * 0.128);
+  }
+  shoe.add(upperShell, COLORS.canvas, { position: [0, -SOLE_DEPTH + 0.04, 0.072] });
+  // Rubber toe cap.
+  shoe.add(ellipsoid(0.044, 0.016, 0.024, 12, 6), COLORS.sole, { position: [0, -SOLE_DEPTH + 0.034, 0.17] });
+  // Grey lace panel lying on the instep.
+  shoe.add(ellipsoid(0.021, 0.006, 0.042, 10, 6), COLORS.canvasShade, { position: [0, -SOLE_DEPTH + 0.074, 0.095], rotation: [-0.3, 0, 0] });
+  shoe.build(foot, `Foot_${suffix}_Sneaker`);
   return { upper: thigh, calf, foot };
 }
 
-function createIdleClip(parts) {
-  const times = [0, 1.1, 2.2];
+// -------------------------------------------------------------------------------------------- assemble ----
+const scene = new THREE.Group();
+scene.name = 'CcortezAvatarRoot';
+const hips = addJoint(scene, 'Hips', [0, HIPS_Y, 0]);
+buildHips(hips);
+const torso = addJoint(hips, 'Torso', TORSO_OFFSET);
+buildTorso(torso);
+const head = addJoint(torso, 'Head', [0, NECK_TOP, -0.004]);
+buildHead(head);
+const armLeft = buildArm(torso, 1);
+const armRight = buildArm(torso, -1);
+const legLeft = buildLeg(hips, 1);
+const legRight = buildLeg(hips, -1);
+const rig = { hips, torso, head, armLeft, armRight, legLeft, legRight };
+
+// ------------------------------------------------------------------------------------------- animation ----
+// Poses are functions of a cycle phase; clips sample them densely, and every sampled pose is grounded: the hips
+// drop by however much the lowest sole would float (or rise if it would sink), so feet never hover or clip.
+const SOLE_POINTS = [
+  [0, -SOLE_DEPTH, -0.06],
+  [0, -SOLE_DEPTH, 0.21],
+];
+
+function applyPose(pose) {
+  const set = (joint, [x, y, z]) => joint.quaternion.setFromEuler(new THREE.Euler(x, y, z, 'XYZ'));
+  rig.hips.position.set(pose.hipsX ?? 0, HIPS_Y, 0);
+  set(rig.hips, pose.hips ?? [0, 0, 0]);
+  set(rig.torso, pose.torso);
+  set(rig.head, pose.head);
+  set(rig.armLeft.upper, pose.armL);
+  set(rig.armRight.upper, pose.armR);
+  set(rig.armLeft.forearm, pose.forearmL);
+  set(rig.armRight.forearm, pose.forearmR);
+  set(rig.legLeft.upper, pose.thighL);
+  set(rig.legRight.upper, pose.thighR);
+  set(rig.legLeft.calf, pose.calfL);
+  set(rig.legRight.calf, pose.calfR);
+  set(rig.legLeft.foot, pose.footL);
+  set(rig.legRight.foot, pose.footR);
+  scene.updateMatrixWorld(true);
+  let lowest = Infinity;
+  for (const foot of [rig.legLeft.foot, rig.legRight.foot]) {
+    for (const point of SOLE_POINTS) {
+      lowest = Math.min(lowest, new THREE.Vector3(...point).applyMatrix4(foot.matrixWorld).y);
+    }
+  }
+  rig.hips.position.y = HIPS_Y + (GROUND_Y - lowest) + (pose.lift ?? 0);
+  scene.updateMatrixWorld(true);
+}
+
+const TRACKED = () => [
+  rig.torso,
+  rig.head,
+  rig.armLeft.upper,
+  rig.armRight.upper,
+  rig.armLeft.forearm,
+  rig.armRight.forearm,
+  rig.legLeft.upper,
+  rig.legRight.upper,
+  rig.legLeft.calf,
+  rig.legRight.calf,
+  rig.legLeft.foot,
+  rig.legRight.foot,
+];
+
+function sampleClip(name, duration, samples, poseAt) {
+  const times = [];
+  const hipsPositions = [];
+  const hipsRotations = [];
+  const rotations = new Map(TRACKED().map((joint) => [joint.name, []]));
+  for (let i = 0; i <= samples; i += 1) {
+    const phase = i / samples;
+    applyPose(poseAt(phase % 1));
+    times.push(phase * duration);
+    hipsPositions.push(...rig.hips.position.toArray());
+    hipsRotations.push(...rig.hips.quaternion.toArray());
+    for (const joint of TRACKED()) rotations.get(joint.name).push(...joint.quaternion.toArray());
+  }
   const tracks = [
-    vectorTrack('Hips.position', times, [
-      [0, 0, 0],
-      [0, 0.01, 0],
-      [0, 0, 0],
-    ]),
-    quaternionTrack('Torso.quaternion', times, [
-      [0.012, 0.006, 0.001],
-      [0.016, 0.002, 0],
-      [0.012, 0.006, 0.001],
-    ]),
-    quaternionTrack('Head.quaternion', times, [
-      [0.002, 0.01, 0],
-      [0.008, 0.018, 0.004],
-      [0.002, 0.01, 0],
-    ]),
-    quaternionTrack(parts.armLeft.upper.name + '.quaternion', times, [
-      [-0.022, 0, 0.14],
-      [-0.014, 0, 0.13],
-      [-0.022, 0, 0.14],
-    ]),
-    quaternionTrack(parts.armRight.upper.name + '.quaternion', times, [
-      [-0.022, 0, -0.14],
-      [-0.014, 0, -0.13],
-      [-0.022, 0, -0.14],
-    ]),
-    quaternionTrack(parts.armLeft.forearm.name + '.quaternion', times, [
-      [0.078, 0, 0.014],
-      [0.092, 0, 0.014],
-      [0.078, 0, 0.014],
-    ]),
-    quaternionTrack(parts.armRight.forearm.name + '.quaternion', times, [
-      [0.078, 0, -0.014],
-      [0.092, 0, -0.014],
-      [0.078, 0, -0.014],
-    ]),
-    quaternionTrack(parts.legLeft.upper.name + '.quaternion', times, [
-      [0.008, 0, 0.042],
-      [0.006, 0, 0.038],
-      [0.008, 0, 0.042],
-    ]),
-    quaternionTrack(parts.legRight.upper.name + '.quaternion', times, [
-      [0.008, 0, -0.042],
-      [0.006, 0, -0.038],
-      [0.008, 0, -0.042],
-    ]),
+    new THREE.VectorKeyframeTrack('Hips.position', times, hipsPositions),
+    new THREE.QuaternionKeyframeTrack('Hips.quaternion', times, hipsRotations),
+    ...[...rotations].map(([jointName, values]) => new THREE.QuaternionKeyframeTrack(`${jointName}.quaternion`, times, values)),
   ];
-
-  return new THREE.AnimationClip('AvatarIdle', -1, tracks);
+  return new THREE.AnimationClip(name, duration, tracks);
 }
 
-function createWalkClip(parts) {
-  const times = [0, 0.25, 0.5, 0.75, 1];
-  const tracks = [
-    vectorTrack('Hips.position', times, [
-      [0, 0, 0],
-      [0, 0.022, 0],
-      [0, 0, 0],
-      [0, 0.022, 0],
-      [0, 0, 0],
-    ]),
-    quaternionTrack('Torso.quaternion', times, [
-      [0.014, 0.012, 0.01],
-      [0.02, -0.012, -0.008],
-      [0.014, 0.012, 0.01],
-      [0.02, -0.012, -0.008],
-      [0.014, 0.012, 0.01],
-    ]),
-    quaternionTrack('Head.quaternion', times, [
-      [-0.01, 0, 0],
-      [0, 0.015, 0.008],
-      [-0.01, 0, 0],
-      [0, -0.015, -0.008],
-      [-0.01, 0, 0],
-    ]),
-    limbTracks(parts, {
-      arm: 0.36,
-      forearm: 0.08,
-      thigh: 0.42,
-      calf: 0.18,
-      foot: 0.08,
-      armRoll: 0.14,
-      run: false,
-      times,
-    }),
-  ];
+const TAU = Math.PI * 2;
+const ARM_OUT = 0.085;
 
-  return new THREE.AnimationClip('AvatarWalk', -1, tracks.flat());
+/** One leg through a gait cycle: thigh swing (forward positive), knee bend and foot pitch (toe up positive). */
+function legCycle(p, { stance, swing, kneeStance, kneeSwing, toeOff }) {
+  // Thigh: forward at heel strike (p = 0), back at toe-off (p = stance), forward again by the end of swing.
+  // Through swing the thigh eases out (reaches forward early), and the knee straightens late, so the foot travels
+  // forward clear of the ground and only comes down at heel strike instead of landing early and scraping forward.
+  let thigh;
+  if (p < stance) thigh = swing * Math.cos((p / stance) * Math.PI);
+  else {
+    const s = (p - stance) / (1 - stance);
+    thigh = -swing * Math.cos((1 - (1 - s) ** 2) * Math.PI);
+  }
+  // Knee: a small loading bend early in stance, a big bend mid-swing to clear the ground.
+  const knee =
+    p < stance
+      ? kneeStance * Math.sin((p / stance) * Math.PI) * 0.9 + 0.04
+      : 0.04 + kneeSwing * Math.sin(((p - stance) / (1 - stance)) ** 0.8 * Math.PI) ** 1.2;
+  // Foot pitch (toe up positive) relative to the calf. `flat` cancels the thigh and knee so the sole stays level
+  // through stance; the heel lifts at toe-off, the toe is up at heel strike, and swing eases from pointed to level.
+  const flat = knee - thigh;
+  let foot;
+  if (p < 0.1) foot = flat + 0.26 * (1 - p / 0.1);
+  else if (p < stance - 0.1) foot = flat;
+  else if (p < stance) foot = flat - toeOff * ((p - (stance - 0.1)) / 0.1);
+  else {
+    const s = (p - stance) / (1 - stance);
+    foot = flat * 0.8 - toeOff * 0.5 * (1 - s) + 0.1 * s;
+  }
+  return { thigh, knee, foot };
 }
 
-function createRunClip(parts) {
-  const times = [0, 0.2, 0.4, 0.6, 0.8];
-  const tracks = [
-    vectorTrack('Hips.position', times, [
-      [0, 0, 0],
-      [0, 0.034, 0],
-      [0, 0, 0],
-      [0, 0.034, 0],
-      [0, 0, 0],
-    ]),
-    quaternionTrack('Torso.quaternion', times, [
-      [0.034, 0.016, 0.012],
-      [0.05, -0.016, -0.012],
-      [0.034, 0.016, 0.012],
-      [0.05, -0.016, -0.012],
-      [0.034, 0.016, 0.012],
-    ]),
-    quaternionTrack('Head.quaternion', times, [
-      [-0.02, 0, 0],
-      [-0.008, 0.012, 0.008],
-      [-0.02, 0, 0],
-      [-0.008, -0.012, -0.008],
-      [-0.02, 0, 0],
-    ]),
-    limbTracks(parts, {
-      arm: 0.56,
-      forearm: 0.14,
-      thigh: 0.62,
-      calf: 0.28,
-      foot: 0.12,
-      armRoll: 0.16,
-      run: true,
-      times,
-    }),
-  ];
-
-  return new THREE.AnimationClip('AvatarRun', -1, tracks.flat());
+/**
+ * Body lift in the airborne windows only: each foot leaves the ground at `stance` and the other lands half a cycle
+ * after the first landed, so the flights are centred at stance/2 + 0.25 and again half a cycle later.
+ */
+function flightLift(phase, gait) {
+  if (!gait.bounce) return 0;
+  const width = 0.5 - gait.stance;
+  if (width <= 0) return 0;
+  const centre = gait.stance + width / 2 - 0.5;
+  let offset = (((phase - centre) % 0.5) + 0.5) % 0.5;
+  if (offset > 0.25) offset -= 0.5;
+  return Math.abs(offset) < width / 2 ? gait.bounce * Math.cos((Math.PI * offset) / width) : 0;
 }
 
-function limbTracks(parts, config) {
-  const swing = config.times.map((_, index) => (index % 2 === 0 ? 1 : -1));
-  const opposite = swing.map((value) => value * -1);
-  const armRoll = config.armRoll ?? 0.12;
-
-  return [
-    quaternionTrack(parts.armLeft.upper.name + '.quaternion', config.times, swing.map((value) => [
-      -config.arm * value - (config.run ? 0.1 : 0.02),
-      0,
-      armRoll,
-    ])),
-    quaternionTrack(parts.armRight.upper.name + '.quaternion', config.times, opposite.map((value) => [
-      -config.arm * value - (config.run ? 0.1 : 0.02),
-      0,
-      -armRoll,
-    ])),
-    quaternionTrack(parts.armLeft.forearm.name + '.quaternion', config.times, swing.map((value) => [
-      0.08 + Math.max(0, value) * config.forearm,
-      0,
-      0,
-    ])),
-    quaternionTrack(parts.armRight.forearm.name + '.quaternion', config.times, opposite.map((value) => [
-      0.08 + Math.max(0, value) * config.forearm,
-      0,
-      0,
-    ])),
-    quaternionTrack(parts.legLeft.upper.name + '.quaternion', config.times, swing.map((value) => [
-      config.thigh * value,
-      0,
-      config.run ? 0.015 : 0,
-    ])),
-    quaternionTrack(parts.legRight.upper.name + '.quaternion', config.times, opposite.map((value) => [
-      config.thigh * value,
-      0,
-      config.run ? -0.015 : 0,
-    ])),
-    quaternionTrack(parts.legLeft.calf.name + '.quaternion', config.times, swing.map((value) => [
-      0.035 + Math.max(0, -value) * config.calf,
-      0,
-      0,
-    ])),
-    quaternionTrack(parts.legRight.calf.name + '.quaternion', config.times, opposite.map((value) => [
-      0.035 + Math.max(0, -value) * config.calf,
-      0,
-      0,
-    ])),
-    quaternionTrack(parts.legLeft.foot.name + '.quaternion', config.times, swing.map((value) => [
-      -Math.max(0, value) * config.foot,
-      0,
-      0,
-    ])),
-    quaternionTrack(parts.legRight.foot.name + '.quaternion', config.times, opposite.map((value) => [
-      -Math.max(0, value) * config.foot,
-      0,
-      0,
-    ])),
-  ];
+function gaitPose(phase, gait) {
+  const left = legCycle(phase, gait);
+  const right = legCycle((phase + 0.5) % 1, gait);
+  const swingL = Math.cos(phase * TAU); // +1 when the left leg is forward
+  return {
+    hips: [0, -gait.hipYaw * swingL, gait.hipRoll * Math.sin(phase * TAU * 2 + Math.PI / 2) * 0.5],
+    hipsX: 0,
+    // The chest counter-rotates against the hips (~7° relative in the walk), so the upper body is not stiff.
+    torso: [gait.lean, gait.hipYaw * 2.0 * swingL, 0],
+    head: [-gait.lean * 0.45 + 0.015 * Math.cos(phase * TAU * 2), -gait.hipYaw * 0.6 * swingL, 0],
+    // Arms swing opposite their own side's leg; elbows bend more on the forward swing.
+    armL: [gait.arm * swingL - gait.armBase, 0, ARM_OUT + 0.02],
+    armR: [-gait.arm * swingL - gait.armBase, 0, -ARM_OUT - 0.02],
+    forearmL: [-(gait.elbow + gait.elbowSwing * Math.max(0, -swingL)), 0, -0.05],
+    forearmR: [-(gait.elbow + gait.elbowSwing * Math.max(0, swingL)), 0, 0.05],
+    // A little width keeps the feet on their own lines, so they never pass through each other.
+    thighL: [-left.thigh, 0, gait.stanceWidth],
+    thighR: [-right.thigh, 0, -gait.stanceWidth],
+    calfL: [left.knee, 0, 0],
+    calfR: [right.knee, 0, 0],
+    footL: [-left.foot, 0, 0],
+    footR: [-right.foot, 0, 0],
+    lift: flightLift(phase, gait),
+  };
 }
 
-function quaternionTrack(path, times, eulers) {
-  return new THREE.QuaternionKeyframeTrack(path, times, eulersToQuaternionValues(eulers));
+const WALK = {
+  stance: 0.6,
+  swing: 0.5,
+  kneeStance: 0.07,
+  kneeSwing: 0.9,
+  toeOff: 0.32,
+  lean: 0.05,
+  hipYaw: 0.07,
+  hipRoll: 0.03,
+  arm: 0.32,
+  armBase: -0.02,
+  elbow: 0.2,
+  elbowSwing: 0.14,
+  bounce: 0.0,
+  stanceWidth: 0.025,
+};
+
+const RUN = {
+  stance: 0.38,
+  swing: 0.55,
+  kneeStance: 0.16,
+  kneeSwing: 1.4,
+  toeOff: 0.5,
+  lean: 0.24,
+  hipYaw: 0.08,
+  hipRoll: 0.035,
+  arm: 0.32,
+  armBase: 0.02,
+  elbow: 1.0,
+  elbowSwing: 0.12,
+  bounce: 0.03,
+  stanceWidth: 0.04,
+};
+
+function idlePose(phase) {
+  const breath = Math.sin(phase * TAU);
+  const sway = Math.sin(phase * TAU + 0.6);
+  return {
+    hips: [0, 0, 0.008 * sway],
+    hipsX: 0.006 * sway,
+    torso: [0.01 + 0.008 * breath, 0.012 * Math.sin(phase * TAU * 0.5), -0.006 * sway],
+    head: [-0.02 - 0.006 * breath, 0.035 * Math.sin(phase * TAU + 1.3), 0.008 * sway],
+    armL: [0.04 + 0.012 * breath, 0, ARM_OUT + 0.006 * breath],
+    armR: [0.04 + 0.012 * breath, 0, -ARM_OUT - 0.006 * breath],
+    forearmL: [-0.16 - 0.015 * breath, 0, -0.06],
+    forearmR: [-0.16 - 0.015 * breath, 0, 0.06],
+    // Weight a touch more on the left leg: the right knee eases.
+    thighL: [-0.01, 0, 0.03],
+    thighR: [-0.03, 0, -0.03],
+    calfL: [0.02, 0, 0],
+    calfR: [0.07, 0, 0],
+    footL: [-0.01, 0, -0.03],
+    footR: [-0.04, 0, 0.03],
+  };
 }
 
-function vectorTrack(path, times, vectors) {
-  return new THREE.VectorKeyframeTrack(path, times, vectors.flat());
+const clips = [
+  sampleClip('AvatarIdle', 2.2, 22, idlePose),
+  sampleClip('AvatarWalk', 0.6, 24, (p) => gaitPose(p, WALK)),
+  sampleClip('AvatarRun', 0.5, 24, (p) => gaitPose(p, RUN)),
+];
+
+/**
+ * The ground speed a gait clip covers at normal playback: the average backward speed of the planted foot (whichever
+ * sole is lower at that instant) relative to the body, measured on the exported clip with an AnimationMixer. Played
+ * at that speed the planted foot stays put; the game scales playback by (movement speed / this).
+ */
+function measureClipGroundSpeed(clip) {
+  const mixer = new THREE.AnimationMixer(scene);
+  mixer.clipAction(clip).play();
+  const feet = [rig.legLeft.foot, rig.legRight.foot];
+  const steps = 720;
+  let travel = 0;
+  let grounded = 0;
+  let previous = null;
+  for (let i = 0; i <= steps; i += 1) {
+    mixer.setTime((i / steps) * clip.duration);
+    scene.updateMatrixWorld(true);
+    const soles = feet.map((foot) => SOLE_POINTS.map((point) => new THREE.Vector3(...point).applyMatrix4(foot.matrixWorld)));
+    const lows = soles.map((points) => Math.min(...points.map((point) => point.y)));
+    const planted = lows[0] <= lows[1] ? 0 : 1;
+    const z = soles.map((points) => (points[0].z + points[1].z) / 2);
+    // Skip the run's airborne windows: with no foot on the ground there is nothing planted to measure.
+    if (previous && previous.planted === planted && lows[planted] < GROUND_Y + 0.02) {
+      travel += previous.z[planted] - z[planted];
+      grounded += 1;
+    }
+    previous = { planted, z };
+  }
+  mixer.stopAllAction();
+  mixer.uncacheRoot(scene);
+  return travel / ((grounded / steps) * clip.duration);
 }
 
-function eulersToQuaternionValues(eulers) {
-  return eulers.flatMap(([x, y, z]) => {
-    const quaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z, 'XYZ'));
-    return [quaternion.x, quaternion.y, quaternion.z, quaternion.w];
-  });
-}
+const GROUND_SPEED = {
+  walk: measureClipGroundSpeed(clips[1]),
+  run: measureClipGroundSpeed(clips[2]),
+};
+console.log(`Clip ground speeds (m/s): walk ${GROUND_SPEED.walk.toFixed(3)}, run ${GROUND_SPEED.run.toFixed(3)}`);
+writeFileSync(
+  join(__dirname, '..', 'src', 'world', 'playerAvatarGaitSpeeds.ts'),
+  `// Generated by scripts/generate-player-avatar.mjs: do not edit by hand.
+// The ground speed (m/s) each gait clip covers at normal playback. The avatar scales clip playback by
+// (movement speed / this), so the planted foot keeps pace with the ground instead of sliding.
+export const PLAYER_AVATAR_CLIP_GROUND_SPEED = {
+  walk: ${GROUND_SPEED.walk.toFixed(3)},
+  run: ${GROUND_SPEED.run.toFixed(3)},
+} as const;
+`,
+  'utf8',
+);
+
+// Rest pose for anything that renders the model before a clip starts: the first idle frame.
+applyPose(idlePose(0));
+
+const exporter = new GLTFExporter();
+mkdirSync(dirname(outputPath), { recursive: true });
+exporter.parse(
+  scene,
+  (result) => {
+    writeFileSync(outputPath, `${JSON.stringify(result)}\n`, 'utf8');
+    console.log(`Generated ${outputPath}`);
+  },
+  (error) => {
+    console.error(error);
+    process.exitCode = 1;
+  },
+  { binary: false, onlyVisible: false, animations: clips },
+);

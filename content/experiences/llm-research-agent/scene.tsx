@@ -7,7 +7,7 @@ import {
   OrbitCraft,
   RevealStage,
   RecruiterSceneShell,
-  SeatedFigure,
+  DocumentStack,
   SignalRibbon,
 } from '../_shared/recruiterBenchPrimitives';
 
@@ -29,7 +29,9 @@ export default function LlmResearchAgentScene(props: ExperienceSceneProps) {
     <RecruiterSceneShell {...props} palette={palette}>
       <RevealStage stage={2}>
         <DeskUnit position={[0, 0, 0.28]} palette={palette} width={2.34} depth={1.08} />
-        <SeatedFigure position={[-0.06, 0.04, 0.68]} shirtColor="#7569ab" accentColor="#59536a" />
+        {/* Source documents on the desk: the agent synthesizes documents into sourced predictions. */}
+        <DocumentStack position={[-0.78, 0.53, 0.5]} palette={palette} />
+        <DocumentStack position={[0.62, 0.53, 0.54]} palette={palette} />
       </RevealStage>
       <RevealStage stage={3}>
         <DisplayPanel

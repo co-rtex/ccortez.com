@@ -4,8 +4,8 @@ import {
   CENTRAL_PLAZA_FOUNTAIN_RADIUS,
   START_HERE_ANCHOR,
   START_HERE_PLACEMENT_TOLERANCE,
+  START_HERE_ROTATION_Y,
   START_HERE_WORKBENCH_ID,
-  getWorkbenchFacingCenterRotationY,
 } from '../world/hub';
 import { SCENIC_REST_SPOTS, getRestSpotSeatAnchor } from '../world/restSpots';
 import { isPointWalkable, isPointWaterBlocked } from '../world/terrain';
@@ -21,10 +21,17 @@ import type {
   WorkbenchResolvedPlacement,
   WorkbenchValidationIssue,
 } from '../types/workbench';
+import { isFlagshipWorkbench } from './flagships';
 
 export const WORKBENCH_FOOTPRINT_RADIUS = 1.28;
-const STREAMING_PRELOAD_PADDING = 7.5;
-const STREAMING_UNLOAD_PADDING = 14;
+// Scenes appear from across the plaza (so the ring reads as destinations, not empty pads) and stream in a
+// little earlier than that; the reveal animation still plays as they come into range.
+// On phones scenes keep a shorter range to limit draw calls.
+export type WorkbenchSceneRange = 'plaza' | 'near';
+const SCENE_RANGE_PADDING: Record<WorkbenchSceneRange, { present: number; preload: number; unload: number }> = {
+  plaza: { present: 36, preload: 40, unload: 46 },
+  near: { present: 13.5, preload: 21.5, unload: 28 },
+};
 
 export interface WorkbenchRuntimeRecord {
   definition: WorkbenchDefinition;
@@ -32,6 +39,8 @@ export interface WorkbenchRuntimeRecord {
   placement: WorkbenchResolvedPlacement;
   linkedExperience?: ExperienceRecord;
   interactionRadius: number;
+  /** Distance at which a loaded scene is shown; falls back to `interactionRadius` when absent. */
+  presentDistance?: number;
   preloadDistance: number;
   unloadDistance: number;
   issues: WorkbenchValidationIssue[];
@@ -59,7 +68,6 @@ function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValid
   const issues: WorkbenchValidationIssue[] = [];
   const { anchor } = record.placement;
   const radialDistance = Math.hypot(anchor.x, anchor.z);
-  const expectedStartRotation = getWorkbenchFacingCenterRotationY(anchor.x, anchor.z);
 
   if (
     record.definition.id === START_HERE_WORKBENCH_ID &&
@@ -85,11 +93,11 @@ function validateSingleWorkbench(record: WorkbenchRuntimeRecord): WorkbenchValid
 
   if (
     record.definition.id === START_HERE_WORKBENCH_ID &&
-    angleDelta(record.placement.rotationY, expectedStartRotation) > 0.12
+    angleDelta(record.placement.rotationY, START_HERE_ROTATION_Y) > 0.12
   ) {
     issues.push({
       code: 'reserved-start-pad',
-      message: 'Start Here bench should face inward toward the central fountain.',
+      message: 'Start Here bench should face south, toward visitors arriving from the spawn point.',
       severity: 'warning',
     });
   }
@@ -178,7 +186,11 @@ export function buildWorkbenchRuntime(
   definitions: WorkbenchDefinition[],
   districtDefinitions: WorkbenchDistrictDefinition[],
   experiences: ExperienceRecord[],
+  sceneRange: WorkbenchSceneRange = 'plaza',
 ): WorkbenchRuntimeRecord[] {
+  // On phones the flagships keep the plaza range, so the benches worth walking to are visible from the plaza; the
+  // rest stay near-range to hold the draw-call budget.
+  const paddingFor = (id: string) => SCENE_RANGE_PADDING[isFlagshipWorkbench(id) ? 'plaza' : sceneRange];
   const validatedDefinitions = validateWorkbenchLayout(definitions);
   const validatedDistricts = validateWorkbenchDistricts(districtDefinitions);
   const experienceById = new Map(experiences.map((experience) => [experience.manifest.id, experience] as const));
@@ -196,8 +208,9 @@ export function buildWorkbenchRuntime(
       placement: resolveWorkbenchPlacement(definition.placement),
       linkedExperience: definition.experienceId ? experienceById.get(definition.experienceId) : undefined,
       interactionRadius: definition.interactionRadius,
-      preloadDistance: definition.interactionRadius + STREAMING_PRELOAD_PADDING,
-      unloadDistance: definition.interactionRadius + STREAMING_UNLOAD_PADDING,
+      presentDistance: definition.interactionRadius + paddingFor(definition.id).present,
+      preloadDistance: definition.interactionRadius + paddingFor(definition.id).preload,
+      unloadDistance: definition.interactionRadius + paddingFor(definition.id).unload,
       issues: [] as WorkbenchValidationIssue[],
     };
   });

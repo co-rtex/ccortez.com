@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { useGameStore } from '../state/gameStore';
-import { WORKBENCH_INSPECT_HINT, shouldShowWorkbenchInspectHint } from './workbenchPanelHints';
+import { getWorkbenchInspectHint, shouldShowWorkbenchInspectHint } from './workbenchPanelHints';
 
 import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import type { ExperienceRecruiterCard } from '../types/experience';
 import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMeta';
+import { getCaseStudyUrl, getTourStep, hasInteractiveModel, isFlagshipWorkbench } from '../workbench/flagships';
+import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
+import { prefersReducedMotion } from '../world/reducedMotion';
 
 interface WorkbenchPanelProps {
   workbenches: WorkbenchRuntimeRecord[];
+  /** Travel to a bench and open it (the guide's action); used by the flagship tour's buttons. */
+  onTravelTo?: (workbenchId: string) => void;
 }
 
 function formatLabel(value: string): string {
@@ -24,31 +30,52 @@ function buildRecruiterMetaLine(parts: Array<string | undefined>): string {
 }
 
 interface LinkedWorkbenchContentProps {
+  /** The panel's title: a story heading that only repeats it is left out. */
+  title?: string;
   recruiterCard?: ExperienceRecruiterCard;
   activeStoryError?: string;
   ActiveStory?: ExperienceStoryComponent;
   isLoading: boolean;
 }
 
+/**
+ * Story headings sit under the panel's own title (h2) and, when there is a recruiter card above the story, its
+ * "Story" heading (h3); so a story's `##` renders as an h4 there and an h3 otherwise. One that only repeats the panel
+ * title (most stories open with their title) is left out.
+ */
+function StoryHeading(title: string | undefined, level: 'h3' | 'h4') {
+  const Tag = level;
+  return function Heading({ children }: { children?: ReactNode }) {
+    if (typeof children === 'string' && children.trim() === title?.trim()) return null;
+    return <Tag className="experience-panel__story-title">{children}</Tag>;
+  };
+}
+
 export function LinkedWorkbenchContent({
+  title,
   recruiterCard,
   activeStoryError,
   ActiveStory,
   isLoading,
 }: LinkedWorkbenchContentProps) {
+  const storyLevel = recruiterCard ? 'h4' : 'h3';
+  // A story's top headings (`#` as well as `##`) sit under the panel's own h2, so neither renders as an h1 or h2 here.
+  const storyComponents = useMemo(() => {
+    const Heading = StoryHeading(title, storyLevel);
+    return { h1: Heading, h2: Heading };
+  }, [title, storyLevel]);
+  // The role on its own line, then where and when, muted: one run-on line wrapped mid-name on a phone. A word
+  // joiner after an en dash keeps names like "UW–Madison" on one line.
+  const keepTogether = (text: string | undefined) => text?.replace(/–(?=\S)/g, '–\u2060');
   const recruiterMetaLine = recruiterCard
-    ? buildRecruiterMetaLine([
-        recruiterCard.roleLabel,
-        recruiterCard.organization,
-        recruiterCard.dateRange,
-        recruiterCard.location,
-      ])
+    ? buildRecruiterMetaLine([recruiterCard.organization, recruiterCard.dateRange, recruiterCard.location].map(keepTogether))
     : null;
 
   return (
     <>
       {recruiterCard ? (
         <section className="recruiter-card">
+          <p className="recruiter-card__role">{recruiterCard.roleLabel}</p>
           {recruiterMetaLine ? <p className="recruiter-card__meta">{recruiterMetaLine}</p> : null}
           <p className="recruiter-card__summary">{recruiterCard.summary}</p>
 
@@ -76,14 +103,14 @@ export function LinkedWorkbenchContent({
       {ActiveStory ? (
         <section className="experience-panel__story">
           {recruiterCard ? <h3 className="experience-panel__story-heading">Story</h3> : null}
-          <ActiveStory />
+          <ActiveStory components={storyComponents} />
         </section>
       ) : null}
     </>
   );
 }
 
-export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
+export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps) {
   const cameraMode = useGameStore((state) => state.cameraMode);
   const panelWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
   const closeWorkbenchPanel = useGameStore((state) => state.closeWorkbenchPanel);
@@ -96,6 +123,80 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
     () => workbenches.find((entry) => entry.definition.id === panelWorkbenchId),
     [panelWorkbenchId, workbenches],
   );
+
+  // Keyboard and screen-reader users land in the panel when it opens (its heading is announced), and go back to
+  // where they were when it closes.
+  const panelRef = useRef<HTMLElement>(null);
+  const jumpToDemo = (): void => {
+    const demo = panelRef.current?.querySelector<HTMLElement>('.taskforge-sim');
+    if (!demo) return;
+    demo.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    // Move focus to the demo's heading so keyboard and screen-reader users land there too.
+    const heading = demo.querySelector<HTMLElement>('h4');
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    }
+  };
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  // The last element focused outside the panel. Opening from the recruiter guide folds the guide in the same
+  // render, removing the button (and blurring it) before the open effect runs, so focus is tracked as it moves.
+  // Pressing on something that cannot take focus (the 3D world) clears it.
+  const lastFocusedOutsideRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const onFocusIn = (event: FocusEvent) => {
+      if (event.target instanceof HTMLElement && !panelRef.current?.contains(event.target)) {
+        lastFocusedOutsideRef.current = event.target;
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (target && !panelRef.current?.contains(target) && !target.closest('button, a, input, select, textarea, [tabindex]')) {
+        lastFocusedOutsideRef.current = null;
+      }
+    };
+    document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, []);
+  useEffect(() => {
+    if (panelWorkbenchId) {
+      // A new bench (for example the tour's next stop) starts at the top of its story.
+      panelRef.current?.querySelector('.experience-panel__content')?.scrollTo({ top: 0 });
+      const active = document.activeElement;
+      const opener =
+        active instanceof HTMLElement && active !== document.body && !panelRef.current?.contains(active)
+          ? active
+          : lastFocusedOutsideRef.current;
+      if (opener) returnFocusRef.current = opener;
+      headingRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    const target = returnFocusRef.current;
+    returnFocusRef.current = null;
+    if (!target || !(panelRef.current?.contains(document.activeElement) || document.activeElement === document.body)) return;
+    if (target.isConnected) {
+      target.focus({ preventScroll: true });
+      return;
+    }
+    const workbenchId = target.dataset.workbenchId;
+    const twin = workbenchId
+      ? document.querySelector<HTMLElement>(`[data-workbench-id="${CSS.escape(workbenchId)}"]`)
+      : null;
+    // The guide may have folded away (it collapses after a bench is opened from it); then its show button (or, on
+    // phones, the guide's summary) is the nearest control to where the visitor was, rather than the page body.
+    const candidates = [
+      twin,
+      document.querySelector<HTMLElement>('.recruiter-navigator__visibility-button--show'),
+      document.querySelector<HTMLElement>('summary.recruiter-navigator__toggle'),
+    ];
+    // A control inside a closed <details> or a hidden guide cannot take focus; skip to one that can.
+    candidates.find((candidate) => candidate && candidate.getClientRects().length > 0)?.focus({ preventScroll: true });
+  }, [panelWorkbenchId]);
 
   useEffect(() => {
     if (!workbench?.linkedExperience) {
@@ -146,12 +247,27 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
   const recruiterCard = workbench?.linkedExperience?.manifest.recruiterCard;
   const metaChips = workbench ? buildWorkbenchMetaChips(workbench) : [];
 
+  const tourStep = workbench ? getTourStep(workbench.definition.id) : null;
+  const titleOf = (id: string): string =>
+    workbenches.find((candidate) => candidate.definition.id === id)?.definition.title ?? id;
+  const travelTo = (id: string): void => {
+    onTravelTo?.(id);
+  };
+
   return (
-    <aside className={`experience-panel ${panelWorkbenchId ? 'experience-panel--open' : ''}`}>
+    <aside
+      ref={panelRef}
+      className={`experience-panel ${panelWorkbenchId ? 'experience-panel--open' : ''}`}
+      aria-labelledby="experience-panel-title"
+      // Closed, the panel only slides off screen; inert keeps its controls out of the tab order.
+      inert={!panelWorkbenchId}
+    >
       <header className="experience-panel__header">
         <div>
           <p className="experience-panel__eyebrow">{resolvePanelEyebrow(workbench)}</p>
-          <h2>{workbench ? workbench.definition.title : 'Select a Workbench'}</h2>
+          <h2 id="experience-panel-title" ref={headingRef} tabIndex={-1}>
+            {workbench ? workbench.definition.title : 'Select a Workbench'}
+          </h2>
         </div>
         <button
           type="button"
@@ -163,7 +279,7 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
         </button>
       </header>
 
-      <section className="experience-panel__meta">
+      <section className="experience-panel__meta" hidden={Boolean(workbench) && metaChips.length === 0}>
         {workbench ? (
           <>
             {metaChips.map((chip) => (
@@ -174,6 +290,18 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
                 {chip.label}
               </span>
             ))}
+            {/* Flagships carry a model further down the story (below the fold on phones); this jumps to it, once the
+                story has loaded. Only the ones with controls are called live models. */}
+            {isFlagshipWorkbench(workbench.definition.id) && activeStory ? (
+              <button type="button" className="experience-panel__demo-jump" onClick={jumpToDemo}>
+                {hasInteractiveModel(workbench.definition.id) ? 'Try the live model' : 'What the bench shows'}
+              </button>
+            ) : null}
+            {getCaseStudyUrl(workbench.definition.id) ? (
+              <a className="experience-panel__case-link" href={getCaseStudyUrl(workbench.definition.id)!}>
+                Read the case study <span aria-hidden="true">↗</span>
+              </a>
+            ) : null}
           </>
         ) : (
           <span className="experience-panel__meta-chip experience-panel__meta-chip--default">
@@ -182,13 +310,18 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
         )}
       </section>
 
-      <section className="experience-panel__content">
+      <section className="experience-panel__content" tabIndex={0} aria-label="Bench details">
         {!workbench ? <p>Nothing selected yet.</p> : null}
         {shouldShowWorkbenchInspectHint(cameraMode, workbench) ? (
-          <p className="experience-panel__inspect-hint">{WORKBENCH_INSPECT_HINT}</p>
+          <p className="experience-panel__inspect-hint">
+            {getWorkbenchInspectHint(
+              typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true,
+            )}
+          </p>
         ) : null}
         {workbench?.definition.contentMode === 'linked' ? (
           <LinkedWorkbenchContent
+            title={workbench.definition.title}
             recruiterCard={recruiterCard}
             activeStoryError={activeStoryError}
             ActiveStory={ActiveStory}
@@ -221,6 +354,32 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
           </div>
         ) : null}
       </section>
+
+      {tourStep && workbench ? (
+        <nav className="panel-tour" aria-label="Flagship tour">
+          <p className="panel-tour__position">
+            Flagship tour <span>{tourStep.position} of {tourStep.total}</span>
+          </p>
+          <div className="panel-tour__buttons">
+            {tourStep.previousId ? (
+              <button type="button" className="panel-tour__previous" onClick={() => travelTo(tourStep.previousId!)}>
+                <span aria-hidden="true">←</span>
+                <span className="panel-tour__label">{titleOf(tourStep.previousId)}</span>
+              </button>
+            ) : null}
+            {tourStep.nextId ? (
+              <button type="button" className="panel-tour__next" onClick={() => travelTo(tourStep.nextId!)}>
+                {tourStep.position === 1 ? 'Start the tour: ' : 'Next: '}
+                {titleOf(tourStep.nextId)} <span aria-hidden="true">→</span>
+              </button>
+            ) : (
+              <a className="panel-tour__next" href={PROFESSIONAL_SITE_URL}>
+                Case studies and resume <span aria-hidden="true">→</span>
+              </a>
+            )}
+          </div>
+        </nav>
+      ) : null}
     </aside>
   );
 }

@@ -130,7 +130,16 @@ export function applyPublishedWorkbenchRingLayout(
     }
   }
 
-  perimeterWorkbenches.forEach((definition, index) => {
+  // Slots run west from the north gate for the first district (work experience) and east from the gate for the
+  // rest (projects), each in priority order, so the anchors of both districts flank the gate, which the spawn
+  // camera faces. Placing projects after work experience all the way round put the flagship projects at the far
+  // south of the ring, the one arc the first screen never shows.
+  const firstDistrict = perimeterWorkbenches[0]?.district;
+  const westArc = perimeterWorkbenches.filter((definition) => definition.district === firstDistrict);
+  const eastArc = perimeterWorkbenches.filter((definition) => definition.district !== firstDistrict);
+  const slotOrder = [...westArc, ...eastArc.reverse()];
+
+  slotOrder.forEach((definition, index) => {
     const angle = SOUTH_ENTRY_ANGLE - slotStep * (index + 1);
     const x = Number((Math.cos(angle) * metrics.perimeterRadius).toFixed(3));
     const z = Number((Math.sin(angle) * metrics.perimeterRadius).toFixed(3));

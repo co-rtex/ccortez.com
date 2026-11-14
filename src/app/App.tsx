@@ -3,6 +3,9 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { bootstrapExperienceRegistry } from '../content/loader';
 import { getAllExperiences } from '../content/registry';
 import { useGameStore } from '../state/gameStore';
+import { getBenchStandPoint, shouldTravelToBench } from '../world/benchTravel';
+import { parseBenchDeepLink } from './benchDeepLink';
+import { FLAGSHIP_TOUR } from '../workbench/flagships';
 import { WorkbenchEditorOverlay } from '../ui/WorkbenchEditorOverlay';
 import { WorkbenchPanel } from '../ui/WorkbenchPanel';
 import { WorkbenchPrompt } from '../ui/WorkbenchPrompt';
@@ -21,7 +24,7 @@ import {
   type WorkbenchEditorTransformMode,
 } from '../workbench/editor';
 import { buildWorkbenchRuntime, serializeWorkbenchLayout } from '../workbench/runtime';
-import { PROFESSIONAL_SITE_URL } from './siteLinks';
+import { OWNER, PROFESSIONAL_SITE_URL } from './siteLinks';
 import { detectWebGLSupport } from './webgl';
 
 // The 3D scene (and three.js with it) loads separately, so the recruiter guide is usable sooner.
@@ -92,12 +95,20 @@ export default function App() {
   const setEditorCameraTarget = useGameStore((state) => state.setEditorCameraTarget);
   const clearEditorCameraTarget = useGameStore((state) => state.clearEditorCameraTarget);
   const panelWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
+  const hasOpenedABench = useGameStore((state) => state.openedWorkbenchIds.length > 0);
   const openWorkbenchPanel = useGameStore((state) => state.openWorkbenchPanel);
   const closeWorkbenchPanel = useGameStore((state) => state.closeWorkbenchPanel);
+  const requestTravel = useGameStore((state) => state.requestTravel);
 
   const allWorkbenchRecords = useMemo(
-    () => buildWorkbenchRuntime(workbenchDefinitions, WORKBENCH_DISTRICTS, bootstrapState.experiences),
-    [bootstrapState.experiences, workbenchDefinitions],
+    () =>
+      buildWorkbenchRuntime(
+        workbenchDefinitions,
+        WORKBENCH_DISTRICTS,
+        bootstrapState.experiences,
+        mobileLiteMode ? 'near' : 'plaza',
+      ),
+    [bootstrapState.experiences, mobileLiteMode, workbenchDefinitions],
   );
   const visibleWorkbenchRecords = useMemo(
     () =>
@@ -139,6 +150,37 @@ export default function App() {
       window.removeEventListener('resize', updateMode);
     };
   }, []);
+
+  // Opening a bench from the guide is fast travel: the player moves to the bench's front too, so closing the
+  // panel leaves them at the bench rather than wherever they had been standing.
+  const openWorkbenchFromGuide = useCallback(
+    (workbenchId: string): void => {
+      const record = visibleWorkbenchRecords.find((candidate) => candidate.definition.id === workbenchId);
+      const { playerPosition: player, playerMode: mode } = useGameStore.getState();
+      if (record && shouldTravelToBench(player, record.placement.anchor)) {
+        if (mode === 'seated') exitSeatedMode();
+        requestTravel(
+          getBenchStandPoint(record.placement.anchor, record.placement.rotationY, record.interactionRadius),
+        );
+      }
+      openWorkbenchPanel(workbenchId);
+    },
+    [exitSeatedMode, openWorkbenchPanel, requestTravel, visibleWorkbenchRecords],
+  );
+
+  // `?bench=<id>` (linked from the case studies on ccortez.com) opens that bench once, on load.
+  const deepLinkHandledRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkHandledRef.current || workbenchEditorEnabled) return;
+    deepLinkHandledRef.current = true;
+    const publishedIds = new Set(
+      visibleWorkbenchRecords
+        .filter((record) => record.definition.visibility === 'published')
+        .map((record) => record.definition.id),
+    );
+    const benchId = parseBenchDeepLink(window.location.search, publishedIds);
+    if (benchId) openWorkbenchFromGuide(benchId);
+  }, [openWorkbenchFromGuide, visibleWorkbenchRecords, workbenchEditorEnabled]);
 
   useEffect(() => {
     const visibleIds = new Set(visibleWorkbenchRecords.map((record) => record.definition.id));
@@ -414,6 +456,7 @@ export default function App() {
     openWorkbenchPanel(activeSelectedWorkbenchId);
   }
 
+
   return (
     <main className={appClassName}>
       {webglSupported ? (
@@ -449,27 +492,47 @@ export default function App() {
             activeWorkbenchId={panelWorkbenchId}
             nearbyWorkbenchId={nearbyWorkbenchId}
             mobileLiteMode={mobileLiteMode}
-            onWorkbenchOpen={openWorkbenchPanel}
+            onWorkbenchOpen={openWorkbenchFromGuide}
+            startFolded
           />
         ) : null}
 
         <div className="hud-layer__footer">
-          <WorkbenchPrompt
-            workbenches={visibleWorkbenchRecords}
-            editorEnabled={workbenchEditorEnabled}
-            mobileLiteMode={mobileLiteMode}
-          />
-          {mobileLiteMode ? (
+          {/* Without WebGL there is no world to walk in, so the controls hint would mislead. */}
+          {webglSupported ? (
+            <WorkbenchPrompt
+              workbenches={visibleWorkbenchRecords}
+              editorEnabled={workbenchEditorEnabled}
+              mobileLiteMode={mobileLiteMode}
+              onStartTour={() => openWorkbenchFromGuide(FLAGSHIP_TOUR[0]!)}
+            />
+          ) : null}
+          {/* Hidden while a panel is open: on a phone it would sit over the bench the panel is about. */}
+          {/* The banner carries the tour invitation, so it stays until the visitor opens a bench (by any route), not
+              on a timer that could take it away before someone using assistive technology reaches it. */}
+          {mobileLiteMode && !hasOpenedABench && !panelWorkbenchId ? (
             <div className="mobile-lite-banner">
-              Mobile-lite mode: tap landmarks for details. The recruiter guide collapses into a quick jump list.{' '}
-              <a href={PROFESSIONAL_SITE_URL}>Read the text portfolio instead</a>
+              {/* The phone's arrival card: whose island it is and the same invitation as on a desktop. */}
+              <p className="mobile-lite-banner__who">
+                <strong>{OWNER.name}</strong>, {OWNER.study}. {OWNER.seeking}.
+              </p>
+              <button
+                type="button"
+                className="mobile-lite-banner__tour"
+                onClick={() => openWorkbenchFromGuide(FLAGSHIP_TOUR[0]!)}
+              >
+                Take the flagship tour <span>5 stops</span>
+              </button>
+              <span>
+                Or tap any bench to open it, or <a href={PROFESSIONAL_SITE_URL}>read the text portfolio</a>.
+              </span>
             </div>
           ) : null}
         </div>
       </div>
 
       {!workbenchEditorEnabled ? <SiteBar /> : null}
-      <WorkbenchPanel workbenches={visibleWorkbenchRecords} />
+      <WorkbenchPanel workbenches={visibleWorkbenchRecords} onTravelTo={openWorkbenchFromGuide} />
       {workbenchEditorEnabled ? (
         <WorkbenchEditorOverlay
           definitions={workbenchDefinitions}

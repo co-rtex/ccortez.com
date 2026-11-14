@@ -26,14 +26,21 @@ function resolveWorkbenchExperienceId(workbench: WorkbenchRuntimeRecord): string
   return experienceId;
 }
 
+/** Extra distance a shown scene may drift beyond before it hides, so it does not flicker at the edge. */
+export const WORKBENCH_SCENE_PRESENT_HYSTERESIS = 2;
+
 export function shouldPresentWorkbenchScene(
   workbench: WorkbenchRuntimeRecord,
   playerPosition: WorldAnchor,
   focusedWorkbenchId: string | null,
+  currentlyPresented = false,
 ): boolean {
+  const range =
+    (workbench.presentDistance ?? workbench.interactionRadius) +
+    (currentlyPresented ? WORKBENCH_SCENE_PRESENT_HYSTERESIS : 0);
   return (
     focusedWorkbenchId === workbench.definition.id ||
-    distanceXZ(workbench.placement.anchor, playerPosition) <= workbench.interactionRadius
+    distanceXZ(workbench.placement.anchor, playerPosition) <= range
   );
 }
 
@@ -80,7 +87,13 @@ export function computeWorkbenchScenePresentation(
     const currentEntry = currentPresentation[experienceId];
     const isLoaded = loadedExperienceIds.has(experienceId);
     const shouldPresent =
-      isLoaded && shouldPresentWorkbenchScene(workbench, playerPosition, focusedWorkbenchId);
+      isLoaded &&
+      shouldPresentWorkbenchScene(
+        workbench,
+        playerPosition,
+        focusedWorkbenchId,
+        Boolean(currentEntry) && currentEntry?.state !== 'exiting',
+      );
 
     if (shouldPresent) {
       if (!currentEntry || currentEntry.state === 'exiting') {

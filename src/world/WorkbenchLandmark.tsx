@@ -1,12 +1,22 @@
 import { Html } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
+import { Color, DoubleSide, Shape, Vector3 } from 'three';
 import type { Group, MeshStandardMaterial } from 'three';
 
+import { useGameStore } from '../state/gameStore';
+import { BENCH_PLINTH } from './benchPlinth';
+import { prefersReducedMotion } from './reducedMotion';
+import { START_HERE_WORKBENCH_ID } from './hub';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+import { getTourStep, hasLongRangeLabel, isFlagshipWorkbench } from '../workbench/flagships';
 import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
 import {
+  FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH,
+  TITLE_BADGE_RANGE,
+  badgeFitsAcross,
+  getTitleBadgeOpacity,
   shouldShowPersistentWorkbenchTitleBadge,
   shouldShowWorkbenchProximityPrompt,
 } from './workbenchLandmarkLabels';
@@ -329,6 +339,94 @@ interface WorkbenchLandmarkProps {
   onSelect: (id: string) => void;
 }
 
+/**
+ * Every scene-owned bench keeps a permanent stone dais and a pennant in its category colour, so the bench ring
+ * reads as a set of destinations from across the plaza before any scene streams in.
+ */
+/**
+ * The bench's architectural base: a faceted stone drum with a light coping lip, a field tinted with the
+ * category colour (the guide's legend: orange experiences, blue projects) and room for the accent inlay ring.
+ * It replaces a broad flat disk that read as a pale placemat on the promenade paving.
+ */
+function BenchPlinth({ accent }: { accent: string }) {
+  const field = useMemo(() => new Color('#d9c8a8').lerp(new Color(accent), 0.36), [accent]);
+  const riserHeight = BENCH_PLINTH.deckY - BENCH_PLINTH.copingHeight - BENCH_PLINTH.footY;
+  return (
+    <group>
+      <mesh castShadow receiveShadow position={[0, BENCH_PLINTH.footY + riserHeight / 2, 0]}>
+        <cylinderGeometry
+          args={[BENCH_PLINTH.topRadius, BENCH_PLINTH.baseRadius, riserHeight, BENCH_PLINTH.sides]}
+        />
+        <meshStandardMaterial color="#a88f6f" roughness={0.9} flatShading />
+      </mesh>
+      <mesh receiveShadow position={[0, BENCH_PLINTH.deckY - BENCH_PLINTH.copingHeight / 2, 0]}>
+        <cylinderGeometry
+          args={[BENCH_PLINTH.copingRadius, BENCH_PLINTH.copingRadius, BENCH_PLINTH.copingHeight, BENCH_PLINTH.sides]}
+        />
+        <meshStandardMaterial color="#efe3cb" roughness={0.8} flatShading />
+      </mesh>
+      <mesh receiveShadow position={[0, BENCH_PLINTH.deckY + 0.002, 0]} rotation={[-Math.PI / 2, 0, Math.PI / BENCH_PLINTH.sides]}>
+        <circleGeometry args={[BENCH_PLINTH.fieldRadius, BENCH_PLINTH.sides]} />
+        <meshStandardMaterial color={field} roughness={0.85} />
+      </mesh>
+      {/* Front step, facing the plaza centre (local +z). */}
+      <mesh
+        castShadow
+        receiveShadow
+        position={[0, (BENCH_PLINTH.footY + BENCH_PLINTH.deckY) / 2 - 0.06, BENCH_PLINTH.topRadius + BENCH_PLINTH.stepDepth / 2 - 0.08]}
+      >
+        <boxGeometry args={[BENCH_PLINTH.stepWidth, BENCH_PLINTH.deckY - BENCH_PLINTH.footY - 0.12, BENCH_PLINTH.stepDepth]} />
+        <meshStandardMaterial color="#e2d3b6" roughness={0.85} />
+      </mesh>
+    </group>
+  );
+}
+
+function isCoarsePointer(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true;
+}
+
+const PENNANT_POLE_HEIGHT = 4.4;
+
+function BenchPennant({ accent, seed }: { accent: string; seed: number }) {
+  const flagRef = useRef<Group>(null);
+
+  useFrame(({ clock }) => {
+    if (flagRef.current && !prefersReducedMotion()) {
+      flagRef.current.rotation.y = Math.sin(clock.elapsedTime * 1.6 + seed) * 0.22;
+    }
+  });
+
+  return (
+    // On the plinth's back-right rim, clear of the hedge crescent behind it.
+    <group position={[2.12, BENCH_PLINTH.deckY, -2.12]}>
+      <mesh castShadow position={[0, PENNANT_POLE_HEIGHT / 2, 0]}>
+        <cylinderGeometry args={[0.045, 0.06, PENNANT_POLE_HEIGHT, 8]} />
+        <meshStandardMaterial color="#f4ead6" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, PENNANT_POLE_HEIGHT + 0.08, 0]}>
+        <sphereGeometry args={[0.1, 12, 10]} />
+        <meshStandardMaterial color="#e2b34a" metalness={0.6} roughness={0.35} />
+      </mesh>
+      <group ref={flagRef} position={[0, PENNANT_POLE_HEIGHT - 0.45, 0]}>
+        <mesh castShadow position={[0.55, 0, 0]} rotation={[0, 0, 0]}>
+          <shapeGeometry args={[PENNANT_SHAPE]} />
+          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.35} roughness={0.7} side={DoubleSide} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+const PENNANT_SHAPE = (() => {
+  const shape = new Shape();
+  shape.moveTo(-0.55, 0.36);
+  shape.lineTo(0.75, 0.04);
+  shape.lineTo(-0.55, -0.32);
+  shape.closePath();
+  return shape;
+})();
+
 export function WorkbenchLandmark({
   workbench,
   isNearby,
@@ -353,14 +451,50 @@ export function WorkbenchLandmark({
   const accentMaterial = accentMaterialMap[workbench.definition.visualRecipe.accentMaterial];
   const presentationMode = workbench.definition.presentationMode;
   const rendersKit = presentationMode !== 'scene-owned';
-  const ringRadius = rendersKit ? 1.08 : 2.38;
+  const ringRadius = rendersKit ? 1.08 : BENCH_PLINTH.inlayRadius;
   const issueSeverity = workbench.issues.some((issue) => issue.severity === 'error')
     ? 'error'
     : workbench.issues.length > 0
       ? 'warning'
       : 'valid';
 
-  useFrame(({ clock }) => {
+  const titleBadgeRef = useRef<HTMLDivElement>(null);
+  const showsTitleBadge = shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled);
+  const panelOpen = useGameStore((state) => state.panelWorkbenchId !== null);
+  // The open panel already names its bench, and on phones this badge would sit under the guide toggle.
+  const isPanelBench = useGameStore((state) => state.panelWorkbenchId === workbench.definition.id);
+  const showsPrompt = shouldShowWorkbenchProximityPrompt(workbench, isNearby) && !panelOpen;
+  const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
+  // Long-range role badges only on wide screens; flagship badges at any width, since one that would sit half off the
+  // edge is hidden (badgeFitsAcross) and on a phone they are the only names across the plaza.
+  const wideViewport = useThree((state) => state.size.width >= FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH);
+  const isFlagship = isFlagshipWorkbench(workbench.definition.id);
+  const longRangeLabel = hasLongRangeLabel(workbench.definition.id);
+  const tourStep = getTourStep(workbench.definition.id);
+  // Start Here stands right in front of the spawn point, so its badge sits just above the welcome board
+  // (higher, it floated up against the fountain's armillary).
+  const startBadgeY = 3.5;
+  const badgeWorld = useMemo(() => new Vector3(), []);
+  useFrame(({ clock, camera, size }) => {
+    const badge = titleBadgeRef.current;
+    if (badge) {
+      const { playerPosition } = useGameStore.getState();
+      const distance = Math.hypot(
+        playerPosition.x - workbench.placement.anchor.x,
+        playerPosition.z - workbench.placement.anchor.z,
+      );
+      // Start Here is the first destination, so its badge stays visible from anywhere on the plaza.
+      let shown = isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, longRangeLabel && (wideViewport || isFlagship));
+      // Shown only because of the long range: hide it rather than let it sit half off the edge of the screen.
+      if (shown && longRangeLabel && distance > TITLE_BADGE_RANGE) {
+        const { anchor } = workbench.placement;
+        badgeWorld.set(anchor.x, anchor.y + 3.3, anchor.z).project(camera);
+        if (!badgeFitsAcross(badgeWorld.x, size.width)) shown = 0;
+      }
+      const opacity = shown.toFixed(2);
+      if (badge.style.opacity !== opacity) badge.style.opacity = opacity;
+    }
+
     const ringMaterial = ringMaterialRef.current;
     if (ringMaterial) {
       const pulse = 0.78 + Math.sin(clock.elapsedTime * 3 + workbench.definition.id.length) * 0.24;
@@ -368,7 +502,7 @@ export function WorkbenchLandmark({
     }
 
     const hero = heroRef.current;
-    if (hero) {
+    if (hero && !prefersReducedMotion()) {
       const style = workbench.definition.visualRecipe.animationStyle ?? 'still';
       if (style === 'soft-orbit') {
         hero.rotation.y = clock.elapsedTime * 0.45;
@@ -424,14 +558,23 @@ export function WorkbenchLandmark({
           <meshStandardMaterial color={palette.base} roughness={0.52} metalness={0.18} />
         </mesh>
       ) : (
-        <mesh position={[0, 1.24, 0]}>
-          <boxGeometry args={[5.8, 2.8, 5.8]} />
-          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-        </mesh>
+        <>
+          <mesh position={[0, 1.24, 0]}>
+            <boxGeometry args={[5.8, 2.8, 5.8]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
+          <BenchPlinth accent={indicatorColor} />
+          {/* Start Here is in plain view with its own badge; a pennant would only add a pole beside the fountain.
+              While this bench's panel is open the pennant is hidden: from the inspect camera its pole crosses the
+              diorama. */}
+          {isStartHere || isPanelBench ? null : (
+            <BenchPennant accent={indicatorColor} seed={workbench.definition.id.length} />
+          )}
+        </>
       )}
 
-      <mesh position={[0, rendersKit ? 0.22 : 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[ringRadius, rendersKit ? 0.08 : 0.055, 10, 48]} />
+      <mesh position={[0, rendersKit ? 0.22 : BENCH_PLINTH.deckY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[ringRadius, rendersKit ? 0.08 : 0.06, 10, 64]} />
         <meshStandardMaterial
           ref={ringMaterialRef}
           color={indicatorColor}
@@ -478,13 +621,29 @@ export function WorkbenchLandmark({
         </Html>
       ) : null}
 
-      {shouldShowPersistentWorkbenchTitleBadge(workbench, editorEnabled) ? (
-        <Html center distanceFactor={16} position={[0, rendersKit ? 2.95 : 4.15, 0]}>
-          <div className="landmark-tooltip landmark-tooltip--title">{workbench.definition.title}</div>
+      {showsTitleBadge ? (
+        <Html center position={[0, rendersKit ? 2.95 : isStartHere ? startBadgeY : 3.3, 0]}>
+          <div
+            ref={titleBadgeRef}
+            className={`landmark-tooltip landmark-tooltip--title${isFlagship ? ' landmark-tooltip--flagship' : ''}${
+              isStartHere ? ' landmark-tooltip--start' : ''
+            }`}
+            style={{ opacity: 0 }}
+          >
+            {/* Every tour stop (Start Here and the flagships) carries its number, so the route reads from the plaza. */}
+            {tourStep ? (
+              <span className="landmark-tooltip__stop" aria-hidden="true">
+                {tourStep.position}
+              </span>
+            ) : null}
+            {workbench.definition.title}
+            {/* Close by, the badge itself says how to open it: one label, not a prompt stacked on the badge. */}
+            {showsPrompt ? <span className="landmark-tooltip__action">{isCoarsePointer() ? 'Tap to open' : 'Press E'}</span> : null}
+          </div>
         </Html>
       ) : null}
 
-      {shouldShowWorkbenchProximityPrompt(workbench, isNearby) ? (
+      {showsPrompt && (!showsTitleBadge || editorEnabled) ? (
         <Html center distanceFactor={16} position={[0, rendersKit ? 2.38 : 3.45, 0]}>
           <div className="landmark-tooltip">
             {editorEnabled ? 'Click to select. Press E to open.' : 'Press E or Click'}

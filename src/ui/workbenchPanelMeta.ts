@@ -10,7 +10,8 @@ export function resolvePanelEyebrow(workbench: WorkbenchRuntimeRecord | undefine
 
   const category = resolveRecruiterNavigatorCategory(workbench);
   if (category === 'start') {
-    return 'Start Here';
+    // The title already says Start Here; the eyebrow introduces the person instead.
+    return 'Welcome';
   }
 
   return category === 'secondary' ? 'More About Me' : 'Recruiter Brief';
@@ -32,10 +33,8 @@ export function buildWorkbenchMetaChips(workbench: WorkbenchRuntimeRecord): Arra
       tone: 'secondary',
     });
   } else if (category === 'start') {
-    chips.push({
-      label: 'Start Here',
-      tone: 'start',
-    });
+    // Title and eyebrow already identify the stop; its district is an internal layout detail.
+    return [];
   } else {
     chips.push({
       label: `Type: ${formatRecruiterCategoryLabel(category)}`,
@@ -43,17 +42,7 @@ export function buildWorkbenchMetaChips(workbench: WorkbenchRuntimeRecord): Arra
     });
   }
 
-  chips.push({
-    label: `District: ${workbench.districtDefinition.label}`,
-    tone: 'default',
-  });
-
-  if (workbench.definition.priorityTier === 'anchor') {
-    chips.push({
-      label: 'Featured',
-      tone: 'featured',
-    });
-  }
-
+  // Flagships are marked by their "Read the case study" link beside these chips; a "Case study" chip as well said
+  // the same thing twice.
   return chips;
 }

@@ -4,23 +4,26 @@
   "title": "Start Here",
   "type": "experience",
   "uiContentRef": "./story.mdx",
+  "sceneModuleRef": "scene.tsx",
   "status": "published",
   "recruiterCard": {
-    "roleLabel": "Software Engineer Portfolio Overview",
-    "organization": "Christian Cortez",
-    "dateRange": "Current",
+    "roleLabel": "Software engineer",
+    "organization": "UW–Madison",
+    "dateRange": "B.S. expected May\u00a02028",
     "location": "Madison, WI",
-    "summary": "This center stop introduces who I am, how this interactive island is organized, and the fastest path for recruiters to understand my experience, projects, and technical strengths.",
+    "summary": "I build systems that keep working when things go wrong: crash-safe job processing, deterministic matching engines, and data pipelines researchers can rerun reproducibly. Studying Computer Science and Data Science at UW–Madison; looking for Summer 2027 software engineering internships.",
     "impactBullets": [
-      "Designed this environment to turn a portfolio into a guided, explorable recruiter experience instead of a static list of links.",
-      "Organized the island so work experience and projects can be scanned quickly while still leaving room for personal context and storytelling.",
-      "Built the world interaction flow to support both free exploration and direct navigation for hiring teams who want the highlights fast."
+      "Software Engineering Research Assistant on the UW–Madison / USDA LiDAR phenotyping collaboration (May 2026 – present).",
+      "Software Developer Intern on the HCSC (Blue Cross Blue Shield) Automation Team, Jun – Aug 2026.",
+      "Systems projects with recorded benchmarks: EngineX (C++20 matching engine) and TaskForge (durable job platform on PostgreSQL). Their workbenches are on this plaza."
     ],
     "techStack": [
-      "React",
+      "Python",
+      "C++",
+      "Go",
       "TypeScript",
-      "Three.js",
-      "React Three Fiber"
+      "PostgreSQL",
+      "Linux"
     ]
   }
 }

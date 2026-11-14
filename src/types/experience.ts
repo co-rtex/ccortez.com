@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 export type ExperienceType = 'experience' | 'project';
 export type ExperienceStatus = 'draft' | 'published';
@@ -30,7 +30,10 @@ export interface ExperienceManifest {
   recruiterCard?: ExperienceRecruiterCard;
 }
 
-export type ExperienceStoryComponent = ComponentType;
+/** MDX story module. `components` overrides how its elements render (MDX's standard prop). */
+export type ExperienceStoryComponent = ComponentType<{
+  components?: Record<string, ComponentType<{ children?: ReactNode }>>;
+}>;
 
 export interface ExperienceStoryModule {
   default: ExperienceStoryComponent;

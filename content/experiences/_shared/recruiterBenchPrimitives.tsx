@@ -9,18 +9,13 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
-import type { Group, MeshStandardMaterial } from 'three';
-import { CatmullRomCurve3, TubeGeometry, Vector3 } from 'three';
+import type { Group, Mesh, MeshStandardMaterial } from 'three';
+import { CatmullRomCurve3, Color, TubeGeometry, Vector3 } from 'three';
 
 import type { ExperienceSceneProps } from '../../../src/types/experience';
-import {
-  RECRUITER_SCENE_PLATFORM_GLOW_RADIUS,
-  RECRUITER_SCENE_PLATFORM_HEIGHT,
-  RECRUITER_SCENE_PLATFORM_OUTER_BOTTOM_RADIUS,
-  RECRUITER_SCENE_PLATFORM_OUTER_TOP_RADIUS,
-  RECRUITER_SCENE_PLATFORM_RING_INNER_RADIUS,
-  RECRUITER_SCENE_PLATFORM_RING_OUTER_RADIUS,
-} from './recruiterBenchPlatform';
+import { hasPerfFlag } from '../../../src/world/perfFlags';
+import { prefersReducedMotion } from '../../../src/world/reducedMotion';
+import { useSceneShadowBudget } from '../../../src/world/sceneShadowBudget';
 import {
   RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS,
   getRecruiterRevealMotionAmount,
@@ -188,11 +183,11 @@ function renderDisplayContent(
         <>
           <mesh position={[-0.16, 0.08, 0.012]}>
             <boxGeometry args={[0.26, 0.22, 0.01]} />
-            <meshStandardMaterial color="#233344" emissive="#233344" emissiveIntensity={0.25} />
+            <meshStandardMaterial color="#3d7290" emissive="#3d7290" emissiveIntensity={0.45} />
           </mesh>
           <mesh position={[0.18, 0.08, 0.012]}>
             <boxGeometry args={[0.34, 0.22, 0.01]} />
-            <meshStandardMaterial color="#243b33" emissive="#243b33" emissiveIntensity={0.25} />
+            <meshStandardMaterial color="#3f8068" emissive="#3f8068" emissiveIntensity={0.45} />
           </mesh>
           {[
             [-0.2, -0.18, '#ef8468'],
@@ -261,13 +256,13 @@ function renderDisplayContent(
         <>
           <mesh position={[0, 0, 0.012]}>
             <boxGeometry args={[0.54, 0.32, 0.01]} />
-            <meshStandardMaterial color="#223846" emissive="#223846" emissiveIntensity={0.15} />
+            <meshStandardMaterial color="#3a6f8c" emissive="#3a6f8c" emissiveIntensity={0.4} />
           </mesh>
           {variant === 'soccer' ? (
             <>
               <mesh position={[0, 0, 0.013]}>
                 <boxGeometry args={[0.5, 0.28, 0.01]} />
-                <meshStandardMaterial color="#1e5f46" emissive="#1e5f46" emissiveIntensity={0.25} />
+                <meshStandardMaterial color="#2f8f69" emissive="#2f8f69" emissiveIntensity={0.45} />
               </mesh>
               <mesh position={[0, 0, 0.014]}>
                 <ringGeometry args={[0.08, 0.092, 18]} />
@@ -359,18 +354,28 @@ interface SceneShellProps extends ExperienceSceneProps {
   children: ReactNode;
 }
 
-export function RecruiterSceneShell({
-  anchor,
-  rotationY,
-  isNearby,
-  isFocused,
-  presentationState,
-  palette,
-  children,
-}: SceneShellProps) {
-  const platformGroupRef = useRef<Group>(null);
-  const ringMaterialRef = useRef<MeshStandardMaterial>(null);
-  const glowMaterialRef = useRef<MeshStandardMaterial>(null);
+/** Dark palette bases read as black holes in the golden-hour light; lift them toward a warm stone grey. */
+function liftedBase(base: string): string {
+  return `#${new Color(base).lerp(new Color('#cfc8bc'), 0.38).getHexString()}`;
+}
+
+export const RECRUITER_SCENE_CONTENT_SCALE = 1.5;
+const MAX_SCENE_METALNESS = 0.12;
+
+export function RecruiterSceneShell({ anchor, rotationY, presentationState, children }: SceneShellProps) {
+  const contentGroupRef = useRef<Group>(null);
+  useSceneShadowBudget(contentGroupRef, anchor);
+
+  // There is no environment map to reflect, so metallic props render near-black; cap metalness once mounted.
+  useEffect(() => {
+    contentGroupRef.current?.traverse((object) => {
+      const material = (object as Mesh).material as MeshStandardMaterial | MeshStandardMaterial[] | undefined;
+      for (const entry of Array.isArray(material) ? material : material ? [material] : []) {
+        if ('metalness' in entry && entry.metalness > MAX_SCENE_METALNESS) entry.metalness = MAX_SCENE_METALNESS;
+      }
+      if (hasPerfFlag('nopropshadow')) object.castShadow = false;
+    });
+  }, []);
   const presentationStateRef = useRef(presentationState);
   const transitionElapsedMsRef = useRef(
     presentationState === 'visible' ? RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS : 0,
@@ -390,7 +395,7 @@ export function RecruiterSceneShell({
       presentationState === 'visible' ? RECRUITER_SCENE_REVEAL_TOTAL_ENTER_MS : 0;
   }, [presentationState]);
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     if (presentationStateRef.current !== 'visible') {
       transitionElapsedMsRef.current += delta * 1000;
     }
@@ -401,76 +406,17 @@ export function RecruiterSceneShell({
       getRecruiterRevealStageProgress(3, presentationStateRef.current, transitionElapsedMsRef.current),
     ];
 
-    const stageOneProgress = stageProgressRef.current[0];
-    const activity = getSceneActivityState(
-      clock.elapsedTime,
-      isNearby,
-      isFocused,
-      0.2,
-      getRecruiterRevealMotionAmount(stageOneProgress),
-    );
-
-    if (platformGroupRef.current) {
-      platformGroupRef.current.position.y = (1 - Math.min(stageOneProgress, 1)) * -0.12;
-      platformGroupRef.current.scale.setScalar(0.96 + Math.max(stageOneProgress, 0) * 0.04);
-    }
-
-    if (ringMaterialRef.current) {
-      ringMaterialRef.current.emissiveIntensity =
-        0.08 + stageOneProgress * 0.16 + activity.ambient * 0.52 + activity.focused * 0.68;
-    }
-    if (glowMaterialRef.current) {
-      glowMaterialRef.current.opacity =
-        stageOneProgress * (0.12 + activity.nearby * 0.08 + activity.focused * 0.12);
-    }
   });
 
   return (
     <RecruiterSceneRevealContext.Provider value={revealRuntime}>
       <group position={[anchor.x, anchor.y, anchor.z]} rotation={[0, rotationY, 0]}>
-        <group ref={platformGroupRef}>
-          <mesh receiveShadow position={[0, 0.04, 0]}>
-            <cylinderGeometry
-              args={[
-                RECRUITER_SCENE_PLATFORM_OUTER_TOP_RADIUS,
-                RECRUITER_SCENE_PLATFORM_OUTER_BOTTOM_RADIUS,
-                RECRUITER_SCENE_PLATFORM_HEIGHT,
-                48,
-              ]}
-            />
-            <meshStandardMaterial color={palette.base} roughness={0.86} metalness={0.08} />
-          </mesh>
-          <mesh receiveShadow position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <ringGeometry
-              args={[
-                RECRUITER_SCENE_PLATFORM_RING_INNER_RADIUS,
-                RECRUITER_SCENE_PLATFORM_RING_OUTER_RADIUS,
-                48,
-              ]}
-            />
-            <meshStandardMaterial
-              ref={ringMaterialRef}
-              color={palette.accent}
-              emissive={palette.accent}
-              emissiveIntensity={0.28}
-              roughness={0.22}
-              metalness={0.24}
-            />
-          </mesh>
-          <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <circleGeometry args={[RECRUITER_SCENE_PLATFORM_GLOW_RADIUS, 40]} />
-            <meshStandardMaterial
-              ref={glowMaterialRef}
-              color={palette.glow}
-              emissive={palette.glow}
-              emissiveIntensity={0.18}
-              transparent
-              opacity={0.14}
-              depthWrite={false}
-            />
-          </mesh>
+        {/* The plinth under the props belongs to the world (WorkbenchLandmark), so it stays put whether or
+            not this scene is loaded. */}
+        {/* Scene props were authored small for the 4.2 m platform; scale them so a bench reads from the plaza. */}
+        <group ref={contentGroupRef} scale={RECRUITER_SCENE_CONTENT_SCALE}>
+          {children}
         </group>
-        {children}
       </group>
     </RecruiterSceneRevealContext.Provider>
   );
@@ -511,11 +457,11 @@ export function DeskUnit({
       ))}
       <mesh castShadow position={[drawerX, 0.28, 0.12]}>
         <boxGeometry args={[0.4, 0.46, 0.6]} />
-        <meshStandardMaterial color={palette.base} roughness={0.42} metalness={0.24} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.42} metalness={0.24} />
       </mesh>
       <mesh castShadow position={[0, 0.52, 0.28]}>
         <boxGeometry args={[0.76, 0.03, 0.24]} />
-        <meshStandardMaterial color="#1c2630" roughness={0.52} />
+        <meshStandardMaterial color="#3b4552" roughness={0.52} />
       </mesh>
       <mesh castShadow position={[0.54, 0.52, 0.24]}>
         <boxGeometry args={[0.18, 0.03, 0.14]} />
@@ -554,11 +500,11 @@ export function SeatedFigure({
       </mesh>
       <mesh castShadow position={[0.09, 0.15, 0.04]} rotation={[0.95, 0.1, 0.1]}>
         <capsuleGeometry args={[0.055, 0.36, 6, 10]} />
-        <meshStandardMaterial color="#2a3138" roughness={0.72} />
+        <meshStandardMaterial color="#3e4a5a" roughness={0.72} />
       </mesh>
       <mesh castShadow position={[-0.09, 0.15, 0.04]} rotation={[0.95, -0.1, -0.1]}>
         <capsuleGeometry args={[0.055, 0.36, 6, 10]} />
-        <meshStandardMaterial color="#2a3138" roughness={0.72} />
+        <meshStandardMaterial color="#3e4a5a" roughness={0.72} />
       </mesh>
       <mesh castShadow position={[0, 0.32, -0.28]}>
         <boxGeometry args={[0.4, 0.36, 0.4]} />
@@ -581,7 +527,7 @@ export function DisplayPanel({
   isFocused,
   rotation = [0, 0, 0] as [number, number, number],
   scale = 1,
-  screenColor = '#162432',
+  screenColor = '#2f6f8f',
 }: {
   position: [number, number, number];
   palette: ScenePalette;
@@ -605,7 +551,7 @@ export function DisplayPanel({
         position[1] + Math.sin(clock.elapsedTime * 0.8 + phase * 10) * 0.02 * motionAmount;
     }
     if (screenMaterialRef.current) {
-      screenMaterialRef.current.emissiveIntensity = 0.24 + activity.ambient * 0.34 + activity.focused * 0.55;
+      screenMaterialRef.current.emissiveIntensity = 0.55 + activity.ambient * 0.3 + activity.focused * 0.45;
     }
   });
 
@@ -613,10 +559,12 @@ export function DisplayPanel({
     <group ref={groupRef} position={position} rotation={rotation} scale={scale}>
       <mesh castShadow>
         <boxGeometry args={[1, 0.6, 0.08]} />
-        <meshStandardMaterial color="#2b3138" roughness={0.32} metalness={0.42} />
+        {/* Warm mid grey, not near-black: seen from behind (outside the ring) the backs were dark slabs. */}
+        <meshStandardMaterial color="#928a82" roughness={0.55} metalness={0.05} />
       </mesh>
-      <mesh position={[0, 0, 0.025]}>
-        <boxGeometry args={[0.88, 0.48, 0.02]} />
+      {/* The screen sits just proud of the bezel (front face at z 0.04) and its content just proud of the screen. */}
+      <mesh position={[0, 0, 0.043]}>
+        <boxGeometry args={[0.88, 0.48, 0.006]} />
         <meshStandardMaterial
           ref={screenMaterialRef}
           color={screenColor}
@@ -625,7 +573,7 @@ export function DisplayPanel({
           roughness={0.18}
         />
       </mesh>
-      {renderDisplayContent(variant, palette)}
+      <group position={[0, 0, 0.036]}>{renderDisplayContent(variant, palette)}</group>
       <mesh castShadow position={[0, -0.28, -0.01]}>
         <boxGeometry args={[0.1, 0.28, 0.06]} />
         <meshStandardMaterial color="#7d8995" roughness={0.34} metalness={0.36} />
@@ -681,11 +629,11 @@ export function ServerRack({
     <group position={position} rotation={rotation}>
       <mesh castShadow receiveShadow>
         <boxGeometry args={[0.92, 2.24, 0.82]} />
-        <meshStandardMaterial color="#22282e" roughness={0.42} metalness={0.5} />
+        <meshStandardMaterial color="#56606c" roughness={0.45} metalness={0.3} />
       </mesh>
       <mesh castShadow position={[0, 0.04, 0.38]}>
         <boxGeometry args={[0.78, 2.04, 0.05]} />
-        <meshStandardMaterial color="#2d3641" roughness={0.26} metalness={0.2} />
+        <meshStandardMaterial color="#6a7685" roughness={0.3} metalness={0.2} />
       </mesh>
       {Array.from({ length: 10 }, (_, index) => {
         const y = 0.82 - index * 0.18;
@@ -786,6 +734,11 @@ export function OrbitCraft({
   );
 }
 
+/**
+ * A data path between two parts of a bench: a slim line in the accent colour with two glowing packets running
+ * along it. (A pale see-through tube alone read as a rendering glitch.) Under reduced motion the packets hold
+ * still at fixed points on the line.
+ */
 export function SignalRibbon({
   points,
   palette,
@@ -800,10 +753,11 @@ export function SignalRibbon({
   isFocused: boolean;
 }) {
   const materialRef = useRef<MeshStandardMaterial>(null);
-  const geometry = useMemo(() => {
+  const packetRefs = useRef<Array<Mesh | null>>([]);
+  const { curve, geometry } = useMemo(() => {
     const filteredPoints = points.filter(Boolean) as Vector3[];
-    const curve = new CatmullRomCurve3(filteredPoints);
-    return new TubeGeometry(curve, 28, 0.028, 8, false);
+    const path = new CatmullRomCurve3(filteredPoints);
+    return { curve: path, geometry: new TubeGeometry(path, 28, 0.022, 8, false) };
   }, [points]);
   const reveal = useWorkbenchReveal();
 
@@ -816,24 +770,41 @@ export function SignalRibbon({
       reveal.getCurrentStageMotionAmount(),
     );
     if (materialRef.current) {
-      materialRef.current.emissiveIntensity = 0.12 + activity.ambient * 0.24 + activity.focused * 0.65;
-      materialRef.current.opacity = 0.2 + activity.nearby * 0.12 + activity.focused * 0.18;
+      materialRef.current.emissiveIntensity = 0.18 + activity.ambient * 0.24 + activity.focused * 0.55;
     }
+    const travel = prefersReducedMotion() ? 0.3 : clock.elapsedTime * 0.32 + phase;
+    packetRefs.current.forEach((packet, index) => {
+      if (!packet) return;
+      curve.getPointAt((((travel + index * 0.5) % 1) + 1) % 1, packet.position);
+    });
   });
 
   return (
-    <mesh geometry={geometry}>
-      <meshStandardMaterial
-        ref={materialRef}
-        color={palette.glow}
-        emissive={palette.glow}
-        emissiveIntensity={0.3}
-        transparent
-        opacity={0.28}
-        roughness={0.14}
-        metalness={0.16}
-      />
-    </mesh>
+    <group>
+      <mesh geometry={geometry}>
+        <meshStandardMaterial
+          ref={materialRef}
+          color={palette.accent}
+          emissive={palette.accent}
+          emissiveIntensity={0.3}
+          transparent
+          opacity={0.72}
+          roughness={0.4}
+          metalness={0.05}
+        />
+      </mesh>
+      {[0, 1].map((index) => (
+        <mesh
+          key={index}
+          ref={(mesh) => {
+            packetRefs.current[index] = mesh;
+          }}
+        >
+          <sphereGeometry args={[0.055, 12, 10]} />
+          <meshStandardMaterial color={palette.glow} emissive={palette.glow} emissiveIntensity={1.1} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -963,7 +934,7 @@ export function PrinterUnit({
     <group position={position}>
       <mesh castShadow>
         <boxGeometry args={[0.62, 0.28, 0.54]} />
-        <meshStandardMaterial color={palette.base} roughness={0.46} metalness={0.22} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.46} metalness={0.22} />
       </mesh>
       <group ref={paperRef} position={[0, 0.12, 0]}>
         <mesh castShadow>
@@ -1081,7 +1052,7 @@ export function KioskStand({
     <group position={position}>
       <mesh castShadow>
         <boxGeometry args={[0.92, 1.42, 0.76]} />
-        <meshStandardMaterial color={palette.base} roughness={0.4} metalness={0.22} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.4} metalness={0.22} />
       </mesh>
       <DisplayPanel
         position={[0, 0.34, 0.38]}
@@ -1127,7 +1098,7 @@ export function HologramPitch({
     <group position={position}>
       <mesh castShadow receiveShadow>
         <cylinderGeometry args={[0.8, 0.88, 0.2, 24]} />
-        <meshStandardMaterial color={palette.base} roughness={0.48} metalness={0.2} />
+        <meshStandardMaterial color={liftedBase(palette.base)} roughness={0.48} metalness={0.2} />
       </mesh>
       <mesh position={[0, 0.2, 0]}>
         <boxGeometry args={[1.1, 0.02, 0.72]} />

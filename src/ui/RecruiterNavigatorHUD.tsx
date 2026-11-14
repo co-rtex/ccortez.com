@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { useGameStore } from '../state/gameStore';
 
 import {
   deriveRecruiterNavigatorData,
+  summarizeOpenedProgress,
   type RecruiterShortlistSection,
   type RecruiterMapMarker,
   type RecruiterStartEntry,
@@ -18,6 +21,10 @@ interface RecruiterNavigatorHUDProps {
   nearbyWorkbenchId: string | null;
   mobileLiteMode: boolean;
   onWorkbenchOpen: (workbenchId: string) => void;
+  /** Fold the guide to its button while a bench panel is open (default on). */
+  foldWhilePanelOpen?: boolean;
+  /** Start folded to its button (default off). */
+  startFolded?: boolean;
 }
 
 interface RecruiterNavigatorContentProps {
@@ -36,11 +43,14 @@ interface RecruiterNavigatorContentProps {
   };
   onWorkbenchOpen: (workbenchId: string) => void;
   onHide?: () => void;
+  openedIds: ReadonlySet<string>;
+  progress: { opened: number; total: number };
 }
 
 function renderShortlistSection(
   section: RecruiterShortlistSection,
   onWorkbenchOpen: (workbenchId: string) => void,
+  openedIds: ReadonlySet<string>,
 ) {
   return (
     <section key={section.id} className="recruiter-navigator__section">
@@ -57,13 +67,15 @@ function renderShortlistSection(
             <button
               key={entry.id}
               type="button"
-              className={`recruiter-navigator__item recruiter-navigator__item--${entry.category} recruiter-navigator__item--${entry.state}`}
+              data-workbench-id={entry.id}
+              className={`recruiter-navigator__item recruiter-navigator__item--${entry.category} recruiter-navigator__item--${entry.state}${openedIds.has(entry.id) ? ' recruiter-navigator__item--opened' : ''}`}
               onClick={() => onWorkbenchOpen(entry.id)}
             >
               <span className="recruiter-navigator__item-title">{entry.title}</span>
               <span className="recruiter-navigator__item-meta">
-                {entry.featured ? 'Featured • ' : ''}
+                {entry.featured ? 'Case study • ' : ''}
                 {entry.districtLabel}
+                {openedIds.has(entry.id) ? ' • Opened' : ''}
               </span>
             </button>
           ))}
@@ -81,6 +93,8 @@ function RecruiterNavigatorContent({
   playerMarker,
   onWorkbenchOpen,
   onHide,
+  openedIds,
+  progress,
 }: RecruiterNavigatorContentProps) {
   return (
     <>
@@ -107,12 +121,16 @@ function RecruiterNavigatorContent({
           <span>{counts.start} start</span>
           <span>{counts.experience} experiences</span>
           <span>{counts.project} projects</span>
+          {progress.opened > 0 ? (
+            <span className="recruiter-navigator__progress">
+              {progress.opened} of {progress.total} opened
+            </span>
+          ) : null}
         </div>
       </header>
 
       <p className="recruiter-navigator__intro">
-        Start in the middle plaza for a quick introduction, then use the map or shortlist to jump
-        into career highlights. Personal and campus context stays visible, but secondary.
+        Walk to any workbench, or pick one here to jump straight to it.
       </p>
       <p className="recruiter-navigator__alt-link">
         Short on time?{' '}
@@ -128,11 +146,15 @@ function RecruiterNavigatorContent({
 
           <button
             type="button"
+            data-workbench-id={startEntry.id}
             className={`recruiter-navigator__item recruiter-navigator__item--start recruiter-navigator__item--${startEntry.state}`}
             onClick={() => onWorkbenchOpen(startEntry.id)}
           >
             <span className="recruiter-navigator__item-title">{startEntry.title}</span>
-            <span className="recruiter-navigator__item-meta">{startEntry.districtLabel}</span>
+            <span className="recruiter-navigator__item-meta">
+              {startEntry.districtLabel}
+              {openedIds.has(startEntry.id) ? ' • Opened' : ''}
+            </span>
           </button>
         </section>
       ) : null}
@@ -151,14 +173,14 @@ function RecruiterNavigatorContent({
           <button
             key={marker.id}
             type="button"
-            className={`recruiter-map-marker recruiter-map-marker--${marker.category} recruiter-map-marker--${marker.state}`}
+            className={`recruiter-map-marker recruiter-map-marker--${marker.category} recruiter-map-marker--${marker.state}${openedIds.has(marker.id) ? ' recruiter-map-marker--opened' : ''}${marker.featured ? ' recruiter-map-marker--flagship' : ''}`}
             style={{
               left: `${marker.xPercent}%`,
               top: `${marker.yPercent}%`,
             }}
             onClick={() => onWorkbenchOpen(marker.id)}
             disabled={!marker.canOpen}
-            aria-label={`${marker.canOpen ? 'Open' : 'Unavailable'} ${marker.title} (${marker.categoryLabel})`}
+            aria-label={`${marker.canOpen ? 'Open' : 'Unavailable'} ${marker.title} (${marker.categoryLabel}${marker.featured ? ', case study' : ''}${openedIds.has(marker.id) ? ', opened' : ''})`}
             title={marker.title}
           >
             <span className="recruiter-map-marker__core" />
@@ -183,10 +205,14 @@ function RecruiterNavigatorContent({
           <span className="recruiter-navigator__swatch recruiter-navigator__swatch--secondary" />
           More About Me
         </span>
+        <span className="recruiter-navigator__legend-item">
+          <span className="recruiter-navigator__swatch recruiter-navigator__swatch--flagship" />
+          Case study
+        </span>
       </div>
 
       <div className="recruiter-navigator__sections">
-        {sections.map((section) => renderShortlistSection(section, onWorkbenchOpen))}
+        {sections.map((section) => renderShortlistSection(section, onWorkbenchOpen, openedIds))}
       </div>
     </>
   );
@@ -199,8 +225,47 @@ export function RecruiterNavigatorHUD({
   nearbyWorkbenchId,
   mobileLiteMode,
   onWorkbenchOpen,
+  foldWhilePanelOpen = true,
+  startFolded = false,
 }: RecruiterNavigatorHUDProps) {
-  const [isHidden, setIsHidden] = useState(false);
+  // In the game the guide starts folded to its button, so the first screen shows the island and one invitation
+  // (the arrival card); it opens with one click.
+  const [isHidden, setIsHidden] = useState(startFolded);
+  const guideRef = useRef<HTMLElement>(null);
+  const showButtonRef = useRef<HTMLButtonElement>(null);
+  const focusShowButtonRef = useRef(false);
+  const mobileDetailsRef = useRef<HTMLDetailsElement>(null);
+  // Fold once, the first time the visitor walks off: by then they have seen it, and the world gets the space.
+  // Never fold while keyboard focus is inside the guide (that would drop focus to the page).
+  useEffect(() => {
+    if (!foldWhilePanelOpen) return;
+    let origin: { x: number; z: number } | null = null;
+    let folded = false;
+    return useGameStore.subscribe((state) => {
+      origin ??= { x: state.playerPosition.x, z: state.playerPosition.z };
+      if (folded || Math.hypot(state.playerPosition.x - origin.x, state.playerPosition.z - origin.z) <= 4) return;
+      if (guideRef.current?.contains(document.activeElement)) return;
+      folded = true;
+      setIsHidden(true);
+    });
+  }, [foldWhilePanelOpen]);
+  // While a bench panel is open the guide folds away so the scene and the panel have room; the visitor can
+  // still reopen it for that panel.
+  const [shownForPanelId, setShownForPanelId] = useState<string | null>(null);
+  // Once the panel closes, forget the 'show it anyway' choice so the next panel folds the guide again.
+  useEffect(() => {
+    if (activeWorkbenchId === null) setShownForPanelId(null);
+  }, [activeWorkbenchId]);
+  // After an explicit Hide, keep keyboard focus on the button that brings the guide back.
+  useEffect(() => {
+    if (isHidden && focusShowButtonRef.current) {
+      focusShowButtonRef.current = false;
+      showButtonRef.current?.focus();
+    }
+  }, [isHidden]);
+  const openedWorkbenchIds = useGameStore((state) => state.openedWorkbenchIds);
+  const openedIds = useMemo(() => new Set(openedWorkbenchIds), [openedWorkbenchIds]);
+  const foldedForPanel = foldWhilePanelOpen && activeWorkbenchId !== null && shownForPanelId !== activeWorkbenchId;
   const data = useMemo(
     () => deriveRecruiterNavigatorData(workbenches, playerPosition, activeWorkbenchId, nearbyWorkbenchId),
     [activeWorkbenchId, nearbyWorkbenchId, playerPosition, workbenches],
@@ -210,6 +275,14 @@ export function RecruiterNavigatorHUD({
     return null;
   }
 
+  const progress = summarizeOpenedProgress(data.markers, openedWorkbenchIds);
+
+  // On phones the open guide would cover the bench above the details sheet, so picking a bench folds it.
+  const openFromMobileGuide = (workbenchId: string): void => {
+    mobileDetailsRef.current?.removeAttribute('open');
+    onWorkbenchOpen(workbenchId);
+  };
+
   const content = (
     <RecruiterNavigatorContent
       counts={data.counts}
@@ -217,26 +290,32 @@ export function RecruiterNavigatorHUD({
       startEntry={data.startEntry}
       sections={data.shortlistSections}
       playerMarker={data.playerMarker}
-      onWorkbenchOpen={onWorkbenchOpen}
+      onWorkbenchOpen={mobileLiteMode ? openFromMobileGuide : onWorkbenchOpen}
+      openedIds={openedIds}
+      progress={progress}
     />
   );
 
   if (mobileLiteMode) {
     return (
-      <details className="recruiter-navigator recruiter-navigator--mobile">
+      <details ref={mobileDetailsRef} className="recruiter-navigator recruiter-navigator--mobile">
         <summary className="recruiter-navigator__toggle">Recruiter Guide</summary>
         <div className="recruiter-navigator__mobile-content">{content}</div>
       </details>
     );
   }
 
-  if (isHidden) {
+  if (isHidden || foldedForPanel) {
     return (
       <div className="recruiter-navigator recruiter-navigator--collapsed">
         <button
+          ref={showButtonRef}
           type="button"
           className="recruiter-navigator__visibility-button recruiter-navigator__visibility-button--show"
-          onClick={() => setIsHidden(false)}
+          onClick={() => {
+            setIsHidden(false);
+            setShownForPanelId(activeWorkbenchId);
+          }}
           aria-label="Show recruiter guide"
         >
           Show Recruiter Guide
@@ -246,7 +325,7 @@ export function RecruiterNavigatorHUD({
   }
 
   return (
-    <section className="recruiter-navigator" aria-label="Recruiter guide">
+    <section ref={guideRef} className="recruiter-navigator" aria-label="Recruiter guide">
       <RecruiterNavigatorContent
         counts={data.counts}
         markers={data.markers}
@@ -254,7 +333,12 @@ export function RecruiterNavigatorHUD({
         sections={data.shortlistSections}
         playerMarker={data.playerMarker}
         onWorkbenchOpen={onWorkbenchOpen}
-        onHide={() => setIsHidden(true)}
+        openedIds={openedIds}
+        progress={progress}
+        onHide={() => {
+          focusShowButtonRef.current = true;
+          setIsHidden(true);
+        }}
       />
     </section>
   );

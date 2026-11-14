@@ -43,7 +43,10 @@ export function SiteBar() {
           </h2>
           <p className="how-to-play__intro">
             Each workbench around the plaza is one job, research role or project. Walk up to one, or pick it in the
-            recruiter guide, to read about it.
+            recruiter guide to go straight there, to read about it. The four beside the north gate, marked Case
+            study, link to written case studies; TaskForge, EngineX and QuantLab also run small live models you can try
+            from their panel, and the flagship tour visits all of them in order. Signposts at the plaza edge point the way to
+            the lighthouse and the lakes, where you can sit on a bench and watch the sunset.
           </p>
           <dl className="how-to-play__controls">
             {HOW_TO_PLAY_CONTROLS.map((control) => (
