@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   FLAGSHIP_TITLE_BADGE_RANGE,
+  badgeFitsAcross,
   getTitleBadgeOpacity,
   shouldShowPersistentWorkbenchTitleBadge,
   shouldShowWorkbenchProximityPrompt,
@@ -100,5 +101,14 @@ describe('flagship title badges', () => {
     expect(getTitleBadgeOpacity(35)).toBe(0);
     expect(getTitleBadgeOpacity(35, true)).toBe(1);
     expect(getTitleBadgeOpacity(FLAGSHIP_TITLE_BADGE_RANGE + 1, true)).toBe(0);
+  });
+});
+
+describe('badgeFitsAcross', () => {
+  it('keeps a badge whose centre leaves room for its width, and hides one that would be cut off', () => {
+    expect(badgeFitsAcross(0, 1440)).toBe(true);
+    expect(badgeFitsAcross(0.8, 1440)).toBe(true);
+    expect(badgeFitsAcross(-0.9, 1440)).toBe(false);
+    expect(badgeFitsAcross(0.9, 3000)).toBe(true);
   });
 });

@@ -30,11 +30,11 @@ export function hasInteractiveModel(workbenchId: string): boolean {
 }
 
 /**
- * Role benches with authored dioramas that face the arrival view (the industry internship and the research-computing
- * job). Like the flagships, they are named from across the plaza, so the main roles do not read as scenery.
- * Phoenix-Aid is left out: from spawn its badge falls at the screen's left edge, half cut off.
+ * Role benches with authored dioramas (the industry internship, the research-computing job and the QA role). Like
+ * the flagships, they are named from across the plaza, so the main roles do not read as scenery. A long-range badge
+ * that would sit half off the screen's edge is hidden (`badgeFitsAcross`).
  */
-const LANDMARK_ROLE_IDS: ReadonlySet<string> = new Set(['hcsc-automation', 'ssec-technical-computing']);
+const LANDMARK_ROLE_IDS: ReadonlySet<string> = new Set(['hcsc-automation', 'ssec-technical-computing', 'phoenix-aid-qa']);
 
 /** Benches whose name badge shows from across the plaza (the flagships and the main role benches). */
 export function hasLongRangeLabel(workbenchId: string): boolean {

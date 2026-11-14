@@ -2,7 +2,7 @@ import { Html } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import type { ThreeEvent } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
-import { Color, DoubleSide, Shape } from 'three';
+import { Color, DoubleSide, Shape, Vector3 } from 'three';
 import type { Group, MeshStandardMaterial } from 'three';
 
 import { useGameStore } from '../state/gameStore';
@@ -14,6 +14,8 @@ import { hasLongRangeLabel, isFlagshipWorkbench } from '../workbench/flagships';
 import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
 import {
   FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH,
+  TITLE_BADGE_RANGE,
+  badgeFitsAcross,
   getTitleBadgeOpacity,
   shouldShowPersistentWorkbenchTitleBadge,
   shouldShowWorkbenchProximityPrompt,
@@ -470,7 +472,8 @@ export function WorkbenchLandmark({
   // Start Here stands right in front of the spawn point, so its badge sits just above the welcome board
   // (higher, it floated up against the fountain's armillary).
   const startBadgeY = 3.5;
-  useFrame(({ clock }) => {
+  const badgeWorld = useMemo(() => new Vector3(), []);
+  useFrame(({ clock, camera, size }) => {
     const badge = titleBadgeRef.current;
     if (badge) {
       const { playerPosition } = useGameStore.getState();
@@ -479,9 +482,14 @@ export function WorkbenchLandmark({
         playerPosition.z - workbench.placement.anchor.z,
       );
       // Start Here is the first destination, so its badge stays visible from anywhere on the plaza.
-      const opacity = (
-        isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, longRangeLabel && wideViewport)
-      ).toFixed(2);
+      let shown = isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, longRangeLabel && wideViewport);
+      // Shown only because of the long range: hide it rather than let it sit half off the edge of the screen.
+      if (shown && longRangeLabel && distance > TITLE_BADGE_RANGE) {
+        const { anchor } = workbench.placement;
+        badgeWorld.set(anchor.x, anchor.y + 3.3, anchor.z).project(camera);
+        if (!badgeFitsAcross(badgeWorld.x, size.width)) shown = 0;
+      }
+      const opacity = shown.toFixed(2);
       if (badge.style.opacity !== opacity) badge.style.opacity = opacity;
     }
 

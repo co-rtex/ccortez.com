@@ -55,7 +55,7 @@ describe('live models', () => {
 
 describe('long-range labels', () => {
   it('names the flagships and the main role benches from across the plaza, not every bench', () => {
-    for (const id of [...FLAGSHIP_WORKBENCH_IDS, 'hcsc-automation', 'ssec-technical-computing']) {
+    for (const id of [...FLAGSHIP_WORKBENCH_IDS, 'hcsc-automation', 'ssec-technical-computing', 'phoenix-aid-qa']) {
       expect(hasLongRangeLabel(id), id).toBe(true);
     }
     expect(hasLongRangeLabel('footymind')).toBe(false);
