@@ -2070,3 +2070,13 @@ body {
   outline: 3px solid #2b230f;
   outline-offset: 3px;
 }
+
+/* The panel's scrolling body takes keyboard focus (so it can be scrolled without a mouse); show it only for keys. */
+.experience-panel__content:focus {
+  outline: none;
+}
+
+.experience-panel__content:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: -3px;
+}

@@ -300,7 +300,7 @@ export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps)
         )}
       </section>
 
-      <section className="experience-panel__content">
+      <section className="experience-panel__content" tabIndex={0} aria-label="Bench details">
         {!workbench ? <p>Nothing selected yet.</p> : null}
         {shouldShowWorkbenchInspectHint(cameraMode, workbench) ? (
           <p className="experience-panel__inspect-hint">
