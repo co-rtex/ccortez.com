@@ -9,7 +9,7 @@
   "recruiterCard": {
     "roleLabel": "Data-Driven Sports Analytics Application",
     "organization": "Personal Project",
-    "dateRange": "2026",
+    "dateRange": "2025",
     "summary": "Built an end-to-end match outcome predictor: rolling team features, models compared by log loss on a held-out validation set, a FastAPI prediction endpoint and a Streamlit explorer.",
     "impactBullets": [
       "Built an ETL pipeline that turns historical match data into rolling team features.",

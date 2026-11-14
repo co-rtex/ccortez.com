@@ -52,15 +52,16 @@ export function TaskforgeSimControls() {
       <p className="taskforge-sim__event">
         {latest ? latest.text : 'Workers are pulling the first jobs.'}
       </p>
+      {/* Announces each new step of the crashed job's story (a handful per crash), not every tick. The region is
+          always rendered, empty until a crash, because screen readers often skip text present when a region appears. */}
+      <p className="visually-hidden" aria-live="polite">
+        {(() => {
+          const done = trace?.steps.filter((traceStep) => traceStep.tick !== null).at(-1);
+          return trace && done ? `Job ${trace.jobId}: ${done.title}.` : '';
+        })()}
+      </p>
       {trace ? (
         <section className="taskforge-sim__trace" aria-labelledby="taskforge-trace-title">
-          {/* Announces each new step of the crashed job's story (a handful per crash), not every tick. */}
-          <p className="visually-hidden" aria-live="polite">
-            {(() => {
-              const done = trace.steps.filter((traceStep) => traceStep.tick !== null).at(-1);
-              return done ? `Job ${trace.jobId}: ${done.title}.` : '';
-            })()}
-          </p>
           <h5 id="taskforge-trace-title">What happened to job {trace.jobId}</h5>
           <ol>
             {trace.steps.map((traceStep) => (

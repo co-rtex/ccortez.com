@@ -10,6 +10,6 @@ PostgreSQL is the only authoritative store. The API writes a job and its outbox 
 
 A running attempt holds a lease, which it renews separately from its session heartbeat, and every report it makes is fenced to that lease, so a worker that wakes up after its lease expired cannot commit anything. A reconciler repairs what no live process will: stale sessions, expired leases, and attempts past their deadline. TaskForge promises at-least-once execution and says plainly that handlers with side effects must be idempotent.
 
-It has 1,000+ Go tests. In a local benchmark with 12 workers, all 10,000 jobs completed while 24 worker processes were killed mid-run.
+It has 1,000+ Go tests. In a recorded local fault-injection run, workers in a 12-worker pool were killed and restarted 24 times while 10,000 jobs ran, and all 10,000 completed.
 
 The case study, with an architecture diagram, is at [ccortez.com/work/taskforge](https://ccortez.com/work/taskforge/). Source: [github.com/co-rtex/TaskForge](https://github.com/co-rtex/TaskForge).
