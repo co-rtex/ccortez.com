@@ -81,8 +81,9 @@ Screenshot and diagnostic fixtures (harmless if left in a URL; ignored when abse
 
 TaskForge, EngineX, QuantLab and the LiDAR research bench each run a small deterministic model of the work in
 `src/sim/` (job queue, order book, backtest; the LiDAR pass is time-driven in its scene). The job queue, order book
-and backtest files are shared with the professional site (`src/lib/sim/` there) and must stay identical;
-`npm run check:shared-sim` compares them with a sibling `../portfolio-professional` checkout. Each
+and backtest files are shared with the professional site (`src/lib/sim/` there) and must stay identical below their header comments;
+`npm run check:shared-sim` compares that code with a sibling `../portfolio-professional` checkout (it skips, with a
+message, if the checkout is missing, so run it by hand before a release). Each
 panel labels its model as a toy, not the real code, and runs it on a fallback clock when no 3D scene is driving it.
 
 The flagship tour (`FLAGSHIP_TOUR` in `src/workbench/flagships.ts`: Start Here, LiDAR, TaskForge, EngineX, QuantLab)
