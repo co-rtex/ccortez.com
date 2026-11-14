@@ -22,16 +22,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Same toolchain and checks as CI: a release that fails lint or the unit tests never deploys.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 22
+          cache: npm
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npx vitest run
 
       - name: Build site
         run: npm run build
