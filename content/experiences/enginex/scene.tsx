@@ -186,9 +186,10 @@ export default function EnginexScene(props: ExperienceSceneProps) {
     // The journal: newest slab at the front, older ones pushed back one place per sequenced order.
     const journal = journalRef.current;
     if (journal) {
-      const entries = sim.journal.slice(-JOURNAL_SHOWN).reverse();
+      // Newest first, read by index: this runs every frame, so no slice or reverse.
+      const last = sim.journal.length - 1;
       for (let i = 0; i < JOURNAL_SHOWN; i += 1) {
-        const entry = entries[i];
+        const entry = last - i >= 0 ? sim.journal[last - i] : undefined;
         const targetZ = JOURNAL.zFront - i * JOURNAL.step;
         const current = drawn.journal[i] ?? targetZ;
         drawn.journal[i] = snap ? targetZ : current + (targetZ - current) * ease;

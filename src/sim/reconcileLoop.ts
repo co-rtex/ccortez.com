@@ -41,15 +41,22 @@ export function trayFor(outcome: RecordOutcome): Tray {
   return 'matched';
 }
 
-function stagesFor(outcome: RecordOutcome): Array<RecordPhase['stage']> {
-  // A slow service makes the call wait out its timeout, then retry; a down service fails both attempts.
-  return outcome === 'slow-then-match' || outcome === 'down'
-    ? ['pick', 'out', 'call', 'wait', 'call', 'back', 'file']
-    : ['pick', 'out', 'call', 'back', 'file'];
+// A slow service makes the call wait out its timeout, then retry; a down service fails both attempts. The lists are
+// built once: the bench samples the script every frame, so nothing here allocates per call.
+const DIRECT_STAGES: ReadonlyArray<RecordPhase['stage']> = ['pick', 'out', 'call', 'back', 'file'];
+const RETRY_STAGES: ReadonlyArray<RecordPhase['stage']> = ['pick', 'out', 'call', 'wait', 'call', 'back', 'file'];
+
+function stagesFor(outcome: RecordOutcome): ReadonlyArray<RecordPhase['stage']> {
+  return outcome === 'slow-then-match' || outcome === 'down' ? RETRY_STAGES : DIRECT_STAGES;
 }
 
+const sumStages = (stages: ReadonlyArray<RecordPhase['stage']>): number =>
+  stages.reduce((sum, stage) => sum + STAGE_SECONDS[stage], 0);
+const DIRECT_SECONDS = sumStages(DIRECT_STAGES);
+const RETRY_SECONDS = sumStages(RETRY_STAGES);
+
 export function recordDuration(outcome: RecordOutcome): number {
-  return stagesFor(outcome).reduce((sum, stage) => sum + STAGE_SECONDS[stage], 0);
+  return stagesFor(outcome) === RETRY_STAGES ? RETRY_SECONDS : DIRECT_SECONDS;
 }
 
 export const PASS_SECONDS = RECORD_SCRIPT.reduce((sum, outcome) => sum + recordDuration(outcome), 0);

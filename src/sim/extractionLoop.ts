@@ -39,19 +39,33 @@ export interface FieldPhase {
   attempt: number;
 }
 
-function stagesFor(outcome: FieldOutcome): Array<{ stage: ExtractStage; attempt: number }> {
-  const once = (attempt: number) => [
-    { stage: 'queue' as const, attempt },
-    { stage: 'extract' as const, attempt },
-    { stage: 'validate' as const, attempt },
-  ];
-  return outcome === 'retried'
-    ? [{ stage: 'pick', attempt: 0 }, ...once(0), { stage: 'requeue', attempt: 0 }, ...once(1), { stage: 'place', attempt: 1 }]
-    : [{ stage: 'pick', attempt: 0 }, ...once(0), { stage: 'place', attempt: 0 }];
+type StageStep = { readonly stage: ExtractStage; readonly attempt: number };
+
+const once = (attempt: number): StageStep[] => [
+  { stage: 'queue', attempt },
+  { stage: 'extract', attempt },
+  { stage: 'validate', attempt },
+];
+// Built once: the bench samples the script every frame, so nothing here allocates per call.
+const VALID_STEPS: readonly StageStep[] = [{ stage: 'pick', attempt: 0 }, ...once(0), { stage: 'place', attempt: 0 }];
+const RETRIED_STEPS: readonly StageStep[] = [
+  { stage: 'pick', attempt: 0 },
+  ...once(0),
+  { stage: 'requeue', attempt: 0 },
+  ...once(1),
+  { stage: 'place', attempt: 1 },
+];
+
+function stagesFor(outcome: FieldOutcome): readonly StageStep[] {
+  return outcome === 'retried' ? RETRIED_STEPS : VALID_STEPS;
 }
 
+const sumSteps = (steps: readonly StageStep[]): number => steps.reduce((sum, { stage }) => sum + EXTRACT_STAGES[stage], 0);
+const VALID_SECONDS = sumSteps(VALID_STEPS);
+const RETRIED_SECONDS = sumSteps(RETRIED_STEPS);
+
 export function fieldDuration(outcome: FieldOutcome): number {
-  return stagesFor(outcome).reduce((sum, { stage }) => sum + EXTRACT_STAGES[stage], 0);
+  return outcome === 'retried' ? RETRIED_SECONDS : VALID_SECONDS;
 }
 
 export const LINE_SECONDS = FIELD_SCRIPT.reduce((sum, outcome) => sum + fieldDuration(outcome), 0) + BOARD_HOLD_SECONDS;
