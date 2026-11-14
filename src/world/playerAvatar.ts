@@ -48,6 +48,8 @@ export interface MovementInputVector {
 
 const PLAYER_IDLE_SPEED_EPSILON = 0.18;
 const PLAYER_FACING_BLEND_RATE = 10;
+/** Slower than turning into a walk: a deliberate half-second turn to look at the bench, not a snap. */
+const PLAYER_FACE_TARGET_BLEND_RATE = 6;
 const PLAYER_WALK_CADENCE = Math.PI * 3.2;
 const PLAYER_RUN_CADENCE = Math.PI * 5.2;
 
@@ -158,12 +160,23 @@ export function createInitialPlayerLocomotionState(initialFacingYaw = 0): Player
   };
 }
 
+/**
+ * Something the avatar should turn to face while it stands still: the bench whose panel is open, so walking up to
+ * a bench and opening it ends with the avatar looking at it, as fast travel already does. `snap` turns at once
+ * (reduced motion). Ignored while moving, when the heading follows the movement.
+ */
+export interface FacingTarget {
+  yaw: number;
+  snap: boolean;
+}
+
 export function stepPlayerLocomotionState(
   current: PlayerLocomotionState,
   movementDelta: MovementInputVector,
   deltaSeconds: number,
   gaitFrozen: boolean,
   speedConfig: MovementSpeedConfig = DEFAULT_MOVEMENT_SPEED_CONFIG,
+  faceTarget: FacingTarget | null = null,
 ): PlayerLocomotionState {
   const safeDelta = Math.max(deltaSeconds, 1e-6);
   const planarSpeed = Math.hypot(movementDelta.x, movementDelta.z) / safeDelta;
@@ -175,7 +188,11 @@ export function stepPlayerLocomotionState(
     : current.movementHeading;
   const facingYaw = isMoving
     ? stepYawTowards(current.facingYaw, movementHeading, deltaSeconds)
-    : current.facingYaw;
+    : faceTarget
+      ? faceTarget.snap
+        ? normalizeAngle(faceTarget.yaw)
+        : stepYawTowards(current.facingYaw, faceTarget.yaw, deltaSeconds, PLAYER_FACE_TARGET_BLEND_RATE)
+      : current.facingYaw;
 
   return {
     planarSpeed,

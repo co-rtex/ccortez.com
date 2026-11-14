@@ -104,7 +104,7 @@ export function OverworldScene({
       <SceneTelemetry />
       <ShadowScheduler />
       <WorldEnvironment />
-      <PlayerController />
+      <PlayerController workbenches={workbenches} />
       <FootstepDust />
       <CameraRig benchAnchors={benchAnchors} />
       <DevShotCamera />

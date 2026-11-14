@@ -78,3 +78,33 @@ describe('player avatar helpers', () => {
     expect(shouldRenderPlayerAvatar('seated')).toBe(false);
   });
 });
+
+describe('facing an open bench', () => {
+  const still = { x: 0, z: 0 };
+
+  it('turns a standing avatar towards the target over a few frames, not at once', () => {
+    let state = createInitialPlayerLocomotionState(0);
+    const target = { yaw: Math.PI / 2, snap: false };
+    state = stepPlayerLocomotionState(state, still, 1 / 60, true, undefined, target);
+    expect(state.facingYaw).toBeGreaterThan(0);
+    expect(state.facingYaw).toBeLessThan(Math.PI / 4);
+    for (let i = 0; i < 60; i += 1) state = stepPlayerLocomotionState(state, still, 1 / 60, true, undefined, target);
+    expect(state.facingYaw).toBeCloseTo(Math.PI / 2, 2);
+  });
+
+  it('snaps under reduced motion', () => {
+    const state = stepPlayerLocomotionState(createInitialPlayerLocomotionState(0), still, 1 / 60, true, undefined, {
+      yaw: -Math.PI / 3,
+      snap: true,
+    });
+    expect(state.facingYaw).toBeCloseTo(-Math.PI / 3, 6);
+  });
+
+  it('keeps following the movement heading while moving', () => {
+    const moving = stepPlayerLocomotionState(createInitialPlayerLocomotionState(0), { x: 0, z: 0.05 }, 1 / 60, false, undefined, {
+      yaw: Math.PI,
+      snap: true,
+    });
+    expect(moving.facingYaw).toBeCloseTo(0, 6);
+  });
+});

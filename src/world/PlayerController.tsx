@@ -22,6 +22,7 @@ import {
   shouldRenderPlayerAvatar,
   stepPlayerLocomotionState,
 } from './playerAvatar';
+import type { FacingTarget } from './playerAvatar';
 import { getRestSpotExitAnchor, getRestSpotSeatAnchor, getScenicRestSpotById } from './restSpots';
 import {
   findNearestWalkablePoint,
@@ -31,6 +32,7 @@ import {
   isPointWalkable,
 } from './terrain';
 import type { WalkabilityBlockReason } from './terrain';
+import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 
 const keyMap = {
   forward: ['KeyW', 'ArrowUp'],
@@ -74,9 +76,11 @@ function getDefaultKeyboardMode(): boolean {
   return window.innerWidth >= 900 && window.matchMedia('(pointer: fine)').matches;
 }
 
-export function PlayerController() {
+export function PlayerController({ workbenches = [] }: { workbenches?: WorkbenchRuntimeRecord[] }) {
   const groupRef = useRef<Group>(null);
   const locomotionRef = useRef(createInitialPlayerLocomotionState());
+  // Reused every frame a bench is open, so facing it allocates nothing.
+  const faceTargetRef = useRef<FacingTarget>({ yaw: 0, snap: false });
   const pressedKeysRef = useRef<Set<string>>(new Set());
   const lastWaterDebugTimestampRef = useRef(0);
   const lastFeedbackTimestampByReasonRef = useRef<Record<CollisionFeedbackReason, number>>({
@@ -346,6 +350,21 @@ export function PlayerController() {
       lastSafePositionRef.current = { x: nextPosition.x, z: nextPosition.z };
     }
 
+    // With a bench's panel open, the avatar turns to face that bench (fast travel already arrives facing it).
+    let faceTarget: FacingTarget | null = null;
+    if (cameraMode === 'workbench-inspect' && playerMode === 'exploring') {
+      const { inspectedWorkbenchId } = useGameStore.getState();
+      const bench = inspectedWorkbenchId
+        ? workbenches.find((record) => record.definition.id === inspectedWorkbenchId)
+        : undefined;
+      if (bench) {
+        const { anchor } = bench.placement;
+        faceTarget = faceTargetRef.current;
+        faceTarget.yaw = Math.atan2(anchor.x - nextPosition.x, anchor.z - nextPosition.z);
+        faceTarget.snap = prefersReducedMotion();
+      }
+    }
+
     locomotionRef.current = stepPlayerLocomotionState(
       locomotionRef.current,
       {
@@ -354,6 +373,8 @@ export function PlayerController() {
       },
       delta,
       cameraMode === 'workbench-inspect' || playerMode !== 'exploring',
+      undefined,
+      faceTarget,
     );
 
     playerGroup.position.set(nextPosition.x, nextPosition.y, nextPosition.z);
