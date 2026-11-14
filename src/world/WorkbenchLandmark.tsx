@@ -630,8 +630,8 @@ export function WorkbenchLandmark({
             }`}
             style={{ opacity: 0 }}
           >
-            {/* Flagships carry their stop on the tour, so the route reads from the plaza. */}
-            {isFlagship && tourStep ? (
+            {/* Every tour stop (Start Here and the flagships) carries its number, so the route reads from the plaza. */}
+            {tourStep ? (
               <span className="landmark-tooltip__stop" aria-hidden="true">
                 {tourStep.position}
               </span>

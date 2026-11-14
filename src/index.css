@@ -2167,6 +2167,12 @@ body {
   }
 }
 
+/* Start Here's badge is amber itself, so its stop number is inverted. */
+.landmark-tooltip--start .landmark-tooltip__stop {
+  background: #2b230f;
+  color: #f6d68c;
+}
+
 /* Landscape phones: the four flagship badges share a short, wide view and overlapped at full size. */
 @media (max-height: 500px) and (orientation: landscape) {
   .landmark-tooltip--title {
