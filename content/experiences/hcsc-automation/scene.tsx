@@ -196,7 +196,7 @@ export default function HcscAutomationScene(props: ExperienceSceneProps) {
             <group key={name} position={[TRAYS[name].x, 0, TRAYS[name].z]}>
               <mesh receiveShadow position={[0, 0.02, 0]}>
                 <boxGeometry args={[0.32, 0.04, 0.24]} />
-                <meshStandardMaterial color="#3a4250" roughness={0.85} />
+                <meshStandardMaterial color="#7d7366" roughness={0.85} />
               </mesh>
               <mesh position={[0, 0.042, 0.125]}>
                 <boxGeometry args={[0.32, 0.03, 0.012]} />

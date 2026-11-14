@@ -204,7 +204,7 @@ export default function LidarPhenotypingResearchScene(props: ExperienceSceneProp
           </mesh>
           <mesh receiveShadow position={[BARS.x, 0.025, BARS.z0 + ((PLOTS - 1) * BARS.step) / 2]}>
             <boxGeometry args={[0.24, 0.05, PLOTS * BARS.step + 0.06]} />
-            <meshStandardMaterial color="#3a4250" roughness={0.8} />
+            <meshStandardMaterial color="#7d7366" roughness={0.8} />
           </mesh>
         </RevealStage>
 

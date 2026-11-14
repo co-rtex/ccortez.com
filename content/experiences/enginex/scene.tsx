@@ -14,8 +14,9 @@ import { prefersReducedMotion } from '../../../src/world/reducedMotion';
 /**
  * EngineX as a working model: a toy limit-order book (not EngineX's code) played out on the bench.
  *
- * Orders wait in a single file at the sequencer gate, which takes one at a time. Each sequenced order is first
- * written to the journal (the row of slabs on the left, newest at the front) and only then touches the book: the
+ * Orders wait in a single file at the sequencer gate, which takes one at a time. Each sequenced order is recorded in
+ * the journal (the row of slabs on the left, newest at the front) and applied to the book in the same step (EngineX
+ * itself applies in memory, journals, syncs, then acknowledges; the toy has no acknowledgements): the book is the
  * ladder in the middle, bids stacked to the left of the price spine and asks to the right, one cube per lot, with
  * alternating shades marking separate orders queued at a price (oldest nearest the spine fills first). Fills drop
  * into the trades tray on the right. The panel can send limit orders priced to cross the book (EngineX accepts only
@@ -238,7 +239,7 @@ export default function EnginexScene(props: ExperienceSceneProps) {
             <boxGeometry args={[1.0, 0.024, 0.16]} />
             <meshStandardMaterial color="#3a4250" roughness={0.85} />
           </mesh>
-          {/* Flow chevrons: along the conveyor into the gate, then on to the journal (written before the book). */}
+          {/* Flow chevrons: along the conveyor into the gate, then on to the journal. */}
           {[GATE.x + 0.95, GATE.x + 0.55, GATE.x - 0.32, GATE.x - 0.62].map((x) => (
             <mesh key={x} position={[x, 0.03, GATE.z]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
               <coneGeometry args={[0.05, 0.09, 3]} />
@@ -252,7 +253,7 @@ export default function EnginexScene(props: ExperienceSceneProps) {
           </mesh>
           <mesh receiveShadow position={[TRADES.x, 0.03, TRADES.z]}>
             <boxGeometry args={[0.42, 0.06, 0.3]} />
-            <meshStandardMaterial color="#3a4250" roughness={0.8} />
+            <meshStandardMaterial color="#7d7366" roughness={0.8} />
           </mesh>
         </RevealStage>
 
