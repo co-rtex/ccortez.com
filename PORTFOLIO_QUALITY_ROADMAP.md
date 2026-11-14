@@ -230,7 +230,9 @@ Later in the sprint:
   independent product read of the final screens led to `b6a6cf5` (the arrival card and phone banner say whose
   island it is, May 2028 and the Summer 2027 target), `ca95be5` (HCSC and SSEC named from across the plaza) and
   `576eefa` (the recruiter card's role on its own line). Checks: 261 unit tests, lint, build; axe clean on spawn
-  and eight panels; 60 fps (vsync) at spawn and four benches, p95 <= 17.3 ms, spawn 576 draw calls.
+  and eight panels; 60 fps (vsync) at spawn and four benches, p95 <= 17.3 ms, spawn 576 draw calls. Uncapped (M3, DPR 2, two runs): spawn
+  median 8.8–9.4 ms, p95 13.1–13.4 ms, 567 calls; overview median 8.0–11.7 ms, p95 23.4–24.4 ms, 988 calls (was
+  11.7–11.8 / 24.0–26.1 ms at 1,026 calls), so no regression from the sprint's late changes.
 
 Not done this sprint (evaluated): contextual avatar animation beyond facing the open bench (Opportunity 4); SSEC, FridgeFinder and
 the other desk-kit benches; a real-phone GPU check.
