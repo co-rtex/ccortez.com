@@ -223,7 +223,16 @@ Later in the sprint:
 - Integration re-run on both branches built against each other: the scripted round trip (case study -> bench ->
   case study -> live demo -> back -> back) with no page errors, and the opt-in spec 4/4.
 
-Not done this sprint (evaluated): contextual avatar animation near benches (Opportunity 4); SSEC, FridgeFinder and
+- Final hour: the avatar turns to face the bench whose panel is open (`6a2a78a`); an independent code review of the
+  sprint (no P1) led to `587748e` (only TaskForge, EngineX and QuantLab are called live models; the phone banner
+  stays until a bench is opened and focus returns to a real control; reduced motion cuts out of the vista; tour
+  button contrast ~7.6:1; story heading levels) and `7c35e11` (no per-frame allocation in the bench scripts). An
+  independent product read of the final screens led to `b6a6cf5` (the arrival card and phone banner say whose
+  island it is, May 2028 and the Summer 2027 target), `ca95be5` (HCSC and SSEC named from across the plaza) and
+  `576eefa` (the recruiter card's role on its own line). Checks: 261 unit tests, lint, build; axe clean on spawn
+  and eight panels; 60 fps (vsync) at spawn and four benches, p95 <= 17.3 ms, spawn 576 draw calls.
+
+Not done this sprint (evaluated): contextual avatar animation beyond facing the open bench (Opportunity 4); SSEC, FridgeFinder and
 the other desk-kit benches; a real-phone GPU check.
 
 Release plan (when approved): release the game first (it adds ?bench= and links only to pages production already

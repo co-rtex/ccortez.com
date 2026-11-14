@@ -761,15 +761,13 @@ body {
   color: var(--panel-fg);
 }
 
+/* A quiet line of help, not a box: as a grey filled panel it read like a disabled input and took ~45px. */
 .experience-panel__inspect-hint {
-  margin: 0 0 1rem;
-  border-radius: 12px;
-  padding: 0.72rem 0.85rem;
-  background: rgba(34, 56, 64, 0.08);
-  border: 1px solid rgba(84, 104, 111, 0.16);
-  color: #29414a;
-  font-size: 0.82rem;
-  font-weight: 700;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  color: #4d6268;
+  font-size: 0.78rem;
+  font-weight: 600;
 }
 
 .recruiter-card {
