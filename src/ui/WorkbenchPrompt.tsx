@@ -9,9 +9,11 @@ interface WorkbenchPromptProps {
   workbenches: WorkbenchRuntimeRecord[];
   editorEnabled: boolean;
   mobileLiteMode: boolean;
+  /** Starts the flagship tour (opens its first stop); offered on the arrival card. */
+  onStartTour?: () => void;
 }
 
-export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode }: WorkbenchPromptProps) {
+export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode, onStartTour }: WorkbenchPromptProps) {
   const cameraMode = useGameStore((state) => state.cameraMode);
   const playerMode = useGameStore((state) => state.playerMode);
   const activeRestSpotId = useGameStore((state) => state.activeRestSpotId);
@@ -60,6 +62,25 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode }: 
   if (!nearbyWorkbench) {
     // Mobile-lite already shows its own banner, and the guide says where to start.
     if (hasWalked || (mobileLiteMode && !editorEnabled)) return null;
+    if (!editorEnabled && onStartTour) {
+      // The arrival card: the one invitation on the first screen. It goes once the visitor starts walking.
+      return (
+        <section className="arrival-card" aria-labelledby="arrival-card-title">
+          <h2 id="arrival-card-title" className="arrival-card__title">
+            Four of these projects run live models.
+          </h2>
+          <button type="button" className="arrival-card__tour" onClick={onStartTour}>
+            Take the flagship tour <span>5 stops</span>
+          </button>
+          <p className="arrival-card__keys">
+            Or walk anywhere: <kbd>W</kbd>
+            <kbd>A</kbd>
+            <kbd>S</kbd>
+            <kbd>D</kbd> to walk, <kbd>Shift</kbd> to run, <kbd>E</kbd> to open a bench.
+          </p>
+        </section>
+      );
+    }
     return (
       <div className="prompt-card prompt-card--idle">
         <p>

@@ -6,8 +6,8 @@
  * side, and the named flagships beside the north gate. The moment the visitor moves, opens a bench or travels, it
  * eases down to the follow pose; under reduced motion it cuts. Nothing waits on it: there is no cinematic.
  */
-export const VISTA_CAMERA_OFFSET = { x: 0, y: 19, z: 19 } as const;
-export const VISTA_LOOK_OFFSET = { x: 0, y: -0.6, z: -16.5 } as const;
+export const VISTA_CAMERA_OFFSET = { x: 0, y: 16.2, z: 20 } as const;
+export const VISTA_LOOK_OFFSET = { x: 0, y: 0, z: -15.5 } as const;
 /** Seconds the camera takes to settle from the vista into the follow pose. */
 export const VISTA_SETTLE_SECONDS = 1.1;
 /** On portrait and narrow screens the vista shows only the middle of the plaza, so it is not used there. */

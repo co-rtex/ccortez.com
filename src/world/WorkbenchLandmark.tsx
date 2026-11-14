@@ -614,7 +614,9 @@ export function WorkbenchLandmark({
         <Html center position={[0, rendersKit ? 2.95 : isStartHere ? startBadgeY : 3.3, 0]}>
           <div
             ref={titleBadgeRef}
-            className={`landmark-tooltip landmark-tooltip--title${isFlagship ? ' landmark-tooltip--flagship' : ''}`}
+            className={`landmark-tooltip landmark-tooltip--title${isFlagship ? ' landmark-tooltip--flagship' : ''}${
+              isStartHere ? ' landmark-tooltip--start' : ''
+            }`}
             style={{ opacity: 0 }}
           >
             {workbench.definition.title}

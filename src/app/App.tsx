@@ -5,6 +5,7 @@ import { getAllExperiences } from '../content/registry';
 import { useGameStore } from '../state/gameStore';
 import { getBenchStandPoint, shouldTravelToBench } from '../world/benchTravel';
 import { parseBenchDeepLink } from './benchDeepLink';
+import { FLAGSHIP_TOUR } from '../workbench/flagships';
 import { WorkbenchEditorOverlay } from '../ui/WorkbenchEditorOverlay';
 import { WorkbenchPanel } from '../ui/WorkbenchPanel';
 import { WorkbenchPrompt } from '../ui/WorkbenchPrompt';
@@ -498,6 +499,7 @@ export default function App() {
             nearbyWorkbenchId={nearbyWorkbenchId}
             mobileLiteMode={mobileLiteMode}
             onWorkbenchOpen={openWorkbenchFromGuide}
+            startFolded
           />
         ) : null}
 
@@ -508,6 +510,7 @@ export default function App() {
               workbenches={visibleWorkbenchRecords}
               editorEnabled={workbenchEditorEnabled}
               mobileLiteMode={mobileLiteMode}
+              onStartTour={() => openWorkbenchFromGuide(FLAGSHIP_TOUR[0]!)}
             />
           ) : null}
           {/* Hidden while a panel is open: on a phone it would sit over the bench the panel is about. */}

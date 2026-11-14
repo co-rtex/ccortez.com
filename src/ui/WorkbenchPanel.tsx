@@ -348,7 +348,8 @@ export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps)
           <div className="panel-tour__buttons">
             {tourStep.previousId ? (
               <button type="button" className="panel-tour__previous" onClick={() => travelTo(tourStep.previousId!)}>
-                <span aria-hidden="true">←</span> {titleOf(tourStep.previousId)}
+                <span aria-hidden="true">←</span>
+                <span className="panel-tour__label">{titleOf(tourStep.previousId)}</span>
               </button>
             ) : null}
             {tourStep.nextId ? (
@@ -358,7 +359,7 @@ export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps)
               </button>
             ) : (
               <a className="panel-tour__next" href={PROFESSIONAL_SITE_URL}>
-                End of the tour: case studies and resume <span aria-hidden="true">→</span>
+                Case studies and resume <span aria-hidden="true">→</span>
               </a>
             )}
           </div>

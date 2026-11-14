@@ -23,6 +23,8 @@ interface RecruiterNavigatorHUDProps {
   onWorkbenchOpen: (workbenchId: string) => void;
   /** Fold the guide to its button while a bench panel is open (default on). */
   foldWhilePanelOpen?: boolean;
+  /** Start folded to its button (default off). */
+  startFolded?: boolean;
 }
 
 interface RecruiterNavigatorContentProps {
@@ -224,8 +226,11 @@ export function RecruiterNavigatorHUD({
   mobileLiteMode,
   onWorkbenchOpen,
   foldWhilePanelOpen = true,
+  startFolded = false,
 }: RecruiterNavigatorHUDProps) {
-  const [isHidden, setIsHidden] = useState(false);
+  // In the game the guide starts folded to its button, so the first screen shows the island and one invitation
+  // (the arrival card); it opens with one click.
+  const [isHidden, setIsHidden] = useState(startFolded);
   const guideRef = useRef<HTMLElement>(null);
   const showButtonRef = useRef<HTMLButtonElement>(null);
   const focusShowButtonRef = useRef(false);

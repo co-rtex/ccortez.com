@@ -1895,3 +1895,123 @@ body {
   outline: 3px solid #2f8f63;
   outline-offset: 2px;
 }
+
+/* Arrival card: the first screen's one invitation (start the tour), with the controls as keycaps. */
+.arrival-card {
+  pointer-events: auto;
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+  max-width: min(400px, 88vw);
+  padding: 0.95rem 1.1rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(243, 224, 188, 0.42);
+  background: linear-gradient(145deg, rgba(19, 34, 40, 0.9), rgba(16, 27, 32, 0.8));
+  color: #f7eee1;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(9px);
+}
+
+.arrival-card__title {
+  margin: 0;
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.arrival-card__tour {
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #f0c66a;
+  background: #f0c66a;
+  color: #2b230f;
+  cursor: pointer;
+}
+
+.arrival-card__tour span {
+  font-size: 0.76rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.arrival-card__tour:hover {
+  background: #f6d68c;
+}
+
+.arrival-card__tour:focus-visible {
+  outline: 3px solid #f6d68c;
+  outline-offset: 3px;
+}
+
+.arrival-card__keys {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #fce5c2;
+}
+
+.arrival-card kbd {
+  display: inline-block;
+  min-width: 1.45em;
+  margin: 0 0.12em;
+  padding: 0 0.35em;
+  border-radius: 5px;
+  border: 1px solid rgba(252, 229, 194, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  font: 600 0.74rem/1.5 'SFMono-Regular', Consolas, Monaco, monospace;
+  text-align: center;
+}
+
+/* Start Here: the first stop, so its badge takes the amber of the arrival card's tour button rather than the dark
+   pill every other bench uses. */
+.landmark-tooltip--start {
+  border-color: #f0c66a;
+  background: #f0c66a;
+  color: #2b230f;
+}
+
+/* Phones: the tour footer is one row, the back button icon-sized, so the story keeps the space. */
+@media (max-width: 700px) {
+  .panel-tour {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.3rem 0.6rem;
+    padding-top: 0.55rem;
+  }
+
+  .panel-tour__position {
+    grid-column: 1 / -1;
+  }
+
+  .panel-tour__buttons {
+    grid-column: 1 / -1;
+    flex-wrap: nowrap;
+  }
+
+  .panel-tour__previous {
+    flex: 0 0 auto;
+  }
+
+  .panel-tour__previous .panel-tour__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .panel-tour__next {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+  }
+}
