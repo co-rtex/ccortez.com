@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { WORKBENCH_LAYOUT } from '../../content/workbenches/layout';
-import { FLAGSHIP_WORKBENCH_IDS, getCaseStudyUrl, isFlagshipWorkbench } from './flagships';
+import { FLAGSHIP_TOUR, FLAGSHIP_WORKBENCH_IDS, getCaseStudyUrl, getTourStep, isFlagshipWorkbench } from './flagships';
 
 describe('flagship benches', () => {
   it('are published benches, each linked to its case study', () => {
@@ -20,5 +20,19 @@ describe('flagship benches', () => {
     expect(isFlagshipWorkbench('taskforge')).toBe(true);
     expect(isFlagshipWorkbench('hcsc-automation')).toBe(false);
     expect(isFlagshipWorkbench('toString')).toBe(false);
+  });
+
+  it('tours Start Here and then every flagship, each a published bench', () => {
+    expect(FLAGSHIP_TOUR[0]).toBe('about-me-overview');
+    expect([...FLAGSHIP_TOUR.slice(1)].sort()).toEqual([...FLAGSHIP_WORKBENCH_IDS].sort());
+    for (const id of FLAGSHIP_TOUR) {
+      expect(WORKBENCH_LAYOUT.find((definition) => definition.id === id)?.visibility, id).toBe('published');
+    }
+  });
+
+  it('knows the neighbours of each stop, and nothing for benches off the route', () => {
+    expect(getTourStep('about-me-overview')).toEqual({ position: 1, total: 5, previousId: null, nextId: 'lidar-phenotyping-research' });
+    expect(getTourStep('quantlab')).toEqual({ position: 5, total: 5, previousId: 'enginex', nextId: null });
+    expect(getTourStep('hcsc-automation')).toBeNull();
   });
 });

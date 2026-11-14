@@ -8,11 +8,14 @@ import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import type { ExperienceRecruiterCard } from '../types/experience';
 import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMeta';
-import { isFlagshipWorkbench } from '../workbench/flagships';
+import { getTourStep, isFlagshipWorkbench } from '../workbench/flagships';
+import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
 import { prefersReducedMotion } from '../world/reducedMotion';
 
 interface WorkbenchPanelProps {
   workbenches: WorkbenchRuntimeRecord[];
+  /** Travel to a bench and open it (the guide's action); used by the flagship tour's buttons. */
+  onTravelTo?: (workbenchId: string) => void;
 }
 
 function formatLabel(value: string): string {
@@ -101,7 +104,7 @@ export function LinkedWorkbenchContent({
   );
 }
 
-export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
+export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps) {
   const cameraMode = useGameStore((state) => state.cameraMode);
   const panelWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
   const closeWorkbenchPanel = useGameStore((state) => state.closeWorkbenchPanel);
@@ -156,6 +159,8 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
   }, []);
   useEffect(() => {
     if (panelWorkbenchId) {
+      // A new bench (for example the tour's next stop) starts at the top of its story.
+      panelRef.current?.querySelector('.experience-panel__content')?.scrollTo({ top: 0 });
       const active = document.activeElement;
       const opener =
         active instanceof HTMLElement && active !== document.body && !panelRef.current?.contains(active)
@@ -231,6 +236,13 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
   const ActiveStory = activeStory;
   const recruiterCard = workbench?.linkedExperience?.manifest.recruiterCard;
   const metaChips = workbench ? buildWorkbenchMetaChips(workbench) : [];
+
+  const tourStep = workbench ? getTourStep(workbench.definition.id) : null;
+  const titleOf = (id: string): string =>
+    workbenches.find((candidate) => candidate.definition.id === id)?.definition.title ?? id;
+  const travelTo = (id: string): void => {
+    onTravelTo?.(id);
+  };
 
   return (
     <aside
@@ -327,6 +339,31 @@ export function WorkbenchPanel({ workbenches }: WorkbenchPanelProps) {
           </div>
         ) : null}
       </section>
+
+      {tourStep && workbench ? (
+        <nav className="panel-tour" aria-label="Flagship tour">
+          <p className="panel-tour__position">
+            Flagship tour <span>{tourStep.position} of {tourStep.total}</span>
+          </p>
+          <div className="panel-tour__buttons">
+            {tourStep.previousId ? (
+              <button type="button" className="panel-tour__previous" onClick={() => travelTo(tourStep.previousId!)}>
+                <span aria-hidden="true">←</span> {titleOf(tourStep.previousId)}
+              </button>
+            ) : null}
+            {tourStep.nextId ? (
+              <button type="button" className="panel-tour__next" onClick={() => travelTo(tourStep.nextId!)}>
+                {tourStep.position === 1 ? 'Start the tour: ' : 'Next: '}
+                {titleOf(tourStep.nextId)} <span aria-hidden="true">→</span>
+              </button>
+            ) : (
+              <a className="panel-tour__next" href={PROFESSIONAL_SITE_URL}>
+                End of the tour: case studies and resume <span aria-hidden="true">→</span>
+              </a>
+            )}
+          </div>
+        </nav>
+      ) : null}
     </aside>
   );
 }

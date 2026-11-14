@@ -1823,3 +1823,75 @@ body {
 .taskforge-sim h4:focus {
   outline: none;
 }
+
+/* Flagship tour: a footer on the panels of the benches on the route. It stays in view while the story scrolls. */
+.panel-tour {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem 1.1rem calc(0.8rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(84, 104, 111, 0.22);
+  background: rgba(238, 244, 240, 0.96);
+}
+
+.panel-tour__position {
+  margin: 0;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #4b5a5f;
+}
+
+.panel-tour__position span {
+  margin-left: 0.35rem;
+  font-variant-numeric: tabular-nums;
+  color: #1f5e42;
+}
+
+.panel-tour__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.panel-tour__buttons button,
+.panel-tour__buttons a {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  min-height: 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.panel-tour__previous {
+  border: 1px solid rgba(35, 64, 74, 0.45);
+  background: transparent;
+  color: #23404a;
+}
+
+.panel-tour__next {
+  border: 1px solid #1f5e42;
+  background: #2f8f63;
+  color: #fffdf8;
+}
+
+.panel-tour__next:hover {
+  background: #1f5e42;
+}
+
+.panel-tour__previous:hover {
+  background: rgba(35, 64, 74, 0.08);
+}
+
+.panel-tour__buttons button:focus-visible,
+.panel-tour__buttons a:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}

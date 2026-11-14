@@ -521,7 +521,7 @@ export default function App() {
       </div>
 
       {!workbenchEditorEnabled ? <SiteBar /> : null}
-      <WorkbenchPanel workbenches={visibleWorkbenchRecords} />
+      <WorkbenchPanel workbenches={visibleWorkbenchRecords} onTravelTo={openWorkbenchFromGuide} />
       {workbenchEditorEnabled ? (
         <WorkbenchEditorOverlay
           definitions={workbenchDefinitions}
