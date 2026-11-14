@@ -516,8 +516,17 @@ export default function App() {
           {/* Hidden while a panel is open: on a phone it would sit over the bench the panel is about. */}
           {mobileLiteMode && !mobileBannerDismissed && !panelWorkbenchId ? (
             <div className="mobile-lite-banner">
-              Mobile-lite mode: tap landmarks for details. The recruiter guide collapses into a quick jump list.{' '}
-              <a href={PROFESSIONAL_SITE_URL}>Read the text portfolio instead</a>
+              {/* The phone's arrival card: the same invitation as on a desktop, in the banner's place. */}
+              <button
+                type="button"
+                className="mobile-lite-banner__tour"
+                onClick={() => openWorkbenchFromGuide(FLAGSHIP_TOUR[0]!)}
+              >
+                Take the flagship tour <span>5 stops</span>
+              </button>
+              <span>
+                Or tap any bench to open it, or <a href={PROFESSIONAL_SITE_URL}>read the text portfolio</a>.
+              </span>
             </div>
           ) : null}
         </div>

@@ -2034,3 +2034,37 @@ body {
   outline: 3px solid #2f8f63;
   outline-offset: 2px;
 }
+
+/* Phone arrival: the banner leads with the tour, as the desktop arrival card does. */
+.mobile-lite-banner {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+
+.mobile-lite-banner__tour {
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #2b230f;
+  background: #2b230f;
+  color: #f6d68c;
+  cursor: pointer;
+}
+
+.mobile-lite-banner__tour span {
+  font-size: 0.76rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.mobile-lite-banner__tour:focus-visible {
+  outline: 3px solid #2b230f;
+  outline-offset: 3px;
+}
