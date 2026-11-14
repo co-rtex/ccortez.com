@@ -19,6 +19,16 @@ export function isFlagshipWorkbench(workbenchId: string): boolean {
   return Object.hasOwn(CASE_STUDY_SLUG_BY_WORKBENCH_ID, workbenchId);
 }
 
+/**
+ * Flagships whose panel has a model the visitor can operate (crash a worker, send an order, re-run a backtest).
+ * LiDAR's bench animates a seeded scan pass but has no controls, so it is not counted as a live model.
+ */
+const INTERACTIVE_FLAGSHIP_IDS: ReadonlySet<string> = new Set(['taskforge', 'enginex', 'quantlab']);
+
+export function hasInteractiveModel(workbenchId: string): boolean {
+  return INTERACTIVE_FLAGSHIP_IDS.has(workbenchId);
+}
+
 export function getCaseStudyUrl(workbenchId: string): string | null {
   const slug = CASE_STUDY_SLUG_BY_WORKBENCH_ID[workbenchId];
   return slug ? `${PROFESSIONAL_SITE_URL}/work/${slug}/` : null;

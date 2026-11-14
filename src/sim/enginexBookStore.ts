@@ -37,6 +37,14 @@ interface EnginexBookState {
   restart: () => void;
 }
 
+/**
+ * A live region does not re-announce text identical to what it already holds, so a repeat (the same send twice, a
+ * second replay in the same state) alternates with an "(again)" suffix.
+ */
+export function fresh(text: string, previous: string): string {
+  return text === previous ? `${text} (again)` : text;
+}
+
 export const useEnginexBook = create<EnginexBookState>((set, get) => ({
   sim: createBook(FIRST_SEED),
   pending: 0,
@@ -66,10 +74,10 @@ export const useEnginexBook = create<EnginexBookState>((set, get) => ({
     const { sim } = get();
     const next = submit(sim, crossingOrder(side, 3));
     if (next === sim) {
-      set({ announcement: 'The sequencer’s line is full; try again in a moment.' });
+      set({ announcement: fresh('The sequencer’s line is full; try again in a moment.', get().announcement) });
       return;
     }
-    set({ sim: next, replay: null, announcement: `Your ${side} 3 joined the line at the sequencer.` });
+    set({ sim: next, replay: null, announcement: fresh(`Your ${side} 3 joined the line at the sequencer.`, get().announcement) });
   },
   replayJournal: () => {
     const { sim } = get();
@@ -79,8 +87,7 @@ export const useEnginexBook = create<EnginexBookState>((set, get) => ({
     const text = `Replayed ${replay.entries} journal entries into an empty book: state ${hash}, ${
       replay.matches ? 'the same as the live book.' : 'not the same as the live book.'
     }`;
-    // A repeated replay in the same state would give the same text, which a live region does not re-announce.
-    set({ replay, announcement: text === get().announcement ? `${text} (again)` : text });
+    set({ replay, announcement: fresh(text, get().announcement) });
   },
   restart: () => set({ sim: createBook(get().sim.seed + 1), pending: 0, replay: null, announcement: '' }),
 }));

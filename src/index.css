@@ -715,7 +715,8 @@ body {
   border-bottom: 1px solid rgba(84, 104, 111, 0.2);
 }
 
-.experience-panel__meta span,
+/* Direct children only: the case-study link's arrow is a span inside the link and must not become a chip. */
+.experience-panel__meta > span,
 .experience-panel__meta-chip {
   background: rgba(216, 226, 224, 0.92);
   color: #24414c;
@@ -1878,14 +1879,15 @@ body {
   color: #23404a;
 }
 
+/* #1f5e42 under #fffdf8 is ~7.6:1 (the lighter #2f8f63 was ~3.9:1, short of 4.5:1 for its 13px label). */
 .panel-tour__next {
-  border: 1px solid #1f5e42;
-  background: #2f8f63;
+  border: 1px solid #17482f;
+  background: #1f5e42;
   color: #fffdf8;
 }
 
 .panel-tour__next:hover {
-  background: #1f5e42;
+  background: #17482f;
 }
 
 .panel-tour__previous:hover {

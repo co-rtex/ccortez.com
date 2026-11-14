@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { WORKBENCH_LAYOUT } from '../../content/workbenches/layout';
-import { FLAGSHIP_TOUR, FLAGSHIP_WORKBENCH_IDS, getCaseStudyUrl, getTourStep, isFlagshipWorkbench } from './flagships';
+import {
+  FLAGSHIP_TOUR,
+  FLAGSHIP_WORKBENCH_IDS,
+  getCaseStudyUrl,
+  getTourStep,
+  hasInteractiveModel,
+  isFlagshipWorkbench,
+} from './flagships';
 
 describe('flagship benches', () => {
   it('are published benches, each linked to its case study', () => {
@@ -34,5 +41,13 @@ describe('flagship benches', () => {
     expect(getTourStep('about-me-overview')).toEqual({ position: 1, total: 5, previousId: null, nextId: 'lidar-phenotyping-research' });
     expect(getTourStep('quantlab')).toEqual({ position: 5, total: 5, previousId: 'enginex', nextId: null });
     expect(getTourStep('hcsc-automation')).toBeNull();
+  });
+});
+
+describe('live models', () => {
+  it('counts only the flagships with controls as live models', () => {
+    expect(['taskforge', 'enginex', 'quantlab'].every(hasInteractiveModel)).toBe(true);
+    expect(hasInteractiveModel('lidar-phenotyping-research')).toBe(false);
+    expect(hasInteractiveModel('about-me-overview')).toBe(false);
   });
 });

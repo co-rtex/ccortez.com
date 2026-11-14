@@ -40,7 +40,7 @@ const TRAY_ORDER: Tray[] = ['matched', 'flagged', 'fallback'];
 const PER_TRAY = 8;
 const CARD_COLOR = new Color('#f1ead8');
 const LAMP = { idle: '#9aa39e', ok: '#58c08f', slow: '#e8b04a', down: '#d4513c' } as const;
-/** Under reduced motion the bench holds this moment of the pass: a record coming back, several already filed. */
+/** Under reduced motion the bench holds this moment of the pass: several records filed, the next one on its way out. */
 const STILL_SECONDS = 24.3;
 
 const ease = (t: number): number => t * t * (3 - 2 * t);

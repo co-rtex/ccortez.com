@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { ENGINEX_TICK_SECONDS, useEnginexBook } from './enginexBookStore';
+import { ENGINEX_TICK_SECONDS, fresh, useEnginexBook } from './enginexBookStore';
 
 describe('EngineX bench order book store', () => {
   beforeEach(() => useEnginexBook.getState().restart());
@@ -36,5 +36,14 @@ describe('EngineX bench order book store', () => {
     expect(useEnginexBook.getState().sim.inbox).toHaveLength(waiting + 1);
     useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS * 8);
     expect(useEnginexBook.getState().announcement).toMatch(/your sell 3 at 6/);
+  });
+});
+
+describe('announcements', () => {
+  it('marks a repeat so the live region speaks it again, and alternates back', () => {
+    expect(fresh('Your buy 3 joined the line at the sequencer.', '')).toBe('Your buy 3 joined the line at the sequencer.');
+    const again = fresh('Your buy 3 joined the line at the sequencer.', 'Your buy 3 joined the line at the sequencer.');
+    expect(again).toBe('Your buy 3 joined the line at the sequencer. (again)');
+    expect(fresh('Your buy 3 joined the line at the sequencer.', again)).toBe('Your buy 3 joined the line at the sequencer.');
   });
 });

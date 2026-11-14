@@ -67,7 +67,7 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode, on
       return (
         <section className="arrival-card" aria-labelledby="arrival-card-title">
           <h2 id="arrival-card-title" className="arrival-card__title">
-            Four of these projects run live models.
+            Three of these projects run live models you can try.
           </h2>
           <button type="button" className="arrival-card__tour" onClick={onStartTour}>
             Take the flagship tour <span>5 stops</span>

@@ -158,7 +158,12 @@ export function CameraRig({ benchAnchors }: CameraRigProps): null {
     if (vista.progress > 0) {
       const moved = Math.hypot(state.playerPosition.x - vista.origin.x, state.playerPosition.z - vista.origin.z);
       if (!vista.ended && (moved > VISTA_END_DISTANCE || state.playerMode !== 'exploring')) vista.ended = true;
-      if (vista.ended) vista.progress = settleVista(vista.progress, delta, prefersReducedMotion());
+      if (vista.ended) {
+        const reduced = prefersReducedMotion();
+        vista.progress = settleVista(vista.progress, delta, reduced);
+        // Reduced motion cuts: land on the follow pose this frame instead of easing the camera there.
+        if (reduced) snap = true;
+      }
       const blend = vistaBlend(vista.progress);
       vistaPosition.set(
         vista.origin.x + VISTA_CAMERA_OFFSET.x,

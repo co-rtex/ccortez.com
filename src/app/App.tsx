@@ -76,13 +76,6 @@ export default function App() {
   });
 
   const [mobileLiteMode, setMobileLiteMode] = useState<boolean>(detectMobileLiteMode);
-  // The mobile-lite explanation gets out of the way after a few seconds; the portfolio pill stays.
-  const [mobileBannerDismissed, setMobileBannerDismissed] = useState(false);
-  useEffect(() => {
-    if (!mobileLiteMode) return;
-    const timer = window.setTimeout(() => setMobileBannerDismissed(true), 10_000);
-    return () => window.clearTimeout(timer);
-  }, [mobileLiteMode]);
   const [webglSupported] = useState<boolean>(() => typeof window === 'undefined' || detectWebGLSupport());
   const [workbenchDefinitions, setWorkbenchDefinitions] = useState<WorkbenchDefinition[]>(WORKBENCH_LAYOUT);
   const [workbenchEditorEnabled, setWorkbenchEditorEnabled] = useState<boolean>(detectWorkbenchEditorMode);
@@ -102,6 +95,7 @@ export default function App() {
   const setEditorCameraTarget = useGameStore((state) => state.setEditorCameraTarget);
   const clearEditorCameraTarget = useGameStore((state) => state.clearEditorCameraTarget);
   const panelWorkbenchId = useGameStore((state) => state.panelWorkbenchId);
+  const hasOpenedABench = useGameStore((state) => state.openedWorkbenchIds.length > 0);
   const openWorkbenchPanel = useGameStore((state) => state.openWorkbenchPanel);
   const closeWorkbenchPanel = useGameStore((state) => state.closeWorkbenchPanel);
   const requestTravel = useGameStore((state) => state.requestTravel);
@@ -514,7 +508,9 @@ export default function App() {
             />
           ) : null}
           {/* Hidden while a panel is open: on a phone it would sit over the bench the panel is about. */}
-          {mobileLiteMode && !mobileBannerDismissed && !panelWorkbenchId ? (
+          {/* The banner carries the tour invitation, so it stays until the visitor opens a bench (by any route), not
+              on a timer that could take it away before someone using assistive technology reaches it. */}
+          {mobileLiteMode && !hasOpenedABench && !panelWorkbenchId ? (
             <div className="mobile-lite-banner">
               {/* The phone's arrival card: the same invitation as on a desktop, in the banner's place. */}
               <button

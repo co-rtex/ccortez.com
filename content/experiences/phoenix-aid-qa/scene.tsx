@@ -39,7 +39,7 @@ const COLORS = {
   placed: new Color('#2f8f63'),
 };
 const LAMP = { idle: '#9aa39e', pass: '#58c08f', fail: '#e8b04a' } as const;
-/** Under reduced motion the bench holds a moment with most of the board filled. */
+/** Under reduced motion the bench holds this moment: seven of the twelve fields on the board, the next being placed. */
 const STILL_SECONDS = 26;
 
 const ease = (t: number): number => t * t * (3 - 2 * t);

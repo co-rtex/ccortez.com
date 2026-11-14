@@ -148,7 +148,7 @@ describe('LinkedWorkbenchContent', () => {
     );
   });
 
-  it('renders story headings one level under the panel, leaving out one that repeats the title', () => {
+  it('renders story headings one level under the heading above them, leaving out one that repeats the title', () => {
     const Story: Parameters<typeof LinkedWorkbenchContent>[0]['ActiveStory'] = ({ components }) => {
       const H2 = components?.h2 ?? 'h2';
       return (
@@ -158,9 +158,29 @@ describe('LinkedWorkbenchContent', () => {
         </>
       );
     };
+    // Without a recruiter card there is no "Story" h3, so story headings sit directly under the panel's h2.
     const markup = renderToStaticMarkup(<LinkedWorkbenchContent title="TaskForge" ActiveStory={Story} isLoading={false} />);
     expect(markup).not.toContain('>TaskForge<');
-    expect(markup).toContain('<h4 class="experience-panel__story-title">How it fails</h4>');
+    expect(markup).toContain('<h3 class="experience-panel__story-title">How it fails</h3>');
+    // Under a recruiter card, the "Story" h3 comes first and story headings are h4.
+    const withCard = renderToStaticMarkup(
+      <LinkedWorkbenchContent
+        title="TaskForge"
+        recruiterCard={{
+          roleLabel: 'Systems project',
+          organization: 'Personal',
+          dateRange: '2026',
+          location: 'Madison, WI',
+          summary: 'A job platform.',
+          impactBullets: ['One.', 'Two.', 'Three.'],
+          techStack: ['Go'],
+        }}
+        ActiveStory={Story}
+        isLoading={false}
+      />,
+    );
+    expect(withCard).toContain('<h3 class="experience-panel__story-heading">Story</h3>');
+    expect(withCard).toContain('<h4 class="experience-panel__story-title">How it fails</h4>');
   });
 
   it('renders an explicit error state without showing the loading copy', () => {

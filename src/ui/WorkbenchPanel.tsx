@@ -8,7 +8,7 @@ import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import type { ExperienceRecruiterCard } from '../types/experience';
 import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMeta';
-import { getCaseStudyUrl, getTourStep, isFlagshipWorkbench } from '../workbench/flagships';
+import { getCaseStudyUrl, getTourStep, hasInteractiveModel, isFlagshipWorkbench } from '../workbench/flagships';
 import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
 import { prefersReducedMotion } from '../world/reducedMotion';
 
@@ -39,13 +39,15 @@ interface LinkedWorkbenchContentProps {
 }
 
 /**
- * Story headings sit under the panel's own title (h2) and its "Story" heading (h3), so a story's `##` renders as
- * an h4; one that only repeats the panel title (most stories open with their title) is left out.
+ * Story headings sit under the panel's own title (h2) and, when there is a recruiter card above the story, its
+ * "Story" heading (h3); so a story's `##` renders as an h4 there and an h3 otherwise. One that only repeats the panel
+ * title (most stories open with their title) is left out.
  */
-function StoryHeading(title: string | undefined) {
+function StoryHeading(title: string | undefined, level: 'h3' | 'h4') {
+  const Tag = level;
   return function Heading({ children }: { children?: ReactNode }) {
     if (typeof children === 'string' && children.trim() === title?.trim()) return null;
-    return <h4 className="experience-panel__story-title">{children}</h4>;
+    return <Tag className="experience-panel__story-title">{children}</Tag>;
   };
 }
 
@@ -56,7 +58,8 @@ export function LinkedWorkbenchContent({
   ActiveStory,
   isLoading,
 }: LinkedWorkbenchContentProps) {
-  const storyComponents = useMemo(() => ({ h2: StoryHeading(title) }), [title]);
+  const storyLevel = recruiterCard ? 'h4' : 'h3';
+  const storyComponents = useMemo(() => ({ h2: StoryHeading(title, storyLevel) }), [title, storyLevel]);
   const recruiterMetaLine = recruiterCard
     ? buildRecruiterMetaLine([
         recruiterCard.roleLabel,
@@ -181,11 +184,15 @@ export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps)
     const twin = workbenchId
       ? document.querySelector<HTMLElement>(`[data-workbench-id="${CSS.escape(workbenchId)}"]`)
       : null;
-    // The guide may have folded away (it collapses after a bench is opened from it); then its show button is the
-    // nearest control to where the visitor was, rather than leaving focus on the page body.
-    (twin ?? document.querySelector<HTMLElement>('.recruiter-navigator__visibility-button--show'))?.focus({
-      preventScroll: true,
-    });
+    // The guide may have folded away (it collapses after a bench is opened from it); then its show button (or, on
+    // phones, the guide's summary) is the nearest control to where the visitor was, rather than the page body.
+    const candidates = [
+      twin,
+      document.querySelector<HTMLElement>('.recruiter-navigator__visibility-button--show'),
+      document.querySelector<HTMLElement>('summary.recruiter-navigator__toggle'),
+    ];
+    // A control inside a closed <details> or a hidden guide cannot take focus; skip to one that can.
+    candidates.find((candidate) => candidate && candidate.getClientRects().length > 0)?.focus({ preventScroll: true });
   }, [panelWorkbenchId]);
 
   useEffect(() => {
@@ -280,11 +287,11 @@ export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps)
                 {chip.label}
               </span>
             ))}
-            {/* Flagships carry a live model further down the story (below the fold on phones); this jumps to it, once the
-                story has loaded. */}
+            {/* Flagships carry a model further down the story (below the fold on phones); this jumps to it, once the
+                story has loaded. Only the ones with controls are called live models. */}
             {isFlagshipWorkbench(workbench.definition.id) && activeStory ? (
               <button type="button" className="experience-panel__demo-jump" onClick={jumpToDemo}>
-                Try the live model
+                {hasInteractiveModel(workbench.definition.id) ? 'Try the live model' : 'What the bench shows'}
               </button>
             ) : null}
             {getCaseStudyUrl(workbench.definition.id) ? (
