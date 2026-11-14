@@ -85,6 +85,19 @@ and backtest files are shared with the professional site (`src/lib/sim/` there) 
 `npm run check:shared-sim` compares them with a sibling `../portfolio-professional` checkout. Each
 panel labels its model as a toy, not the real code, and runs it on a fallback clock when no 3D scene is driving it.
 
+The flagship tour (`FLAGSHIP_TOUR` in `src/workbench/flagships.ts`: Start Here, LiDAR, TaskForge, EngineX, QuantLab)
+is offered from the arrival card and the phone banner and continues from a footer on those panels; the last stop
+hands over to the written case studies. Only TaskForge, EngineX and QuantLab are called live models
+(`hasInteractiveModel`); LiDAR's scan pass has no controls.
+
+Two role benches have scripted dioramas instead of the shared desk kit: HCSC (`src/sim/reconcileLoop.ts`, a
+reconciliation pass) and Phoenix-Aid (`src/sim/extractionLoop.ts`, an extraction line with a validation gate).
+Both are fixed, tested scripts on made-up records, labelled as illustrations.
+
+`VITE_PROFESSIONAL_SITE_URL` points the game's links to the text portfolio at another build (for example a local
+build of the professional branch); the professional site's `NEXT_PUBLIC_GAME_URL` does the reverse, so the two
+development versions can be checked together before a release.
+
 ## Current Product Scope
 
 This stabilization baseline is intentionally recruiter-first.
