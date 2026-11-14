@@ -8,7 +8,7 @@ import type { ExperienceStoryComponent } from '../types/experience';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import type { ExperienceRecruiterCard } from '../types/experience';
 import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMeta';
-import { getTourStep, isFlagshipWorkbench } from '../workbench/flagships';
+import { getCaseStudyUrl, getTourStep, isFlagshipWorkbench } from '../workbench/flagships';
 import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
 import { prefersReducedMotion } from '../world/reducedMotion';
 
@@ -286,6 +286,11 @@ export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps)
               <button type="button" className="experience-panel__demo-jump" onClick={jumpToDemo}>
                 Try the live model
               </button>
+            ) : null}
+            {getCaseStudyUrl(workbench.definition.id) ? (
+              <a className="experience-panel__case-link" href={getCaseStudyUrl(workbench.definition.id)!}>
+                Read the case study <span aria-hidden="true">↗</span>
+              </a>
             ) : null}
           </>
         ) : (

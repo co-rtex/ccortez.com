@@ -2015,3 +2015,22 @@ body {
     min-width: 0;
   }
 }
+
+/* Flagship panels: the written case study on ccortez.com, beside the live model. */
+.experience-panel__case-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 1.9rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1f4f8a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.experience-panel__case-link:focus-visible {
+  outline: 3px solid #2f8f63;
+  outline-offset: 2px;
+}
