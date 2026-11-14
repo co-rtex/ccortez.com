@@ -2,9 +2,12 @@ import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
 
 /**
  * The flagship benches: the work that also has a full case study on the professional site. "Featured" used to be
- * every anchor-tier bench (ten of nineteen), which singled nothing out. Flagships get the guide's tag, a "Case
- * study" chip in the panel, and a name badge that reads from across the plaza, and they flank the north gate the
- * spawn camera faces.
+ * every anchor-tier bench (ten of nineteen), which singled nothing out. Flagships get the guide's "Case study" tag,
+ * a "Read the case study" link in the panel, and a numbered name badge that reads from across the plaza, and they
+ * flank the north gate the spawn camera faces.
+ *
+ * Keep this map in step with `islandBench` in the professional site's src/content/caseStudies.ts (both repos pin it
+ * in a test).
  */
 const CASE_STUDY_SLUG_BY_WORKBENCH_ID: Readonly<Record<string, string>> = {
   taskforge: 'taskforge',

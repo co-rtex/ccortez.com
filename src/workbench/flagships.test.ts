@@ -64,3 +64,16 @@ describe('long-range labels', () => {
     expect(hasLongRangeLabel('footymind')).toBe(false);
   });
 });
+
+describe('case-study links', () => {
+  // Pinned on purpose: the professional site's `islandBench` fields link to these bench ids, and its content test
+  // pins the same pairs. Renaming either side must change both.
+  it('maps each flagship bench to its case-study slug on the professional site', () => {
+    expect(Object.fromEntries(FLAGSHIP_WORKBENCH_IDS.map((id) => [id, getCaseStudyUrl(id)?.split('/work/')[1]]))).toEqual({
+      taskforge: 'taskforge/',
+      enginex: 'enginex/',
+      quantlab: 'quantlab/',
+      'lidar-phenotyping-research': 'lidar-phenotyping/',
+    });
+  });
+});
