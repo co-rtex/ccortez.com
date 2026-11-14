@@ -4,8 +4,10 @@
  * A toy limit-order book for the EngineX workbench: the ideas the engine is built on, small enough to watch.
  * It is not EngineX's code.
  *
- * - One sequencer: orders wait in an inbox and are taken one at a time; each gets the next sequence number.
- * - Journal first: a sequenced order is appended to the journal before it touches the book.
+ * - One sequencer: orders wait in an inbox and are taken one at a time, in arrival order; each gets the next
+ *   sequence number, is matched in memory and is recorded in the journal. (In EngineX an order is acknowledged
+ *   only after its journal entry is synced; the model has no acknowledgements.)
+ * - Limit orders only, as in EngineX: a visitor's order is a limit order priced to cross the book.
  * - Price-time priority: an incoming order fills against the best opposite price first and, within a price,
  *   against the oldest resting order first. What is left rests at its limit price, behind earlier orders there.
  * - Determinism: replaying the journal into an empty book reproduces the same book and the same state hash.
@@ -14,11 +16,11 @@ export type Side = 'buy' | 'sell';
 
 export interface IncomingOrder {
   side: Side;
-  /** Limit price in ticks; a market order uses the far end of the price range. */
+  /** Limit price in ticks. */
   price: number;
   qty: number;
-  /** True for a visitor's market order (shown differently in the scene). */
-  market?: boolean;
+  /** True for an order a visitor sent (shown differently in the scene and announced). */
+  visitor?: boolean;
 }
 
 export interface RestingOrder {
@@ -125,17 +127,21 @@ export function submit(sim: BookSim, order: IncomingOrder): BookSim {
   return { ...sim, inbox: [...sim.inbox, order] };
 }
 
-/** Step until no visitor (market) order is waiting, so a paused book shows a submitted order's fills at once. */
-export function sequenceMarketOrders(sim: BookSim): BookSim {
+/** Step until no visitor order is waiting, so a paused book shows a submitted order's fills at once. */
+export function sequenceVisitorOrders(sim: BookSim): BookSim {
   let next = sim;
-  for (let guard = 0; guard < INBOX_LIMIT + VISITOR_ROOM + 2 && next.inbox.some((order) => order.market); guard += 1) {
+  for (let guard = 0; guard < INBOX_LIMIT + VISITOR_ROOM + 2 && next.inbox.some((order) => order.visitor); guard += 1) {
     next = step(next);
   }
   return next;
 }
 
-export function marketOrder(side: Side, qty: number): IncomingOrder {
-  return { side, price: side === 'buy' ? MAX_PRICE : MIN_PRICE, qty, market: true };
+/**
+ * A visitor's order: a limit order priced at the far end of the range, so it crosses the book and fills against
+ * the best prices first; whatever it cannot fill rests at its limit, as any limit order does.
+ */
+export function crossingOrder(side: Side, qty: number): IncomingOrder {
+  return { side, price: side === 'buy' ? MAX_PRICE : MIN_PRICE, qty, visitor: true };
 }
 
 /**
@@ -173,7 +179,7 @@ function arrival(sim: BookSim, random: () => number): IncomingOrder {
   return { side, price: Math.min(MAX_PRICE, Math.max(MIN_PRICE, price)), qty };
 }
 
-/** The sequencer: journal the oldest inbox order, then match it. */
+/** The sequencer: take the oldest inbox order, give it a sequence number, record it in the journal and match it. */
 function sequence(sim: BookSim): BookSim {
   const [order, ...rest] = sim.inbox;
   if (!order) return sim;
@@ -210,7 +216,8 @@ function applyOrder(
   }
   const verb = order.side === 'buy' ? 'buy' : 'sell';
   let lastEvent: string;
-  if (remaining > 0 && !order.market) {
+  const who = order.visitor ? 'your ' : '';
+  if (remaining > 0) {
     const own = order.side === 'buy' ? bids : asks;
     let level = own.find((candidate) => candidate.price === order.price);
     if (!level) {
@@ -221,15 +228,10 @@ function applyOrder(
     level.orders.push({ seq, qty: remaining });
     lastEvent =
       filled > 0
-        ? `#${seq} ${verb} ${order.qty} at ${order.price}: filled ${filled}, ${remaining} rests at ${order.price}`
-        : `#${seq} ${verb} ${order.qty} at ${order.price} rests behind earlier orders at that price`;
-  } else if (order.market) {
-    lastEvent =
-      remaining > 0
-        ? `#${seq} market ${verb} ${order.qty}: filled ${filled}; the book ran out for the other ${remaining}`
-        : `#${seq} market ${verb} ${order.qty}: filled against the best prices, oldest order first`;
+        ? `#${seq} ${who}${verb} ${order.qty} at ${order.price}: filled ${filled}, ${remaining} rests at ${order.price}`
+        : `#${seq} ${who}${verb} ${order.qty} at ${order.price} rests behind earlier orders at that price`;
   } else {
-    lastEvent = `#${seq} ${verb} ${order.qty} at ${order.price}: filled in full`;
+    lastEvent = `#${seq} ${who}${verb} ${order.qty} at ${order.price}: filled in full`;
   }
   return { bids, asks, trades, lastEvent };
 }

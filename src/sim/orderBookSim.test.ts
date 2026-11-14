@@ -5,12 +5,12 @@ import {
   bestBid,
   bookHash,
   createBook,
-  marketOrder,
+  crossingOrder,
   replayJournal,
   restingLots,
   step,
   submit,
-  sequenceMarketOrders,
+  sequenceVisitorOrders,
   type BookSim,
 } from './orderBookSim';
 
@@ -47,7 +47,7 @@ describe('toy order book', () => {
   it('fills the best price first and, within a price, the oldest order first', () => {
     // Asks at 11: #2 (2 lots) then #6 at 12... the opening book has two orders at 12: #4 then #6.
     let sim = createBook(1);
-    sim = submit({ ...sim, inbox: [] }, marketOrder('buy', 4));
+    sim = submit({ ...sim, inbox: [] }, crossingOrder('buy', 4));
     sim = step({ ...sim, rng: 0 });
     const fills = sim.trades.filter((trade) => trade.seq === sim.nextSeq - 1);
     expect(fills.map((fill) => [fill.price, fill.maker, fill.qty])).toEqual([
@@ -57,24 +57,24 @@ describe('toy order book', () => {
     ]);
   });
 
-  it('sequences strictly in arrival order, refuses a full line, and can run a paused book up to a market order', () => {
+  it('sequences strictly in arrival order, refuses a full line, and can run a paused book up to a visitor order', () => {
     let sim = createBook(4);
     sim = { ...sim, inbox: [{ side: 'buy', price: 8, qty: 1 }] };
-    const queued = submit(sim, marketOrder('sell', 2));
-    expect(queued.inbox.map((order) => Boolean(order.market))).toEqual([false, true]);
+    const queued = submit(sim, crossingOrder('sell', 2));
+    expect(queued.inbox.map((order) => Boolean(order.visitor))).toEqual([false, true]);
     let full = queued;
-    for (let i = 0; i < 10; i += 1) full = submit(full, marketOrder('buy', 1));
-    expect(submit(full, marketOrder('buy', 1))).toBe(full);
-    const done = sequenceMarketOrders(queued);
-    expect(done.inbox.some((order) => order.market)).toBe(false);
+    for (let i = 0; i < 10; i += 1) full = submit(full, crossingOrder('buy', 1));
+    expect(submit(full, crossingOrder('buy', 1))).toBe(full);
+    const done = sequenceVisitorOrders(queued);
+    expect(done.inbox.some((order) => order.visitor)).toBe(false);
     const sequenced = done.journal.slice(queued.journal.length);
     expect(sequenced[0]).toMatchObject({ side: 'buy', price: 8 });
-    expect(sequenced[1]).toMatchObject({ side: 'sell', market: true });
+    expect(sequenced[1]).toMatchObject({ side: 'sell', visitor: true });
   });
 
   it('replaying the journal reproduces the book exactly', () => {
     let sim = run(createBook(99), 60);
-    sim = submit(sim, marketOrder('sell', 3));
+    sim = submit(sim, crossingOrder('sell', 3));
     sim = run(sim, 40);
     const replayed = replayJournal(sim.journal);
     expect(bookHash(replayed)).toBe(bookHash(sim));

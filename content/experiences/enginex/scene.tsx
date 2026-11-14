@@ -18,7 +18,8 @@ import { prefersReducedMotion } from '../../../src/world/reducedMotion';
  * written to the journal (the row of slabs on the left, newest at the front) and only then touches the book: the
  * ladder in the middle, bids stacked to the left of the price spine and asks to the right, one cube per lot, with
  * alternating shades marking separate orders queued at a price (oldest nearest the spine fills first). Fills drop
- * into the trades tray on the right. The panel can send market orders and replay the journal to the same state.
+ * into the trades tray on the right. The panel can send limit orders priced to cross the book (EngineX accepts only
+ * limit orders) and replay the journal to the same state.
  */
 
 const palette = {
@@ -50,7 +51,7 @@ const COLORS = {
   ask: [new Color('#d8664f'), new Color('#f2a691')],
   buyToken: new Color('#3f9e6e'),
   sellToken: new Color('#d8664f'),
-  market: new Color('#f0b44c'),
+  visitor: new Color('#f0b44c'),
   trade: new Color('#f3ecd8'),
 };
 
@@ -176,7 +177,7 @@ export default function EnginexScene(props: ExperienceSceneProps) {
         dummy.scale.setScalar(order ? 0.1 : 0);
         dummy.updateMatrix();
         inbox.setMatrixAt(i, dummy.matrix);
-        inbox.setColorAt(i, order?.market ? COLORS.market : order?.side === 'buy' ? COLORS.buyToken : COLORS.sellToken);
+        inbox.setColorAt(i, order?.visitor ? COLORS.visitor : order?.side === 'buy' ? COLORS.buyToken : COLORS.sellToken);
       }
       inbox.instanceMatrix.needsUpdate = true;
       if (inbox.instanceColor) inbox.instanceColor.needsUpdate = true;
@@ -195,7 +196,7 @@ export default function EnginexScene(props: ExperienceSceneProps) {
         dummy.scale.set(entry ? 1 : 0, entry ? 1 : 0, entry ? 1 : 0);
         dummy.updateMatrix();
         journal.setMatrixAt(i, dummy.matrix);
-        journal.setColorAt(i, entry?.market ? COLORS.market : entry?.side === 'buy' ? COLORS.bid[0]! : COLORS.ask[0]!);
+        journal.setColorAt(i, entry?.visitor ? COLORS.visitor : entry?.side === 'buy' ? COLORS.bid[0]! : COLORS.ask[0]!);
       }
       journal.instanceMatrix.needsUpdate = true;
       if (journal.instanceColor) journal.instanceColor.needsUpdate = true;
@@ -281,7 +282,7 @@ export default function EnginexScene(props: ExperienceSceneProps) {
       <Label show={isFocused} position={[-0.6, 1.45, LADDER_Z]}>bids</Label>
       <Label show={isFocused} position={[0.6, 1.45, LADDER_Z]}>asks</Label>
       <Label show={isFocused} position={[GATE.x, 0.82, GATE.z]}>sequencer</Label>
-      <Label show={isFocused} position={[JOURNAL.x, 0.5, 0]}>journal (written first)</Label>
+      <Label show={isFocused} position={[JOURNAL.x, 0.5, 0]}>journal</Label>
       <Label show={isFocused} position={[TRADES.x, 0.55, TRADES.z]}>trades</Label>
     </RecruiterSceneShell>
   );

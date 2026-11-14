@@ -11,16 +11,16 @@ describe('EngineX bench order book store', () => {
     expect(useEnginexBook.getState().sim.tick).toBe(before + 3);
   });
 
-  it('queues a market order for the sequencer and clears an earlier replay result', () => {
+  it('queues a visitor order for the sequencer and clears an earlier replay result', () => {
     useEnginexBook.getState().replayJournal();
     expect(useEnginexBook.getState().replay?.matches).toBe(true);
-    useEnginexBook.getState().market('buy');
+    useEnginexBook.getState().send('buy');
     expect(useEnginexBook.getState().replay).toBeNull();
-    expect(useEnginexBook.getState().sim.inbox.at(-1)).toMatchObject({ side: 'buy', market: true, qty: 3 });
+    expect(useEnginexBook.getState().sim.inbox.at(-1)).toMatchObject({ side: 'buy', visitor: true, qty: 3 });
   });
 
   it('replays the journal to the live state after a run', () => {
-    useEnginexBook.getState().market('sell');
+    useEnginexBook.getState().send('sell');
     useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS * 40);
     useEnginexBook.getState().replayJournal();
     const replay = useEnginexBook.getState().replay!;
@@ -28,13 +28,13 @@ describe('EngineX bench order book store', () => {
     expect(replay.entries).toBe(useEnginexBook.getState().sim.journal.length);
   });
 
-  it('puts a market order at the back of the line, in arrival order, and announces its fills once sequenced', () => {
+  it('puts a visitor order at the back of the line, in arrival order, and announces its fills once sequenced', () => {
     useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS * 5);
     const waiting = useEnginexBook.getState().sim.inbox.length;
-    useEnginexBook.getState().market('sell');
-    expect(useEnginexBook.getState().sim.inbox.at(-1)).toMatchObject({ side: 'sell', market: true });
+    useEnginexBook.getState().send('sell');
+    expect(useEnginexBook.getState().sim.inbox.at(-1)).toMatchObject({ side: 'sell', visitor: true });
     expect(useEnginexBook.getState().sim.inbox).toHaveLength(waiting + 1);
     useEnginexBook.getState().advance(ENGINEX_TICK_SECONDS * 8);
-    expect(useEnginexBook.getState().announcement).toMatch(/market sell 3/);
+    expect(useEnginexBook.getState().announcement).toMatch(/your sell 3 at 6/);
   });
 });

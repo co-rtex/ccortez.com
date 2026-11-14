@@ -24,7 +24,7 @@ describe("recovery trace", () => {
     expect(recoveryTrace(runTo(createSim(2027), 10))).toBeNull();
   });
 
-  it("follows the stranded job from the crash to its recovery under a newer fence", () => {
+  it("follows the stranded job from the crash to its recovery under a new lease", () => {
     const tick = busyTick(2027, 2);
     let sim = addInput(runTo(createSim(2027), tick), { type: "kill", workerId: 2 });
     sim = step(sim);
@@ -41,8 +41,8 @@ describe("recovery trace", () => {
     expect(trace.steps.every((s) => s.tick !== null)).toBe(true);
     const titles = trace.steps.map((s) => s.title);
     expect(titles[1]).toBe("Lease expired, job requeued");
-    const claim = titles.find((t) => /claimed it with fence/.test(t))!;
-    expect(Number(claim.match(/fence (\d+)/)![1])).toBeGreaterThan(trace.staleFence);
+    const claim = titles.find((t) => /claimed it under lease/.test(t))!;
+    expect(Number(claim.match(/lease (\d+)/)![1])).not.toBe(trace.staleLease);
     // Ticks never go backwards.
     const ticks = trace.steps.map((s) => s.tick!);
     expect([...ticks].sort((a, b) => a - b)).toEqual(ticks);

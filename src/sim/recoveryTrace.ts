@@ -4,7 +4,7 @@ import type { Sim, SimEvent } from "./jobSim";
 /**
  * Follows the job held by the most recently crashed worker, from the crash to wherever it is now. The simulator
  * shows this beside the event log, so the recovery that TaskForge is built around reads as one story: the worker
- * dies, the database still says "running", the lease runs out, another worker claims the job with a newer fence,
+ * dies, the database still says "running", the lease runs out, another worker claims the job under a new lease,
  * and the job finishes. The last step is what the simulation is waiting for next, if anything.
  */
 export type TraceStep = {
@@ -19,7 +19,7 @@ export type RecoveryTrace = {
   jobId: number;
   workerId: number;
   crashTick: number;
-  staleFence: number;
+  staleLease: number;
   steps: TraceStep[];
   outcome: "in_progress" | "recovered" | "dead_lettered";
 };
@@ -33,17 +33,17 @@ export function recoveryTrace(sim: Sim): RecoveryTrace | null {
       break;
     }
   }
-  if (!crash || crash.jobId === undefined || crash.workerId === undefined || crash.fence === undefined) return null;
+  if (!crash || crash.jobId === undefined || crash.workerId === undefined || crash.lease === undefined) return null;
 
   const jobId = crash.jobId;
   const workerId = crash.workerId;
-  const staleFence = crash.fence;
+  const staleLease = crash.lease;
   const steps: TraceStep[] = [
     {
       key: `crash-${crash.seq}`,
       tick: crash.tick,
       title: `w${workerId} crashed holding job ${jobId}`,
-      detail: `Its heartbeats stop. The queue still records job ${jobId} as running under fence ${staleFence}; nothing has noticed the crash yet.`,
+      detail: `It stops renewing its lease. The queue still records job ${jobId} as running under lease ${staleLease}; nothing has noticed the crash yet.`,
     },
   ];
 
@@ -58,17 +58,17 @@ export function recoveryTrace(sim: Sim): RecoveryTrace | null {
           key,
           tick: event.tick,
           title: "Lease expired, job requeued",
-          detail: `No heartbeat renewed the lease, so the reconciler took job ${jobId} back from w${workerId} and put it on the queue.`,
+          detail: `Nothing renewed lease ${staleLease}, so the reconciler took job ${jobId} back from w${workerId} and put it on the queue. The lost attempt still counts toward the job's limit.`,
         });
         break;
       case "claim":
         steps.push({
           key,
           tick: event.tick,
-          title: `w${event.workerId} claimed it with fence ${event.fence}`,
+          title: `w${event.workerId} claimed it under lease ${event.lease}`,
           detail: reclaimed
-            ? `Another attempt, under a newer fence again.`
-            : `Each attempt gets a newer fence. In TaskForge a late report from w${workerId}'s attempt, still carrying fence ${staleFence}, is refused as stale; this model only shows the numbers.`,
+            ? `Another attempt, under its own lease again.`
+            : `A new attempt under its own lease. In TaskForge a late report from w${workerId}'s attempt would name lease ${staleLease}, which has expired, so it would be refused; this model does not simulate reports.`,
         });
         reclaimed = true;
         break;
@@ -113,7 +113,7 @@ export function recoveryTrace(sim: Sim): RecoveryTrace | null {
         detail: `Nobody will renew it: w${workerId} is down until tick ${holder.restartAt}.`,
       };
     } else if (job?.state === "running" && holder) {
-      waiting = { title: `w${holder.id} is working on it`, detail: `Heartbeats keep its lease (fence ${job.fence}) alive.` };
+      waiting = { title: `w${holder.id} is working on it`, detail: `It renews lease ${job.lease} as it works.` };
     } else if (job?.state === "queued") {
       waiting = { title: "Waiting for a free worker", detail: "The first idle worker takes the lowest-numbered queued job." };
     } else if (job?.state === "retry_wait") {
@@ -122,7 +122,7 @@ export function recoveryTrace(sim: Sim): RecoveryTrace | null {
     if (waiting) steps.push({ key: "next", tick: null, ...waiting });
   }
 
-  return { jobId, workerId, crashTick: crash.tick, staleFence, steps, outcome };
+  return { jobId, workerId, crashTick: crash.tick, staleLease, steps, outcome };
 }
 
 function capitalise(text: string): string {

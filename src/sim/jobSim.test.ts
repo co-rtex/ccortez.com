@@ -49,13 +49,13 @@ describe("job simulation", () => {
     }
   });
 
-  it("issues strictly increasing fences", () => {
+  it("gives every claim its own lease id", () => {
     const sim = runToEnd(5, DEFAULT_CONFIG, [{ tick: 2, type: "kill", workerId: 1 }]);
-    const fences = sim.events
+    const leases = sim.events
       .filter((e) => e.kind === "claim")
-      .map((e) => Number(/fence (\d+)/.exec(e.text)?.[1]));
-    expect(fences).toEqual([...fences].sort((x, y) => x - y));
-    expect(new Set(fences).size).toBe(fences.length);
+      .map((e) => Number(/lease (\d+)/.exec(e.text)?.[1]));
+    expect(leases).toEqual([...leases].sort((x, y) => x - y));
+    expect(new Set(leases).size).toBe(leases.length);
   });
 
   it("dead-letters after the attempt limit when every attempt fails", () => {
@@ -87,11 +87,14 @@ describe("job simulation", () => {
   });
 
   it("keeps its history hashes (golden values), so tagging events never changes a replay", () => {
-    expect(formatHash(runToEnd(2027).hash)).toBe("f2553cd0");
+    // Re-pinned on 2026-11-13 (were f2553cd0 and f035f824): event text now says "lease N" instead of "fence N",
+    // because TaskForge refuses a stale report for naming an expired lease, not by comparing a newer token. The
+    // simulation itself (the sequence of events and states) did not change; only the hashed wording did.
+    expect(formatHash(runToEnd(2027).hash)).toBe("7fe50be6");
     const crashes = [
       { tick: 3, type: "kill" as const, workerId: 2 },
       { tick: 9, type: "kill" as const, workerId: 1 },
     ];
-    expect(formatHash(runToEnd(2027, DEFAULT_CONFIG, crashes).hash)).toBe("f035f824");
+    expect(formatHash(runToEnd(2027, DEFAULT_CONFIG, crashes).hash)).toBe("528169be");
   });
 });

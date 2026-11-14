@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 
-import { bookHash, createBook, marketOrder, replayJournal, step, submit, type BookSim, type Side } from './orderBookSim';
+import { bookHash, createBook, crossingOrder, replayJournal, step, submit, type BookSim, type Side } from './orderBookSim';
 
 /**
  * The live toy order book behind the EngineX workbench. The diorama and the panel's controls both read it, so a
- * market order sent from the panel is seen going through the sequencer gate and into the ladder.
+ * visitor's order sent from the panel is seen going through the sequencer gate and into the ladder.
  */
 export const ENGINEX_TICK_SECONDS = 0.9;
 const FIRST_SEED = 2026;
@@ -28,10 +28,11 @@ interface EnginexBookState {
   /** performance.now() of the last advance, so a panel can tell whether a scene is driving the model. */
   lastAdvancedAt: number;
   replay: ReplayCheck | null;
-  /** What the visitor's latest market order did, once the sequencer has taken it; announced to screen readers. */
+  /** What the visitor's latest order did, once the sequencer has taken it; announced to screen readers. */
   announcement: string;
   advance: (seconds: number) => void;
-  market: (side: Side) => void;
+  /** Send a visitor's order: a limit order priced to cross the book (EngineX accepts only limit orders). */
+  send: (side: Side) => void;
   replayJournal: () => void;
   restart: () => void;
 }
@@ -56,19 +57,19 @@ export const useEnginexBook = create<EnginexBookState>((set, get) => ({
       } else {
         sim = step(sim);
       }
-      if (sim.journal.at(-1)?.market && sim.journal.length !== state.sim.journal.length) announcement = sim.lastEvent;
+      if (sim.journal.at(-1)?.visitor && sim.journal.length !== state.sim.journal.length) announcement = sim.lastEvent;
     }
     if (sim !== state.sim) set({ sim, pending, announcement, replay });
     else set({ pending });
   },
-  market: (side) => {
+  send: (side) => {
     const { sim } = get();
-    const next = submit(sim, marketOrder(side, 3));
+    const next = submit(sim, crossingOrder(side, 3));
     if (next === sim) {
       set({ announcement: 'The sequencer’s line is full; try again in a moment.' });
       return;
     }
-    set({ sim: next, replay: null, announcement: `Market ${side} 3 joined the line at the sequencer.` });
+    set({ sim: next, replay: null, announcement: `Your ${side} 3 joined the line at the sequencer.` });
   },
   replayJournal: () => {
     const { sim } = get();

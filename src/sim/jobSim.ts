@@ -4,8 +4,8 @@
 /**
  * A small deterministic simulation of a durable job queue.
  *
- * Workers pull jobs, hold them under a lease, heartbeat while running, and
- * report an outcome. A crashed worker stops heartbeating; once its lease
+ * Workers pull jobs, hold them under a lease, renew it while running, and
+ * report an outcome. A crashed worker stops renewing; once its lease
  * expires a reconciler requeues the job for another attempt. Handler failures
  * retry with exponential backoff until a dead-letter limit.
  *
@@ -23,7 +23,7 @@ export type Job = {
   readyAt: number;
   workerId: number | null;
   leaseUntil: number;
-  fence: number;
+  lease: number;
 };
 
 export type Worker = {
@@ -43,8 +43,8 @@ export type SimEvent = {
   jobId?: number;
   /** The worker this event is about, if any. Not part of the history hash. */
   workerId?: number;
-  /** The job's fence at this event, if it is about a job. Not part of the history hash. */
-  fence?: number;
+  /** Id of the job's current lease at this event, if it is about a job. Not part of the history hash. */
+  lease?: number;
 };
 
 export type SimInput = { tick: number; type: "kill"; workerId: number };
@@ -52,7 +52,7 @@ export type SimInput = { tick: number; type: "kill"; workerId: number };
 export type SimConfig = {
   jobs: number;
   workers: number;
-  /** Ticks a lease lasts without a heartbeat. */
+  /** Ticks a lease lasts without a renewal. (TaskForge keeps heartbeats and renewal separate; the model merges them.) */
   leaseTicks: number;
   /** Ticks before a crashed worker comes back with a new session. */
   restartTicks: number;
@@ -66,7 +66,7 @@ export type Sim = {
   config: SimConfig;
   tick: number;
   rng: number;
-  nextFence: number;
+  nextLease: number;
   jobs: Job[];
   workers: Worker[];
   events: SimEvent[];
@@ -111,7 +111,7 @@ export function createSim(seed: number, config: SimConfig = DEFAULT_CONFIG, inpu
     config,
     tick: 0,
     rng: seed >>> 0,
-    nextFence: 1,
+    nextLease: 1,
     jobs: Array.from({ length: config.jobs }, (_, i) => ({
       id: i + 1,
       state: "queued" as const,
@@ -120,7 +120,7 @@ export function createSim(seed: number, config: SimConfig = DEFAULT_CONFIG, inpu
       readyAt: 0,
       workerId: null,
       leaseUntil: 0,
-      fence: 0,
+      lease: 0,
     })),
     workers: Array.from({ length: config.workers }, (_, i) => ({
       id: i + 1,
@@ -163,9 +163,9 @@ export function step(prev: Sim): Sim {
   const events = [...prev.events];
   let hash = prev.hash;
   let rng = prev.rng;
-  let nextFence = prev.nextFence;
+  let nextLease = prev.nextLease;
 
-  const emit = (kind: SimEvent["kind"], text: string, about: Pick<SimEvent, "jobId" | "workerId" | "fence"> = {}) => {
+  const emit = (kind: SimEvent["kind"], text: string, about: Pick<SimEvent, "jobId" | "workerId" | "lease"> = {}) => {
     const seq = events.length + 1;
     events.push({ seq, tick, kind, text, ...about });
     hash = fnv1a(hash, `${seq}|${tick}|${kind}|${text}`);
@@ -190,7 +190,7 @@ export function step(prev: Sim): Sim {
         ? `worker ${worker.id} crashed while holding job ${worker.jobId}`
         : `worker ${worker.id} crashed while idle`,
       worker.jobId !== null
-        ? { jobId: worker.jobId, workerId: worker.id, fence: jobById(worker.jobId).fence }
+        ? { jobId: worker.jobId, workerId: worker.id, lease: jobById(worker.jobId).lease }
         : { workerId: worker.id },
     );
     // The job stays "running" in the database; nobody knows yet. Only its lease will tell.
@@ -214,16 +214,16 @@ export function step(prev: Sim): Sim {
     job.workerId = null;
     if (job.attempt >= config.maxAttempts) {
       job.state = "dead_letter";
-      emit("dead_letter", `lease on job ${job.id} expired (fence ${job.fence}); out of attempts, dead-lettered`, {
+      emit("dead_letter", `lease ${job.lease} on job ${job.id} expired; out of attempts, dead-lettered`, {
         jobId: job.id,
-        fence: job.fence,
+        lease: job.lease,
       });
     } else {
       job.state = "queued";
       job.readyAt = tick;
-      emit("lease_expired", `lease on job ${job.id} expired (fence ${job.fence}); requeued`, {
+      emit("lease_expired", `lease ${job.lease} on job ${job.id} expired; requeued`, {
         jobId: job.id,
-        fence: job.fence,
+        lease: job.lease,
       });
     }
   }
@@ -236,7 +236,7 @@ export function step(prev: Sim): Sim {
     }
   }
 
-  // 5. Live workers heartbeat and make progress.
+  // 5. Live workers renew their lease and make progress.
   for (const worker of workers) {
     if (!worker.alive || worker.jobId === null) continue;
     const job = jobById(worker.jobId);
@@ -252,7 +252,7 @@ export function step(prev: Sim): Sim {
         emit("dead_letter", `job ${job.id} failed attempt ${job.attempt}; dead-lettered`, {
           jobId: job.id,
           workerId: worker.id,
-          fence: job.fence,
+          lease: job.lease,
         });
       } else {
         const backoff = 2 ** job.attempt;
@@ -261,15 +261,15 @@ export function step(prev: Sim): Sim {
         emit("failure", `job ${job.id} failed attempt ${job.attempt}; retry in ${backoff} ticks`, {
           jobId: job.id,
           workerId: worker.id,
-          fence: job.fence,
+          lease: job.lease,
         });
       }
     } else {
       job.state = "succeeded";
-      emit("success", `worker ${worker.id} finished job ${job.id} (fence ${job.fence})`, {
+      emit("success", `worker ${worker.id} finished job ${job.id} (lease ${job.lease})`, {
         jobId: job.id,
         workerId: worker.id,
-        fence: job.fence,
+        lease: job.lease,
       });
     }
   }
@@ -281,20 +281,20 @@ export function step(prev: Sim): Sim {
     if (!job) break;
     job.state = "running";
     job.attempt += 1;
-    job.fence = nextFence;
-    nextFence += 1;
+    job.lease = nextLease;
+    nextLease += 1;
     job.workerId = worker.id;
     job.workLeft = 2 + Math.floor(random() * 4);
     job.leaseUntil = tick + config.leaseTicks;
     worker.jobId = job.id;
-    emit("claim", `worker ${worker.id} claimed job ${job.id} (attempt ${job.attempt}, fence ${job.fence})`, {
+    emit("claim", `worker ${worker.id} claimed job ${job.id} (attempt ${job.attempt}, lease ${job.lease})`, {
       jobId: job.id,
       workerId: worker.id,
-      fence: job.fence,
+      lease: job.lease,
     });
   }
 
-  return { ...prev, tick: tick + 1, rng, nextFence, jobs, workers, events, hash };
+  return { ...prev, tick: tick + 1, rng, nextLease, jobs, workers, events, hash };
 }
 
 /** Runs a simulation to completion. Bounded so a bad config cannot loop forever. */

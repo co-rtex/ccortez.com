@@ -14,7 +14,7 @@ import { prefersReducedMotion } from '../../../src/world/reducedMotion';
 /**
  * TaskForge as a working model rather than a desk: the same deterministic simulation as the homepage of
  * ccortez.com, played out in 3D. Jobs wait on the queue pallet, a worker pod pulls one and holds it under a lease
- * (the ring around the pod), heartbeats keep the ring full, and a crashed pod's lease runs down until the
+ * (the ring around the pod), renewals keep the ring full, and a crashed pod's lease runs down until the
  * reconciler puts the job back in the queue. Failed attempts wait on the backoff shelf; jobs that keep failing
  * land in the dead-letter bin. PostgreSQL, the only authoritative store, flashes on every committed event.
  * It is a toy model of TaskForge's rules, not the real system; the panel says so.
@@ -194,7 +194,7 @@ export default function TaskforgeScene(props: ExperienceSceneProps) {
       if (ring && ringMaterial) {
         const holding = Boolean(job && job.state === 'running');
         const remaining = holding && job ? (job.leaseUntil - sim.tick) / sim.config.leaseTicks : 0;
-        // Shown while the job is still claimed: full and green under heartbeats, shrinking red once they stop.
+        // Shown while the job is still claimed: full and green while the worker renews, shrinking red once it stops.
         ring.visible = holding;
         ring.scale.setScalar(0.35 + 0.65 * Math.max(0, Math.min(1, remaining)));
         const color = worker.alive ? '#58c08f' : '#d4513c';
