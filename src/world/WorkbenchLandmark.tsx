@@ -10,7 +10,7 @@ import { BENCH_PLINTH } from './benchPlinth';
 import { prefersReducedMotion } from './reducedMotion';
 import { START_HERE_WORKBENCH_ID } from './hub';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
-import { hasLongRangeLabel, isFlagshipWorkbench } from '../workbench/flagships';
+import { getTourStep, hasLongRangeLabel, isFlagshipWorkbench } from '../workbench/flagships';
 import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
 import {
   FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH,
@@ -470,6 +470,7 @@ export function WorkbenchLandmark({
   const wideViewport = useThree((state) => state.size.width >= FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH);
   const isFlagship = isFlagshipWorkbench(workbench.definition.id);
   const longRangeLabel = hasLongRangeLabel(workbench.definition.id);
+  const tourStep = getTourStep(workbench.definition.id);
   // Start Here stands right in front of the spawn point, so its badge sits just above the welcome board
   // (higher, it floated up against the fountain's armillary).
   const startBadgeY = 3.5;
@@ -629,6 +630,12 @@ export function WorkbenchLandmark({
             }`}
             style={{ opacity: 0 }}
           >
+            {/* Flagships carry their stop on the tour, so the route reads from the plaza. */}
+            {isFlagship && tourStep ? (
+              <span className="landmark-tooltip__stop" aria-hidden="true">
+                {tourStep.position}
+              </span>
+            ) : null}
             {workbench.definition.title}
             {/* Close by, the badge itself says how to open it: one label, not a prompt stacked on the badge. */}
             {showsPrompt ? <span className="landmark-tooltip__action">{isCoarsePointer() ? 'Tap to open' : 'Press E'}</span> : null}

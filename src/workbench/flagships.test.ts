@@ -39,8 +39,11 @@ describe('flagship benches', () => {
   });
 
   it('knows the neighbours of each stop, and nothing for benches off the route', () => {
-    expect(getTourStep('about-me-overview')).toEqual({ position: 1, total: 5, previousId: null, nextId: 'lidar-phenotyping-research' });
-    expect(getTourStep('quantlab')).toEqual({ position: 5, total: 5, previousId: 'enginex', nextId: null });
+    expect(getTourStep('about-me-overview')).toEqual({ position: 1, total: 5, previousId: null, nextId: 'taskforge' });
+    expect(getTourStep('quantlab')).toEqual({ position: 4, total: 5, previousId: 'enginex', nextId: 'lidar-phenotyping-research' });
+    expect(getTourStep('lidar-phenotyping-research')).toEqual({ position: 5, total: 5, previousId: 'quantlab', nextId: null });
+    // The route follows the professional site's case-study order.
+    expect(FLAGSHIP_TOUR.slice(1)).toEqual(['taskforge', 'enginex', 'quantlab', 'lidar-phenotyping-research']);
     expect(getTourStep('hcsc-automation')).toBeNull();
   });
 });

@@ -899,7 +899,7 @@ body {
 .landmark-tooltip--title {
   /* drei's Html wrapper has no width, so without max-content the badge shrinks to its narrowest wrap. */
   width: max-content;
-  max-width: 14rem;
+  max-width: 16rem;
   text-wrap: balance;
   transition: opacity 0.15s ease;
   border-color: rgba(221, 209, 180, 0.62);
@@ -919,6 +919,21 @@ body {
 .landmark-tooltip--flagship {
   border-color: rgba(240, 190, 96, 0.95);
   box-shadow: 0 0 0 1px rgba(240, 190, 96, 0.35);
+}
+
+/* The flagship's stop on the tour, before its name. */
+.landmark-tooltip__stop {
+  display: inline-grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-right: 0.4rem;
+  border-radius: 999px;
+  background: #f0be60;
+  color: #2b230f;
+  font-size: 0.7rem;
+  font-weight: 800;
+  vertical-align: 0.05em;
 }
 
 .landmark-tooltip--editor {

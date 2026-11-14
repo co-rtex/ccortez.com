@@ -52,12 +52,13 @@ export function getCaseStudyUrl(workbenchId: string): string | null {
  * the previous and next stop (travel and open, as from the guide); closing the panel leaves the visitor free to
  * roam. The last stop hands over to the written case studies and resume.
  */
+// The same order as the case studies on the professional site (TaskForge, EngineX, QuantLab, LiDAR), after Start Here.
 export const FLAGSHIP_TOUR: readonly string[] = [
   'about-me-overview',
-  'lidar-phenotyping-research',
   'taskforge',
   'enginex',
   'quantlab',
+  'lidar-phenotyping-research',
 ];
 
 export interface TourStep {
