@@ -94,3 +94,13 @@ describe('workbench scene range', () => {
     }
   });
 });
+
+describe('phone scene range', () => {
+  it('keeps the flagships at plaza range on phones and the rest near', () => {
+    const plaza = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, [], 'plaza');
+    const near = buildWorkbenchRuntime(WORKBENCH_LAYOUT, WORKBENCH_DISTRICTS, [], 'near');
+    const byId = (records: typeof plaza, id: string) => records.find((r) => r.definition.id === id)!;
+    expect(byId(near, 'taskforge').presentDistance).toBe(byId(plaza, 'taskforge').presentDistance);
+    expect(byId(near, 'footymind').presentDistance).toBeLessThan(byId(plaza, 'footymind').presentDistance);
+  });
+});

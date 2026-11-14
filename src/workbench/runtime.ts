@@ -21,6 +21,7 @@ import type {
   WorkbenchResolvedPlacement,
   WorkbenchValidationIssue,
 } from '../types/workbench';
+import { isFlagshipWorkbench } from './flagships';
 
 export const WORKBENCH_FOOTPRINT_RADIUS = 1.28;
 // Scenes appear from across the plaza (so the ring reads as destinations, not empty pads) and stream in a
@@ -187,7 +188,9 @@ export function buildWorkbenchRuntime(
   experiences: ExperienceRecord[],
   sceneRange: WorkbenchSceneRange = 'plaza',
 ): WorkbenchRuntimeRecord[] {
-  const padding = SCENE_RANGE_PADDING[sceneRange];
+  // On phones the flagships keep the plaza range, so the benches worth walking to are visible from the plaza; the
+  // rest stay near-range to hold the draw-call budget.
+  const paddingFor = (id: string) => SCENE_RANGE_PADDING[isFlagshipWorkbench(id) ? 'plaza' : sceneRange];
   const validatedDefinitions = validateWorkbenchLayout(definitions);
   const validatedDistricts = validateWorkbenchDistricts(districtDefinitions);
   const experienceById = new Map(experiences.map((experience) => [experience.manifest.id, experience] as const));
@@ -205,9 +208,9 @@ export function buildWorkbenchRuntime(
       placement: resolveWorkbenchPlacement(definition.placement),
       linkedExperience: definition.experienceId ? experienceById.get(definition.experienceId) : undefined,
       interactionRadius: definition.interactionRadius,
-      presentDistance: definition.interactionRadius + padding.present,
-      preloadDistance: definition.interactionRadius + padding.preload,
-      unloadDistance: definition.interactionRadius + padding.unload,
+      presentDistance: definition.interactionRadius + paddingFor(definition.id).present,
+      preloadDistance: definition.interactionRadius + paddingFor(definition.id).preload,
+      unloadDistance: definition.interactionRadius + paddingFor(definition.id).unload,
       issues: [] as WorkbenchValidationIssue[],
     };
   });

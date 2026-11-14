@@ -465,7 +465,8 @@ export function WorkbenchLandmark({
   const isPanelBench = useGameStore((state) => state.panelWorkbenchId === workbench.definition.id);
   const showsPrompt = shouldShowWorkbenchProximityPrompt(workbench, isNearby) && !panelOpen;
   const isStartHere = workbench.definition.id === START_HERE_WORKBENCH_ID;
-  // Long-range flagship badges only where they fit: on a narrow screen the far ones sit at the edges, half cut off.
+  // Long-range role badges only on wide screens; flagship badges at any width, since one that would sit half off the
+  // edge is hidden (badgeFitsAcross) and on a phone they are the only names across the plaza.
   const wideViewport = useThree((state) => state.size.width >= FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH);
   const isFlagship = isFlagshipWorkbench(workbench.definition.id);
   const longRangeLabel = hasLongRangeLabel(workbench.definition.id);
@@ -482,7 +483,7 @@ export function WorkbenchLandmark({
         playerPosition.z - workbench.placement.anchor.z,
       );
       // Start Here is the first destination, so its badge stays visible from anywhere on the plaza.
-      let shown = isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, longRangeLabel && wideViewport);
+      let shown = isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, longRangeLabel && (wideViewport || isFlagship));
       // Shown only because of the long range: hide it rather than let it sit half off the edge of the screen.
       if (shown && longRangeLabel && distance > TITLE_BADGE_RANGE) {
         const { anchor } = workbench.placement;
