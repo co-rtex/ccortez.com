@@ -24,7 +24,7 @@ import {
   type WorkbenchEditorTransformMode,
 } from '../workbench/editor';
 import { buildWorkbenchRuntime, serializeWorkbenchLayout } from '../workbench/runtime';
-import { PROFESSIONAL_SITE_URL } from './siteLinks';
+import { OWNER, PROFESSIONAL_SITE_URL } from './siteLinks';
 import { detectWebGLSupport } from './webgl';
 
 // The 3D scene (and three.js with it) loads separately, so the recruiter guide is usable sooner.
@@ -512,7 +512,10 @@ export default function App() {
               on a timer that could take it away before someone using assistive technology reaches it. */}
           {mobileLiteMode && !hasOpenedABench && !panelWorkbenchId ? (
             <div className="mobile-lite-banner">
-              {/* The phone's arrival card: the same invitation as on a desktop, in the banner's place. */}
+              {/* The phone's arrival card: whose island it is and the same invitation as on a desktop. */}
+              <p className="mobile-lite-banner__who">
+                <strong>{OWNER.name}</strong>, {OWNER.study}. {OWNER.seeking}.
+              </p>
               <button
                 type="button"
                 className="mobile-lite-banner__tour"

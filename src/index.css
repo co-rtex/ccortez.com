@@ -1916,6 +1916,27 @@ body {
   backdrop-filter: blur(9px);
 }
 
+.arrival-card__who {
+  margin: 0;
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: rgba(247, 238, 225, 0.82);
+}
+
+.arrival-card__who strong {
+  font-family: 'Syne', 'Avenir Next', sans-serif;
+  font-size: 1.15rem;
+  color: #fff7ea;
+}
+
+.mobile-lite-banner__who {
+  margin: 0 0 0.45rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
 .arrival-card__title {
   margin: 0;
   font-family: 'Syne', 'Avenir Next', sans-serif;

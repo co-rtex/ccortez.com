@@ -7,3 +7,14 @@
 export const PROFESSIONAL_SITE_URL = (
   (import.meta.env.VITE_PROFESSIONAL_SITE_URL as string | undefined) ?? 'https://ccortez.com'
 ).replace(/\/$/, '');
+
+/**
+ * Whose island this is, said on the first screen (the arrival card on a desktop, the banner on a phone). The same
+ * facts as the professional site's hero.
+ */
+export const OWNER = {
+  name: 'Christian Cortez',
+  // U+2060 (word joiner) after the en dash keeps 'UW–Madison' on one line on narrow screens.
+  study: 'CS and Data Science at UW–\u2060Madison, graduating May 2028',
+  seeking: 'Looking for Summer 2027 software engineering internships',
+} as const;

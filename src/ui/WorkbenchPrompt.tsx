@@ -4,6 +4,7 @@ import { useGameStore } from '../state/gameStore';
 import { getScenicRestSpotById } from '../world/restSpots';
 
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
+import { OWNER } from '../app/siteLinks';
 
 interface WorkbenchPromptProps {
   workbenches: WorkbenchRuntimeRecord[];
@@ -66,6 +67,12 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode, on
       // The arrival card: the one invitation on the first screen. It goes once the visitor starts walking.
       return (
         <section className="arrival-card" aria-labelledby="arrival-card-title">
+          <p className="arrival-card__who">
+            <strong>{OWNER.name}</strong>
+            <span>
+              {OWNER.study}. {OWNER.seeking}.
+            </span>
+          </p>
           <h2 id="arrival-card-title" className="arrival-card__title">
             Three of these projects run live models you can try.
           </h2>
