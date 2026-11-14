@@ -179,7 +179,41 @@ Done (each commit verified with lint, types, unit tests, build and GPU screensho
   61 fps with a panel open. Uncapped at the north ring the four live benches cost ~0.2 ms a frame (5.6 vs 5.4 ms
   median with bench scenes off).
 
-## Known issues / next candidates (ranked)
+## Sprint 2: one product (2026-11-13 evening, started 20:35:58 EST)
+
+Problems found:
+- The first view stacked the fountain, Start Here and the lighthouse into one column with the flagships a thin
+  band; the expanded recruiter guide covered a quarter of the screen; nothing on it pointed to a route.
+- 14 benches still shared the desk kit, including the main industry roles.
+- Source review (TaskForge docs, EngineX repo): the toys and the TaskForge copy claimed things the projects do not
+  do (EngineX market orders and journal-first; TaskForge numeric fences, heartbeat-as-renewal, workers talking to
+  PostgreSQL directly, "24 workers" killed). Fixed in both repos; see the professional claims ledger.
+- The professional branch linked to production's game, which does not support ?bench=, so the two development
+  versions could not be checked together.
+
+Done (each verified with lint, types, unit tests, build and GPU screenshots in `.shots/v9/`):
+- Arrival vista (`8a5d790`, `58ff0b9`): four compositions compared (`.shots/v9/opening-candidates.jpg`); the
+  camera opens high over the plaza (Start Here ahead, both district signs, the four named flagships, the whole
+  lighthouse) and settles into the follow view on the first step (cut under reduced motion; skipped on portrait
+  screens and with view parameters). The guide starts folded; an arrival card offers "Take the flagship tour";
+  Start Here's badge is amber. Independent art/UX critique acted on.
+- Flagship tour (`e5c478b`): Start Here, LiDAR, TaskForge, EngineX, QuantLab, as a footer on those panels (previous,
+  next, then the case studies and resume); no tour mode; one row on phones.
+- Tier B environments: HCSC reconciliation pass (`989d85e`), Phoenix-Aid extraction line (`ec7b166`), each a
+  tested fixed script, labelled as an illustration on made-up records.
+- Cross-site: flagship panels link to their case study (`08e4904`); VITE_PROFESSIONAL_SITE_URL and the site's
+  NEXT_PUBLIC_GAME_URL let both branches be built against each other; the round trip case study -> bench ->
+  case study -> back, back was verified at 1440 and 390 and is an opt-in e2e spec in the professional repo.
+- Accuracy (`9197e26`): shared models synced; golden hashes re-pinned with the reason recorded.
+- Performance: the vista shows more of the island while it lasts: uncapped spawn median 9.2–10.6 ms (was
+  6.4–7.0), p95 13.1–13.5 ms (was 12.3–12.7), 567 draw calls; 60 fps with vsync. It ends at the first step.
+  Overview 988 draw calls (was 1,026). 60 fps at HCSC and Phoenix-Aid.
+
+Release plan (when approved): release the game first (it adds ?bench= and links only to pages production already
+has), then the professional site (its bench links need the new game). Rollback: revert each Vercel production
+deployment; DNS is unchanged throughout.
+
+
 
 1. Bench dioramas: the four flagships are live models (minimap rings them; the phone badge overlap is fixed).
    Next: the 14 other benches still share the desk kit; the first candidates are the remaining anchor benches
