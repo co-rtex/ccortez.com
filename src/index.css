@@ -627,6 +627,8 @@ body {
 }
 
 .mobile-lite-banner {
+  /* The HUD layer passes pointer events through to the world; the banner's button and link must take them. */
+  pointer-events: auto;
   align-self: flex-start;
   max-width: min(700px, 90vw);
   background: rgba(239, 198, 124, 0.95);
