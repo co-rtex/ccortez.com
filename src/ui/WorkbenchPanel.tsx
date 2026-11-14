@@ -60,19 +60,18 @@ export function LinkedWorkbenchContent({
 }: LinkedWorkbenchContentProps) {
   const storyLevel = recruiterCard ? 'h4' : 'h3';
   const storyComponents = useMemo(() => ({ h2: StoryHeading(title, storyLevel) }), [title, storyLevel]);
+  // The role on its own line, then where and when, muted: one run-on line wrapped mid-name on a phone. A word
+  // joiner after an en dash keeps names like "UW–Madison" on one line.
+  const keepTogether = (text: string | undefined) => text?.replace(/–(?=\S)/g, '–\u2060');
   const recruiterMetaLine = recruiterCard
-    ? buildRecruiterMetaLine([
-        recruiterCard.roleLabel,
-        recruiterCard.organization,
-        recruiterCard.dateRange,
-        recruiterCard.location,
-      ])
+    ? buildRecruiterMetaLine([recruiterCard.organization, recruiterCard.dateRange, recruiterCard.location].map(keepTogether))
     : null;
 
   return (
     <>
       {recruiterCard ? (
         <section className="recruiter-card">
+          <p className="recruiter-card__role">{recruiterCard.roleLabel}</p>
           {recruiterMetaLine ? <p className="recruiter-card__meta">{recruiterMetaLine}</p> : null}
           <p className="recruiter-card__summary">{recruiterCard.summary}</p>
 

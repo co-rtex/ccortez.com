@@ -780,11 +780,18 @@ body {
   background: linear-gradient(180deg, rgba(255, 251, 243, 0.96), rgba(245, 236, 219, 0.86));
 }
 
+.recruiter-card__role {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
 .recruiter-card__meta {
-  margin: 0 0 0.7rem;
+  margin: 0.15rem 0 0.7rem;
   color: var(--panel-muted);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .recruiter-card__summary {
