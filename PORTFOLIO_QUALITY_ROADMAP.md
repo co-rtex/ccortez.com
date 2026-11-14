@@ -236,8 +236,13 @@ Not done this sprint (evaluated): contextual avatar animation beyond facing the 
 the other desk-kit benches; a real-phone GPU check.
 
 Release plan (when approved): release the game first (it adds ?bench= and links only to pages production already
-has), then the professional site (its bench links need the new game). Rollback: revert each Vercel production
-deployment; DNS is unchanged throughout.
+has), then the professional site (its bench links and island band need the new game).
+1. Merge `game/art-direction-pass` into `main`: the Pages workflow (`deploy-pages.yml`) deploys game.ccortez.com.
+   Check it: `scripts/verify-release.sh` and a load of `https://game.ccortez.com/?bench=taskforge`.
+2. Merge `site/visual-identity` into the professional `main`: Vercel deploys ccortez.com. Check it:
+   `BASE_URL=https://ccortez.com npm run test:e2e` and the round trip case study -> bench -> case study.
+Rollback: the game by reverting the merge on `main` (Pages redeploys the previous build); the professional site by
+Vercel's instant rollback to the previous production deployment. DNS is unchanged throughout.
 
 
 
