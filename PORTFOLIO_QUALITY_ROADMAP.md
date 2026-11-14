@@ -209,6 +209,23 @@ Done (each verified with lint, types, unit tests, build and GPU screenshots in `
   6.4–7.0), p95 13.1–13.5 ms (was 12.3–12.7), 567 draw calls; 60 fps with vsync. It ends at the first step.
   Overview 988 draw calls (was 1,026). 60 fps at HCSC and Phoenix-Aid.
 
+Later in the sprint:
+- Phones (`ede66f4`, `acf9784`): the arrival banner leads with the flagship tour, and it is tappable. The HUD
+  layer's `pointer-events: none` had let the canvas take every tap on it, including the old "Read the text
+  portfolio" link, which never worked on phones.
+- Accessibility (`a9030d2`): axe flagged the HCSC and Phoenix-Aid panels' scrolling body
+  (scrollable-region-focusable); it now takes keyboard focus, with a visible focus ring.
+- Professional site, from an independent product critique (passes 10–11 in its SPRINT_STATUS): the hero names
+  May 2028 and the Summer 2027 internship target above the fold; the simulator opens mid-run; the TaskForge case
+  study opens on the problem and the measured result, tells the crash once (walkthrough, then "Now kill one
+  yourself"), and ends with its own targets against recorded results; home leads with TaskForge and puts the rest in
+  a 2x2 grid. A second independent review removed a table row that stated a target no record states.
+- Integration re-run on both branches built against each other: the scripted round trip (case study -> bench ->
+  case study -> live demo -> back -> back) with no page errors, and the opt-in spec 4/4.
+
+Not done this sprint (evaluated): contextual avatar animation near benches (Opportunity 4); SSEC, FridgeFinder and
+the other desk-kit benches; a real-phone GPU check.
+
 Release plan (when approved): release the game first (it adds ?bench= and links only to pages production already
 has), then the professional site (its bench links need the new game). Rollback: revert each Vercel production
 deployment; DNS is unchanged throughout.
