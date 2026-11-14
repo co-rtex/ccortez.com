@@ -181,6 +181,14 @@ describe('LinkedWorkbenchContent', () => {
     );
     expect(withCard).toContain('<h3 class="experience-panel__story-heading">Story</h3>');
     expect(withCard).toContain('<h4 class="experience-panel__story-title">How it fails</h4>');
+    // A story that opens with a top-level `#` title is mapped the same way, never rendered as an h1.
+    const H1Story: Parameters<typeof LinkedWorkbenchContent>[0]['ActiveStory'] = ({ components }) => {
+      const H1 = components?.h1 ?? 'h1';
+      return <H1>TaskForge</H1>;
+    };
+    const h1Markup = renderToStaticMarkup(<LinkedWorkbenchContent title="TaskForge" ActiveStory={H1Story} isLoading={false} />);
+    expect(h1Markup).not.toContain('<h1');
+    expect(h1Markup).not.toContain('>TaskForge<');
   });
 
   it('renders an explicit error state without showing the loading copy', () => {

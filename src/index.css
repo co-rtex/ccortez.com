@@ -2108,3 +2108,26 @@ body {
   outline: 3px solid #2f8f63;
   outline-offset: -3px;
 }
+
+/* Landscape phones: the banner kept its portrait size and covered ~40% of a 390px-tall view, avatar included. It
+   keeps to the left side, with tighter type, so the plaza and the avatar stay in view. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-lite-banner {
+    max-width: min(360px, 46vw);
+    font-size: 0.74rem;
+    line-height: 1.3;
+    padding: 0.45rem 0.6rem;
+    gap: 0.35rem;
+  }
+
+  .mobile-lite-banner__who {
+    margin-bottom: 0;
+    font-size: 0.72rem;
+  }
+
+  .mobile-lite-banner__tour {
+    min-height: 2.25rem;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.8rem;
+  }
+}

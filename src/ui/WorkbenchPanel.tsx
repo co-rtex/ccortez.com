@@ -59,7 +59,11 @@ export function LinkedWorkbenchContent({
   isLoading,
 }: LinkedWorkbenchContentProps) {
   const storyLevel = recruiterCard ? 'h4' : 'h3';
-  const storyComponents = useMemo(() => ({ h2: StoryHeading(title, storyLevel) }), [title, storyLevel]);
+  // A story's top headings (`#` as well as `##`) sit under the panel's own h2, so neither renders as an h1 or h2 here.
+  const storyComponents = useMemo(() => {
+    const Heading = StoryHeading(title, storyLevel);
+    return { h1: Heading, h2: Heading };
+  }, [title, storyLevel]);
   // The role on its own line, then where and when, muted: one run-on line wrapped mid-name on a phone. A word
   // joiner after an en dash keeps names like "UW–Madison" on one line.
   const keepTogether = (text: string | undefined) => text?.replace(/–(?=\S)/g, '–\u2060');
