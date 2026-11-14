@@ -3,6 +3,14 @@ import { useMemo, useRef } from 'react';
 import { Vector3 } from 'three';
 import type { PerspectiveCamera } from 'three';
 
+import {
+  VISTA_CAMERA_OFFSET,
+  VISTA_END_DISTANCE,
+  VISTA_LOOK_OFFSET,
+  settleVista,
+  shouldOpenWithVista,
+  vistaBlend,
+} from './arrivalVista';
 import { getBenchFramingWeight, getFollowLookAhead, getPanelViewOffset } from './followCamera';
 import { prefersReducedMotion } from './reducedMotion';
 
@@ -45,6 +53,12 @@ export function CameraRig({ benchAnchors }: CameraRigProps): null {
   const lookTarget = useMemo(() => new Vector3(), []);
   const benchLook = useMemo(() => new Vector3(), []);
   const framingRef = useRef(0);
+  // Arrival vista state: decided on the first frame; `origin` is the spawn point it frames.
+  const vistaRef = useRef<{ progress: number; ended: boolean; origin: { x: number; y: number; z: number } } | null>(
+    null,
+  );
+  const vistaPosition = useMemo(() => new Vector3(), []);
+  const vistaLook = useMemo(() => new Vector3(), []);
 
   useFrame(({ camera, gl, size }, delta) => {
     const state = useGameStore.getState();
@@ -66,6 +80,9 @@ export function CameraRig({ benchAnchors }: CameraRigProps): null {
       perspective.clearViewOffset();
       viewOffset.applied = false;
     }
+
+    // Any other camera taking over (a bench opened, sitting down, the editor) ends the arrival vista for good.
+    if (vistaRef.current && state.cameraMode !== 'follow') vistaRef.current.progress = 0;
 
     if (state.cameraMode === 'workbench-inspect') {
       return;
@@ -130,7 +147,34 @@ export function CameraRig({ benchAnchors }: CameraRigProps): null {
       lookTarget.lerp(benchLook, framingRef.current);
     }
 
-    const interpolation = 1 - Math.exp(-blendSpeed * delta);
+    // Arrival vista: hold the establishing view until the visitor moves or opens something, then ease down.
+    let snap = false;
+    if (vistaRef.current === null) {
+      const opens = shouldOpenWithVista(window.location.search, (camera as PerspectiveCamera).aspect ?? 1);
+      vistaRef.current = { progress: opens ? 1 : 0, ended: !opens, origin: { ...state.playerPosition } };
+      snap = opens;
+    }
+    const vista = vistaRef.current;
+    if (vista.progress > 0) {
+      const moved = Math.hypot(state.playerPosition.x - vista.origin.x, state.playerPosition.z - vista.origin.z);
+      if (!vista.ended && (moved > VISTA_END_DISTANCE || state.playerMode !== 'exploring')) vista.ended = true;
+      if (vista.ended) vista.progress = settleVista(vista.progress, delta, prefersReducedMotion());
+      const blend = vistaBlend(vista.progress);
+      vistaPosition.set(
+        vista.origin.x + VISTA_CAMERA_OFFSET.x,
+        vista.origin.y + VISTA_CAMERA_OFFSET.y,
+        vista.origin.z + VISTA_CAMERA_OFFSET.z,
+      );
+      vistaLook.set(
+        vista.origin.x + VISTA_LOOK_OFFSET.x,
+        vista.origin.y + VISTA_LOOK_OFFSET.y,
+        vista.origin.z + VISTA_LOOK_OFFSET.z,
+      );
+      targetPosition.lerp(vistaPosition, blend);
+      lookTarget.lerp(vistaLook, blend);
+    }
+
+    const interpolation = snap ? 1 : 1 - Math.exp(-blendSpeed * delta);
     camera.position.lerp(targetPosition, interpolation);
     camera.lookAt(lookTarget);
   });
