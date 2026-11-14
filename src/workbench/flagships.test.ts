@@ -7,6 +7,7 @@ import {
   getCaseStudyUrl,
   getTourStep,
   hasInteractiveModel,
+  hasLongRangeLabel,
   isFlagshipWorkbench,
 } from './flagships';
 
@@ -49,5 +50,14 @@ describe('live models', () => {
     expect(['taskforge', 'enginex', 'quantlab'].every(hasInteractiveModel)).toBe(true);
     expect(hasInteractiveModel('lidar-phenotyping-research')).toBe(false);
     expect(hasInteractiveModel('about-me-overview')).toBe(false);
+  });
+});
+
+describe('long-range labels', () => {
+  it('names the flagships and the main role benches from across the plaza, not every bench', () => {
+    for (const id of [...FLAGSHIP_WORKBENCH_IDS, 'hcsc-automation', 'ssec-technical-computing']) {
+      expect(hasLongRangeLabel(id), id).toBe(true);
+    }
+    expect(hasLongRangeLabel('footymind')).toBe(false);
   });
 });

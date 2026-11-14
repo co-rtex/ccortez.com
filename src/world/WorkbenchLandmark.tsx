@@ -10,7 +10,7 @@ import { BENCH_PLINTH } from './benchPlinth';
 import { prefersReducedMotion } from './reducedMotion';
 import { START_HERE_WORKBENCH_ID } from './hub';
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
-import { isFlagshipWorkbench } from '../workbench/flagships';
+import { hasLongRangeLabel, isFlagshipWorkbench } from '../workbench/flagships';
 import { getWorkbenchRingColor } from './workbenchLandmarkAppearance';
 import {
   FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH,
@@ -466,6 +466,7 @@ export function WorkbenchLandmark({
   // Long-range flagship badges only where they fit: on a narrow screen the far ones sit at the edges, half cut off.
   const wideViewport = useThree((state) => state.size.width >= FLAGSHIP_BADGE_MIN_VIEWPORT_WIDTH);
   const isFlagship = isFlagshipWorkbench(workbench.definition.id);
+  const longRangeLabel = hasLongRangeLabel(workbench.definition.id);
   // Start Here stands right in front of the spawn point, so its badge sits just above the welcome board
   // (higher, it floated up against the fountain's armillary).
   const startBadgeY = 3.5;
@@ -479,7 +480,7 @@ export function WorkbenchLandmark({
       );
       // Start Here is the first destination, so its badge stays visible from anywhere on the plaza.
       const opacity = (
-        isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, isFlagship && wideViewport)
+        isPanelBench ? 0 : isStartHere ? 1 : getTitleBadgeOpacity(distance, longRangeLabel && wideViewport)
       ).toFixed(2);
       if (badge.style.opacity !== opacity) badge.style.opacity = opacity;
     }

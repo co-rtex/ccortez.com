@@ -232,7 +232,7 @@ deployment; DNS is unchanged throughout.
 
 
 
-1. Bench dioramas: the four flagships are live models (minimap rings them; the phone badge overlap is fixed).
+1. Bench dioramas: the four flagships have authored dioramas; TaskForge, EngineX and QuantLab run live models (LiDAR animates a seeded scan pass). HCSC and Phoenix-Aid now have scripted Tier B dioramas.
    Next: the 14 other benches still share the desk kit; the first candidates are the remaining anchor benches
    (HCSC, SSEC, Phoenix-Aid, FridgeFinder, Quant Signal Workstation, LLM Research Agent).
 2. Real-phone GPU check still pending (phones use the shorter ~18 m scene range).
