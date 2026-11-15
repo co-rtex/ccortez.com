@@ -3,7 +3,7 @@ import { describeRun, useQuantlabRuns, visibleDays } from '../../../src/sim/quan
 import { useFallbackClock } from '../../../src/sim/useFallbackClock';
 
 /**
- * Controls for the QuantLab workbench's toy backtest, in the details panel: re-run the same manifest (it must
+ * Controls for the Hindsight workbench's toy backtest, in the details panel: re-run the same manifest (it must
  * reproduce exactly) or run on the next dataset version (it should differ). The scene's state is also said here in
  * text; only the visitor's own runs are announced.
  */
@@ -19,7 +19,7 @@ export function QuantlabRunControls() {
     <section className="taskforge-sim" aria-labelledby="quantlab-run-title">
       <h4 id="quantlab-run-title">Re-run a backtest</h4>
       <p>
-        The bench runs a toy backtest on synthetic prices (the ideas QuantLab is built on, not its code). Dataset
+        The bench runs a toy backtest on synthetic prices (the ideas Hindsight is built on, not its code). Dataset
         versions never change and the rule only reads past prices, so re-running a version reproduces its manifest by
         construction, while another version gives a different one.
       </p>

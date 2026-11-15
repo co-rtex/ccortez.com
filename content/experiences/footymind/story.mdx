@@ -1,9 +1,11 @@
-## FootyMind
+## The Invisible Game
 
-FootyMind is a sports analytics application built around the full modeling loop: feature engineering, model training, and validation on held-out matches so results are judged on data the model has not seen.
+Event data records what happened to the ball. Most of a football match happens away from it: the space a run opens, the pressure on the player in possession, the passes they could have chosen. The Invisible Game is a lab for that part, built on real player-tracking data.
 
-I engineered features from historical match data and trained classification pipelines with scikit-learn. I then compared models by log loss on a held-out validation set to check whether they generalized or were simply overfitting.
+In the lab you can replay a possession, pause on a decision and read why it was interesting from computed evidence, find similar moments in other matches, and move a player to see how the picture changes. Those "what if?" scenarios are model-based, and the lab states the assumptions behind each one.
 
-That evaluation work was important because sports data can be noisy, context-sensitive, and easy to over-interpret. The project pushed me to think about model discipline, not just accuracy snapshots.
+Behind it is a research pipeline I tried to keep honest: every model is tested on matches it never saw, the two data providers are evaluated separately, and every value is labelled as observed, estimated or simulated. Some ideas did not survive that testing, and the lab reports them as negative results instead of hiding them.
 
-FootyMind shows how I approach ML work when the domain is interesting but the engineering expectations still need to be rigorous.
+It began in 2025 as a match-outcome predictor trained on a small synthetic sample. That prototype is archived with an audit of its limits and is not part of version 1.0.
+
+Try the [public demo](https://footymind-web-production.up.railway.app/). Source and research: [github.com/co-rtex/footymind](https://github.com/co-rtex/footymind).

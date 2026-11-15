@@ -1,7 +1,7 @@
 {
   "id": "enginex",
   "slug": "enginex",
-  "title": "EngineX",
+  "title": "Lockstep",
   "type": "project",
   "uiContentRef": "./story.mdx",
   "sceneModuleRef": "./scene.tsx",

@@ -46,9 +46,12 @@ expect_status "$PRO/Christian_Cortez_Resume.pdf" 200 application/pdf
 expect_status "$PRO/og.png" 200 image/png
 expect_status "$PRO/sitemap.xml" 200 xml
 expect_status "$PRO/robots.txt" 200 text/plain
-for slug in enginex taskforge quantlab lidar-phenotyping tradegrid; do
+for slug in lockstep taskforge hindsight lidar-phenotyping tradegrid; do
   expect_status "$PRO/work/$slug/" 200 text/html
 done
+# Renamed 2026-11 (EngineX -> Lockstep, QuantLab -> Hindsight): the old addresses redirect.
+expect_redirect "$PRO/work/enginex/" "$PRO/work/lockstep/"
+expect_redirect "$PRO/work/quantlab/" "$PRO/work/hindsight/"
 expect_status "$PRO/this-page-does-not-exist/" 404
 expect_body "$PRO/" "https://game.ccortez.com" "professional site links to the game"
 

@@ -1,26 +1,31 @@
 {
   "id": "footymind",
   "slug": "footymind",
-  "title": "FootyMind",
+  "title": "The Invisible Game",
   "type": "project",
   "uiContentRef": "./story.mdx",
   "sceneModuleRef": "./scene.tsx",
   "status": "published",
   "recruiterCard": {
-    "roleLabel": "Data-Driven Sports Analytics Application",
+    "roleLabel": "Football Tracking Analysis Lab",
     "organization": "Personal Project",
-    "dateRange": "2025",
-    "summary": "Built an end-to-end match outcome predictor: rolling team features, models compared by log loss on a held-out validation set, a FastAPI prediction endpoint and a Streamlit explorer.",
+    "dateRange": "2025 - 2026",
+    "summary": "A football analysis lab built on real player-tracking data: replay a possession, see the space, pressure and passing options behind a decision, and ask \"what if?\" under stated assumptions. Version 1.0 was released in November 2026, with a public demo.",
     "impactBullets": [
-      "Built an ETL pipeline that turns historical match data into rolling team features.",
-      "Trained scikit-learn classifiers and compared them by log loss on a held-out validation set.",
-      "Served predictions through FastAPI and an interactive Streamlit explorer."
+      "Works from two tracking providers, never pooled: 3 Metrica matches (optical, 25 Hz) and 20 SkillCorner A-League matches (broadcast, 10 fps), with checksum-pinned downloads and data-quality gates.",
+      "Evaluates every model leave-one-match-out, separately per provider: spatial context read 0.2 s before the pass lowered pass-outcome log loss in every held-out match (3 of 3 and 20 of 20).",
+      "Labels every value as observed, derived, estimated, hypothetical or simulated, and reports negative results next to the positive ones.",
+      "Serves the analysis through FastAPI to a React and Canvas lab with a guided tour, packaged with Docker."
     ],
     "techStack": [
       "Python",
+      "NumPy",
+      "Polars",
       "scikit-learn",
       "FastAPI",
-      "Streamlit"
+      "React",
+      "TypeScript",
+      "Docker"
     ]
   }
 }

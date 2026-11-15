@@ -1,7 +1,7 @@
 {
   "id": "fridgefinder",
   "slug": "fridgefinder",
-  "title": "FridgeFinder",
+  "title": "Fridge to Fork",
   "type": "project",
   "uiContentRef": "./story.mdx",
   "sceneModuleRef": "./scene.tsx",

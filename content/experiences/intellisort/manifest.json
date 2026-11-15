@@ -1,7 +1,7 @@
 {
   "id": "intellisort",
   "slug": "intellisort",
-  "title": "IntelliSort",
+  "title": "Big O Sort",
   "type": "project",
   "uiContentRef": "./story.mdx",
   "sceneModuleRef": "./scene.tsx",

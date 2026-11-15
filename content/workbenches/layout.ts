@@ -303,7 +303,7 @@ const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
   },
   {
     id: 'enginex',
-    title: 'EngineX',
+    title: 'Lockstep',
     category: 'projects',
     district: 'projects',
     visibility: 'published',
@@ -331,7 +331,7 @@ const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
   },
   {
     id: 'quantlab',
-    title: 'QuantLab',
+    title: 'Hindsight',
     category: 'projects',
     district: 'projects',
     visibility: 'published',
@@ -359,7 +359,7 @@ const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
   },
   {
     id: 'fridgefinder',
-    title: 'FridgeFinder',
+    title: 'Fridge to Fork',
     category: 'projects',
     district: 'projects',
     visibility: 'published',
@@ -386,7 +386,7 @@ const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
   },
   {
     id: 'quant-signal-workstation',
-    title: 'Quant Signal Workstation',
+    title: 'Quant Almanac',
     category: 'projects',
     district: 'projects',
     visibility: 'published',
@@ -494,7 +494,7 @@ const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
   },
   {
     id: 'intellisort',
-    title: 'IntelliSort',
+    title: 'Big O Sort',
     category: 'projects',
     district: 'projects',
     visibility: 'published',
@@ -521,7 +521,7 @@ const RAW_WORKBENCH_LAYOUT: WorkbenchDefinition[] = [
   },
   {
     id: 'footymind',
-    title: 'FootyMind',
+    title: 'The Invisible Game',
     category: 'projects',
     district: 'projects',
     visibility: 'published',

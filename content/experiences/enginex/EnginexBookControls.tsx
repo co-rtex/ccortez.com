@@ -3,7 +3,7 @@ import { REPLAY_SHOWN_TICKS, useEnginexBook } from '../../../src/sim/enginexBook
 import { useFallbackClock } from '../../../src/sim/useFallbackClock';
 
 /**
- * Controls for the EngineX workbench's toy order book, in the details panel: send an order through the
+ * Controls for the Lockstep workbench's toy order book, in the details panel: send an order through the
  * sequencer and watch it sweep the ladder, then replay the journal into an empty book and compare the state.
  * Everything the scene shows is also said here in text, and the latest event is announced politely.
  */
@@ -22,9 +22,9 @@ export function EnginexBookControls() {
     <section className="taskforge-sim" aria-labelledby="enginex-book-title">
       <h4 id="enginex-book-title">Send an order</h4>
       <p>
-        The bench is running a toy order book (the ideas EngineX is built on, not its code). Orders pass a single
+        The bench is running a toy order book (the ideas Lockstep is built on, not its code). Orders pass a single
         sequencer one at a time in arrival order, are recorded in the journal, and match by price and, within a price,
-        by arrival. Like EngineX it takes limit orders only: send one priced to cross the book and watch it sweep the
+        by arrival. Like Lockstep it takes limit orders only: send one priced to cross the book and watch it sweep the
         ladder; whatever it cannot fill rests at its limit.
       </p>
       <div className="taskforge-sim__buttons">

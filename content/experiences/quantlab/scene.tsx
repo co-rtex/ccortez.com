@@ -12,7 +12,7 @@ import { useQuantlabRuns, visibleDays, type Run } from '../../../src/sim/quantla
 import { prefersReducedMotion } from '../../../src/world/reducedMotion';
 
 /**
- * QuantLab as a working model: a toy backtest on synthetic prices (not QuantLab's code). The dataset shelf holds
+ * Hindsight as a working model: a toy backtest on synthetic prices (not Hindsight's code). The dataset shelf holds
  * immutable versions, with the run's version pulled out; the worker block glows while the run is going; the equity
  * curve grows a column per day, tinted where it stands below its running peak (drawdown); and the manifest plaque
  * lights green when a re-run of the same dataset version reproduces the previous run exactly.

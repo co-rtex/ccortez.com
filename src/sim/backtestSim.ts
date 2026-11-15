@@ -1,8 +1,8 @@
 // Shared with the professional site (ccortez.com, src/lib/sim/backtest.ts): the same toy backtest drives the
-// QuantLab case study there and the QuantLab bench here. Keep the two copies identical.
+// Hindsight case study there and the Hindsight bench here. Keep the two copies identical.
 /**
- * A toy backtest for the QuantLab workbench: the ideas QuantLab is built on, small enough to watch. It is not
- * QuantLab's code, and the prices are synthetic.
+ * A toy backtest for the Hindsight workbench: the ideas Hindsight is built on, small enough to watch. It is not
+ * Hindsight's code, and the prices are synthetic.
  *
  * - Immutable dataset versions: version N always holds the same synthetic price series.
  * - No look-ahead: the rule decides each day's position from prices up to the day before.
