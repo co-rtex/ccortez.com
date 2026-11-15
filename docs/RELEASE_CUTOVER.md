@@ -3,7 +3,8 @@
 > **Completed 2026-11-12.** `ccortez.com` → Vercel (professional site), `game.ccortez.com` → GitHub Pages (game).
 > Evidence is in `SPRINT_STATUS.md`. The rollback section below still applies.
 >
-> **Released 2026-11-14:** the release candidate below is live. See "Release, 2026-11-14".
+> **Released 2026-11-14:** the release candidate below is live. See "Release, 2026-11-14", and "Maintenance
+> releases, 2026-11-15" for the fixes that followed.
 
 Goal: `ccortez.com` serves the professional portfolio (Vercel); `game.ccortez.com` serves this 3D game
 (GitHub Pages). **Steps 1 and later change production and need Christian's explicit approval.** Everything
@@ -53,6 +54,24 @@ Closeout audit of the live sites, same day:
 - On a 667×375 landscape phone the QuantLab badge hides near the screen edge.
 - A few content questions about supporting (non-flagship) benches await the owner's confirmation; they are
   tracked outside this public repository.
+
+## Maintenance releases, 2026-11-15 (done)
+
+Found in the closeout audit of the live sites and released with Christian's approval, game first. Times are UTC.
+
+| PR | What | Commit | Deploy |
+| --- | --- | --- | --- |
+| Game #7 (hotfix) | "Try the live model" scrolled the whole full-screen shell (176 px on desktop, 515 px on a 390×844 phone, header and Close off screen); it now scrolls only the panel. Touch screens are told to tap the workbench. | `de699cb` | Pages run 43749237946 succeeded at 18:54:15 |
+| Game #6 | FridgeFinder and LLM Research Agent benches say only what the sources support; `og:image`, `og:url`, canonical link and a large Twitter card | `c067248` | Pages run 43749475767 succeeded at 18:56:40 |
+| Professional #2 | TradeGrid states what its repository shows instead of an unsupported 20+; LiDAR runtime tile fits one line; resume PDF regenerated | `13777f7` | Vercel `portfolio-professional-ajom4vedj` succeeded at 18:57:25 |
+
+Checked on production after each step: the live-model jump leaves the shell at scroll 0 with the demo at the top of
+the panel on TaskForge, EngineX and QuantLab at 1440×900, 390×844 and 844×390; the preview tags and
+`/og.jpg` are served; the corrected panels render; the live resume PDF matches the committed one;
+`BASE_URL=https://ccortez.com npm run test:e2e` 65 passed, 13 skipped; the integration spec 8 passed.
+
+Rollback targets now: Vercel `portfolio-professional-k300eznpd`; for the game, revert the commits above on `main`
+(newest first) or go back to `a08a400`.
 
 ## Release candidate, 2026-11-14 (code only: no DNS, no domain settings; released, see above)
 
