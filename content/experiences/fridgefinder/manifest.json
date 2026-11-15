@@ -7,23 +7,21 @@
   "sceneModuleRef": "./scene.tsx",
   "status": "published",
   "recruiterCard": {
-    "roleLabel": "Full-Stack AI Recipe Platform",
+    "roleLabel": "Recipe App Front-End Prototype",
     "organization": "Personal Project",
-    "dateRange": "2026",
-    "summary": "Built an AI-assisted recipe and nutrition platform that combines FastAPI services, OpenAI-powered generation, React UI flows, and normalized PostgreSQL persistence.",
+    "dateRange": "2025",
+    "summary": "Prototyped the front end of a recipe app: list what is in the fridge, browse suggested recipes with nutrition facts, and cook along with step timers. The prototype runs on sample recipes and has no back end.",
     "impactBullets": [
-      "Built a FastAPI backend with REST endpoints to parse ingredients and generate AI recipes using OpenAI APIs.",
-      "Designed normalized PostgreSQL schemas for users and recipes, enabling scalable persistence and query performance.",
-      "Built React flows for recipe and nutrition experiences while containerizing the stack for reproducible deployment.",
-      "Kept the AI generation flow behind clear REST endpoints so the UI and model calls could evolve independently."
+      "Built the ingredient entry, recipe results, recipe detail and cook-mode screens in React and TypeScript.",
+      "Showed nutrition facts on each recipe and added per-step timers to the cook mode.",
+      "Used sample recipe data so the whole flow, from ingredients to a cooked meal, could be tried end to end."
     ],
     "techStack": [
-      "Python",
-      "FastAPI",
       "React",
-      "OpenAI API",
-      "PostgreSQL",
-      "Docker"
+      "TypeScript",
+      "Vite",
+      "Tailwind CSS",
+      "shadcn/ui"
     ]
   }
 }

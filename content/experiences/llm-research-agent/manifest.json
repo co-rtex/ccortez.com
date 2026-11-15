@@ -7,13 +7,13 @@
   "sceneModuleRef": "./scene.tsx",
   "status": "published",
   "recruiterCard": {
-    "roleLabel": "Structured Prediction & Eval Framework",
+    "roleLabel": "Structured Prediction & Evaluation",
     "organization": "Personal Project",
     "dateRange": "2026",
-    "summary": "Designed a multi-step research agent that synthesizes documents into sourced predictions, then measures retrieval quality, calibration, and output reliability.",
+    "summary": "Designed a multi-step research agent that synthesizes documents into sourced, structured predictions, then measures retrieval quality and output reliability.",
     "impactBullets": [
-      "Designed a multi-step research agent that synthesizes documents into sourced predictions with calibrated probabilities.",
-      "Built an eval framework measuring retrieval precision, reasoning consistency, and output calibration over test suites.",
+      "Designed a multi-step research agent that synthesizes documents into sourced predictions in a fixed, parseable format.",
+      "Built an eval framework measuring retrieval precision and reasoning consistency over test suites.",
       "Added guardrails, retry logic, and Pydantic schemas to enforce parseable, reliable structured outputs."
     ],
     "techStack": [
