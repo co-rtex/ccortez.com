@@ -40,6 +40,8 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  /* clip, where supported, also refuses programmatic scrolling (focus, scrollIntoView), so the shell never moves. */
+  overflow: clip;
 }
 
 .app-shell::before {

@@ -228,6 +228,15 @@ describe('LinkedWorkbenchContent', () => {
   });
 });
 
+describe('walk-up prompt wording', () => {
+  it('says tap on touch screens and E or click elsewhere', async () => {
+    const { getWorkbenchPromptSubtitle } = await import('./workbenchPanelHints');
+    expect(getWorkbenchPromptSubtitle(true, false)).toBe('Tap the workbench to open details');
+    expect(getWorkbenchPromptSubtitle(false, false)).toBe('Press E or click workbench to open details');
+    expect(getWorkbenchPromptSubtitle(true, true)).toBe('Tap the workbench to preview draft details');
+  });
+});
+
 describe('inspect hint wording', () => {
   it('says pinch on touch screens and scroll elsewhere', async () => {
     const { getWorkbenchInspectHint } = await import('./workbenchPanelHints');
