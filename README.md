@@ -1,4 +1,4 @@
-# Christian Cortez — 3D portfolio island
+# Cortez Cove — Christian Cortez's 3D portfolio
 
 Open-world portfolio built with `Vite + React + TypeScript + React Three Fiber`. Planned home:
 `game.ccortez.com` (see `docs/RELEASE_CUTOVER.md`). The text portfolio and resume live in a separate
