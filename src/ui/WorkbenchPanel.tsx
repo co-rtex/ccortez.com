@@ -11,6 +11,7 @@ import { buildWorkbenchMetaChips, resolvePanelEyebrow } from './workbenchPanelMe
 import { getCaseStudyUrl, getTourStep, hasInteractiveModel, isFlagshipWorkbench } from '../workbench/flagships';
 import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
 import { prefersReducedMotion } from '../world/reducedMotion';
+import { scrollDemoIntoPanel } from './demoJump';
 
 interface WorkbenchPanelProps {
   workbenches: WorkbenchRuntimeRecord[];
@@ -129,8 +130,7 @@ export function WorkbenchPanel({ workbenches, onTravelTo }: WorkbenchPanelProps)
   const panelRef = useRef<HTMLElement>(null);
   const jumpToDemo = (): void => {
     const demo = panelRef.current?.querySelector<HTMLElement>('.taskforge-sim');
-    if (!demo) return;
-    demo.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    if (!demo || !scrollDemoIntoPanel(demo, prefersReducedMotion())) return;
     // Move focus to the demo's heading so keyboard and screen-reader users land there too.
     const heading = demo.querySelector<HTMLElement>('h4');
     if (heading) {
