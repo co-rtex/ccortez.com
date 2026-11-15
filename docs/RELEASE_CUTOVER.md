@@ -2,12 +2,78 @@
 
 > **Completed 2026-11-12.** `ccortez.com` → Vercel (professional site), `game.ccortez.com` → GitHub Pages (game).
 > Evidence is in `SPRINT_STATUS.md`. The rollback section below still applies.
+>
+> **Released 2026-11-14:** the release candidate below is live. See "Release, 2026-11-14", and "Maintenance
+> releases, 2026-11-15" for the fixes that followed.
 
 Goal: `ccortez.com` serves the professional portfolio (Vercel); `game.ccortez.com` serves this 3D game
 (GitHub Pages). **Steps 1 and later change production and need Christian's explicit approval.** Everything
 in "Already done" was safe and reversible.
 
-## Release candidate, 2026-11-14 (code only: no DNS, no domain settings)
+## Release, 2026-11-14 (done)
+
+Approved by Christian and released in the order the runbook requires, game first. Times are UTC, from GitHub
+and Vercel.
+
+| Step | What | Result |
+| --- | --- | --- |
+| 0 | Branch heads matched the reviewed ones (game `d04a59d`, professional `bf283cf`); CI green on both PRs; `npm run check:shared-sim` all four "same" | passed |
+| 1 | Game PR #4 squash-merged into `main` at 14:25:11 as **`a08a400`** | Pages workflow run 43604764979 (lint, unit tests, build, deploy) succeeded at 14:26:52 |
+| 1 | `scripts/verify-release.sh`; live stylesheet carries the new tour badges; in a browser at 1440×900 and 390×844, `?bench=taskforge` opens the TaskForge panel and the arrival screen shows tour badges 1–5 | passed, no page errors |
+| 2 | Professional PR #1 merged (merge commit) into `main` at 14:29:39 as **`403b4fe`** | Vercel production build succeeded at 14:30:07 (deployment `portfolio-professional-k300eznpd`) |
+| 2 | `BASE_URL=https://ccortez.com npm run test:e2e` | 65 passed, 13 skipped (viewport-specific and opt-in) |
+| 2 | `BASE_URL=https://ccortez.com INTEGRATION_GAME_URL=https://game.ccortez.com npx playwright test integration` | 8 passed (four flagships, desktop and mobile) |
+| 2 | `scripts/verify-release.sh` again with both sides live | passed |
+
+No DNS records or domain settings changed. The feature branches were left in place.
+
+Closeout audit of the live sites, same day:
+
+- Recruiter journey (home → flagship → resume → PDF → game → tour → case study → contact) at 1440×900 and
+  390×844: 12 of 12 steps, no page errors.
+- Game journey with and without reduced motion (keyboard order, open with E, Escape, tour, TaskForge and
+  EngineX demos, guide fast travel, deep link and refresh, history back): all steps, no page errors.
+- Cross-site round trip from the TaskForge case study to its bench, back to the case study and its live demo,
+  and back through history: passed.
+- Every published bench opens from `?bench=<id>` (19 of 19), no console errors.
+- axe on the game's spawn screen and 10 bench panels: 0 violations. No-WebGL fallback at desktop and phone
+  sizes: shown, not covered by the guide.
+- Professional pages carry title, description, canonical URL and `og:image`; external links resolve.
+
+**Rollback targets**
+
+- Professional site: Vercel instant rollback to `portfolio-professional-ppa5tvcci` (production before this
+  release). No rebuild.
+- Game: revert `a08a400` on `main` (the previous `main` is `5176c5b`); the Pages workflow redeploys.
+- Roll back the professional site first if both go back; the game alone going back leaves the site's bench
+  links opening the spawn point, which is harmless.
+
+**Known limitations at release**
+
+- Frame times were measured on an Apple M3 only; no physical phone was tested.
+- On a 667×375 landscape phone the QuantLab badge hides near the screen edge.
+- A few content questions about supporting (non-flagship) benches await the owner's confirmation; they are
+  tracked outside this public repository.
+
+## Maintenance releases, 2026-11-15 (done)
+
+Found in the closeout audit of the live sites and released with Christian's approval, game first. Times are UTC.
+
+| PR | What | Commit | Deploy |
+| --- | --- | --- | --- |
+| Game #7 (hotfix) | "Try the live model" scrolled the whole full-screen shell (176 px on desktop, 515 px on a 390×844 phone, header and Close off screen); it now scrolls only the panel. Touch screens are told to tap the workbench. | `de699cb` | Pages run 43749237946 succeeded at 18:54:15 |
+| Game #6 | FridgeFinder and LLM Research Agent benches say only what the sources support; `og:image`, `og:url`, canonical link and a large Twitter card | `c067248` | Pages run 43749475767 succeeded at 18:56:40 |
+| Professional #2 | TradeGrid states what its repository shows instead of an unsupported 20+; LiDAR runtime tile fits one line; resume PDF regenerated | `13777f7` | Vercel `portfolio-professional-ajom4vedj` succeeded at 18:57:25 |
+
+Checked on production after each step: the live-model jump leaves the shell at scroll 0 with the demo at the top of
+the panel on TaskForge, EngineX and QuantLab at 1440×900, 390×844 and 844×390; the preview tags and
+`/og.jpg` are served; the corrected panels render; the live resume PDF matches the committed one;
+`BASE_URL=https://ccortez.com npm run test:e2e` 65 passed, 13 skipped; the integration spec 8 passed.
+
+Rollback targets now: Vercel `portfolio-professional-k300eznpd`; for the game, revert the commits above on `main`
+(newest first) or go back to `a08a400`.
+
+## Release candidate, 2026-11-14 (code only: no DNS, no domain settings; released, see above)
 
 Verified today with `scripts/verify-release.sh` (all checks pass): `ccortez.com` A `64.29.17.1`, `216.198.79.1`
 (Vercel); `www` CNAME `ccd20a33c6e119dd.vercel-dns-017.com.`; `game` CNAME `co-rtex.github.io.` (GitHub Pages).
