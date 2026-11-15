@@ -5,6 +5,7 @@ import { getScenicRestSpotById } from '../world/restSpots';
 
 import type { WorkbenchRuntimeRecord } from '../workbench/runtime';
 import { OWNER } from '../app/siteLinks';
+import { getWorkbenchPromptSubtitle } from './workbenchPanelHints';
 
 interface WorkbenchPromptProps {
   workbenches: WorkbenchRuntimeRecord[];
@@ -105,9 +106,10 @@ export function WorkbenchPrompt({ workbenches, editorEnabled, mobileLiteMode, on
       <p className="prompt-card__subtitle">
         {editorEnabled
           ? 'Click to select. Press E or use the editor to open.'
-          : nearbyWorkbench.definition.contentMode === 'placeholder'
-            ? 'Press E or click workbench to preview draft details'
-            : 'Press E or click workbench to open details'}
+          : getWorkbenchPromptSubtitle(
+              typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches === true,
+              nearbyWorkbench.definition.contentMode === 'placeholder',
+            )}
       </p>
     </div>
   );
