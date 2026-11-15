@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { ENGINEX_TICK_SECONDS, fresh, useEnginexBook } from './enginexBookStore';
 
-describe('EngineX bench order book store', () => {
+describe('Lockstep bench order book store', () => {
   beforeEach(() => useEnginexBook.getState().restart());
 
   it('advances one tick per whole tick of real time', () => {

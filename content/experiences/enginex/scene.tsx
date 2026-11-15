@@ -12,14 +12,14 @@ import { useEnginexBook } from '../../../src/sim/enginexBookStore';
 import { prefersReducedMotion } from '../../../src/world/reducedMotion';
 
 /**
- * EngineX as a working model: a toy limit-order book (not EngineX's code) played out on the bench.
+ * Lockstep as a working model: a toy limit-order book (not Lockstep's code) played out on the bench.
  *
  * Orders wait in a single file at the sequencer gate, which takes one at a time. Each sequenced order is recorded in
- * the journal (the row of slabs on the left, newest at the front) and applied to the book in the same step (EngineX
+ * the journal (the row of slabs on the left, newest at the front) and applied to the book in the same step (Lockstep
  * itself applies in memory, journals, syncs, then acknowledges; the toy has no acknowledgements): the book is the
  * ladder in the middle, bids stacked to the left of the price spine and asks to the right, one cube per lot, with
  * alternating shades marking separate orders queued at a price (oldest nearest the spine fills first). Fills drop
- * into the trades tray on the right. The panel can send limit orders priced to cross the book (EngineX accepts only
+ * into the trades tray on the right. The panel can send limit orders priced to cross the book (Lockstep accepts only
  * limit orders) and replay the journal to the same state.
  */
 

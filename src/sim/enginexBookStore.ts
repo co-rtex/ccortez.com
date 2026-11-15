@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { bookHash, createBook, crossingOrder, replayJournal, step, submit, type BookSim, type Side } from './orderBookSim';
 
 /**
- * The live toy order book behind the EngineX workbench. The diorama and the panel's controls both read it, so a
+ * The live toy order book behind the Lockstep workbench. The diorama and the panel's controls both read it, so a
  * visitor's order sent from the panel is seen going through the sequencer gate and into the ladder.
  */
 export const ENGINEX_TICK_SECONDS = 0.9;
@@ -31,7 +31,7 @@ interface EnginexBookState {
   /** What the visitor's latest order did, once the sequencer has taken it; announced to screen readers. */
   announcement: string;
   advance: (seconds: number) => void;
-  /** Send a visitor's order: a limit order priced to cross the book (EngineX accepts only limit orders). */
+  /** Send a visitor's order: a limit order priced to cross the book (Lockstep accepts only limit orders). */
   send: (side: Side) => void;
   replayJournal: () => void;
   restart: () => void;

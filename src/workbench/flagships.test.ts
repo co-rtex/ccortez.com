@@ -71,8 +71,8 @@ describe('case-study links', () => {
   it('maps each flagship bench to its case-study slug on the professional site', () => {
     expect(Object.fromEntries(FLAGSHIP_WORKBENCH_IDS.map((id) => [id, getCaseStudyUrl(id)?.split('/work/')[1]]))).toEqual({
       taskforge: 'taskforge/',
-      enginex: 'enginex/',
-      quantlab: 'quantlab/',
+      enginex: 'lockstep/',
+      quantlab: 'hindsight/',
       'lidar-phenotyping-research': 'lidar-phenotyping/',
     });
   });

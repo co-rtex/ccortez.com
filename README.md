@@ -65,7 +65,10 @@ Workbench layout is the live world model.
 Public:
 
 - `?bench=<id>` opens a published bench on load, moving the player to it as if picked in the guide. The case
-  studies on ccortez.com link here (`taskforge`, `enginex`, `quantlab`, `lidar-phenotyping-research`).
+  studies on ccortez.com link here (`taskforge`, `enginex`, `quantlab`, `lidar-phenotyping-research`). Bench ids
+  kept their original names when the projects were renamed (2026-11); the new names work as aliases
+  (`?bench=lockstep`, `hindsight`, `quant-almanac`, `the-invisible-game`, `big-o-sort`, `fridge-to-fork`;
+  `BENCH_ID_ALIASES` in `src/app/benchDeepLink.ts`).
 
 Screenshot and diagnostic fixtures (harmless if left in a URL; ignored when absent):
 
@@ -79,16 +82,16 @@ Screenshot and diagnostic fixtures (harmless if left in a URL; ignored when abse
 
 ## Flagship Benches
 
-TaskForge, EngineX, QuantLab and the LiDAR research bench each run a small deterministic model of the work in
+TaskForge, Lockstep, Hindsight and the LiDAR research bench each run a small deterministic model of the work in
 `src/sim/` (job queue, order book, backtest; the LiDAR pass is time-driven in its scene). The job queue, order book
 and backtest files are shared with the professional site (`src/lib/sim/` there) and must stay identical below their header comments;
 `npm run check:shared-sim` compares that code with a sibling `../portfolio-professional` checkout (it skips, with a
 message, if the checkout is missing, so run it by hand before a release). Each
 panel labels its model as a toy, not the real code, and runs it on a fallback clock when no 3D scene is driving it.
 
-The flagship tour (`FLAGSHIP_TOUR` in `src/workbench/flagships.ts`: Start Here, LiDAR, TaskForge, EngineX, QuantLab)
+The flagship tour (`FLAGSHIP_TOUR` in `src/workbench/flagships.ts`: Start Here, TaskForge, Lockstep, Hindsight, LiDAR)
 is offered from the arrival card and the phone banner and continues from a footer on those panels; the last stop
-hands over to the written case studies. Only TaskForge, EngineX and QuantLab are called live models
+hands over to the written case studies. Only TaskForge, Lockstep and Hindsight are called live models
 (`hasInteractiveModel`); LiDAR's scan pass has no controls.
 
 Two role benches have scripted dioramas instead of the shared desk kit: HCSC (`src/sim/reconcileLoop.ts`, a

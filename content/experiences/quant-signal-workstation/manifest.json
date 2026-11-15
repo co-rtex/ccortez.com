@@ -1,7 +1,7 @@
 {
   "id": "quant-signal-workstation",
   "slug": "quant-signal-workstation",
-  "title": "Quantitative Signal Workstation",
+  "title": "Quant Almanac",
   "type": "project",
   "uiContentRef": "./story.mdx",
   "sceneModuleRef": "./scene.tsx",

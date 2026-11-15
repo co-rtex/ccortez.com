@@ -1,13 +1,13 @@
 // Shared with the professional site (ccortez.com, src/lib/sim/orderBook.ts): the same toy order book drives the
-// EngineX case study there and the EngineX bench here. Keep the two copies identical.
+// Lockstep case study there and the Lockstep bench here. Keep the two copies identical.
 /**
- * A toy limit-order book for the EngineX workbench: the ideas the engine is built on, small enough to watch.
- * It is not EngineX's code.
+ * A toy limit-order book for the Lockstep workbench: the ideas the engine is built on, small enough to watch.
+ * It is not Lockstep's code.
  *
  * - One sequencer: orders wait in an inbox and are taken one at a time, in arrival order; each gets the next
- *   sequence number, is matched in memory and is recorded in the journal. (In EngineX an order is acknowledged
+ *   sequence number, is matched in memory and is recorded in the journal. (In Lockstep an order is acknowledged
  *   only after its journal entry is synced; the model has no acknowledgements.)
- * - Limit orders only, as in EngineX: a visitor's order is a limit order priced to cross the book.
+ * - Limit orders only, as in Lockstep: a visitor's order is a limit order priced to cross the book.
  * - Price-time priority: an incoming order fills against the best opposite price first and, within a price,
  *   against the oldest resting order first. What is left rests at its limit price, behind earlier orders there.
  * - Determinism: replaying the journal into an empty book reproduces the same book and the same state hash.

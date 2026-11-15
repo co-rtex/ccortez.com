@@ -4,7 +4,7 @@ import { prefersReducedMotion } from '../world/reducedMotion';
 import { DATASET_VERSIONS, DAYS, runBacktest, type BacktestResult } from './backtestSim';
 
 /**
- * The QuantLab workbench's run loop: a toy backtest reveals its equity curve day by day, holds the finished
+ * The Hindsight workbench's run loop: a toy backtest reveals its equity curve day by day, holds the finished
  * result, then runs again. Left alone it alternates a re-run of the same manifest (which must reproduce it) with
  * a run on the next dataset version; the panel's buttons start either one now. Under reduced motion a run is
  * shown finished at once and nothing starts by itself.

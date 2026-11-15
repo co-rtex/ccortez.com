@@ -11,8 +11,8 @@ import { PROFESSIONAL_SITE_URL } from '../app/siteLinks';
  */
 const CASE_STUDY_SLUG_BY_WORKBENCH_ID: Readonly<Record<string, string>> = {
   taskforge: 'taskforge',
-  enginex: 'enginex',
-  quantlab: 'quantlab',
+  enginex: 'lockstep',
+  quantlab: 'hindsight',
   'lidar-phenotyping-research': 'lidar-phenotyping',
 };
 
@@ -55,7 +55,7 @@ export function getCaseStudyUrl(workbenchId: string): string | null {
  * the previous and next stop (travel and open, as from the guide); closing the panel leaves the visitor free to
  * roam. The last stop hands over to the written case studies and resume.
  */
-// The same order as the case studies on the professional site (TaskForge, EngineX, QuantLab, LiDAR), after Start Here.
+// The same order as the case studies on the professional site (TaskForge, Lockstep, Hindsight, LiDAR), after Start Here.
 export const FLAGSHIP_TOUR: readonly string[] = [
   'about-me-overview',
   'taskforge',

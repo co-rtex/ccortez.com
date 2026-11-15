@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DAYS } from './backtestSim';
 import { DAY_SECONDS, HOLD_SECONDS, describeRun, useQuantlabRuns } from './quantlabRunStore';
 
-describe('QuantLab bench run loop', () => {
+describe('Hindsight bench run loop', () => {
   it('reveals a run day by day, then re-runs the same manifest and reports that it reproduced', () => {
     const first = useQuantlabRuns.getState().run;
     useQuantlabRuns.getState().advance(DAY_SECONDS * 10.5);
